@@ -1,9 +1,9 @@
 node_modules/
-.env
-.env.local
-.DS_Store
 *.log
-dist/
-build/
-.vscode/
-.idea/
+.env
+.DS_Store
+test-*.docx
+test-*.pptx
+test-*.xlsx
+test-*.zip
+_*.html
