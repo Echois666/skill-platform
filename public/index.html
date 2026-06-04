@@ -68,15 +68,21 @@
             <h2 class="text-4xl font-bold mb-12 text-center gradient-text">智能生成工具</h2>
             <div class="bg-slate-800/60 border border-purple-500/20 rounded-2xl p-8">
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold mb-3">① 选择园区类型</label>
+                    <label class="block text-sm font-semibold mb-3">① 描述您的需求（智能解析）</label>
+                    <textarea id="genReq" rows="3" placeholder="例如：我们要给某某化工集团建一个化工园区，重点是安全风险预警和应急指挥调度" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-gray-100 resize-none"></textarea>
+                    <button id="parseBtn" onclick="parseReq()" class="mt-3 bg-slate-700 hover:bg-purple-600 px-5 py-2 rounded-lg text-sm font-semibold transition">🧠 智能解析需求</button>
+                    <div id="parseResult" class="mt-3"></div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-3">② 选择/确认园区类型</label>
                     <select id="genPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-gray-100"></select>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-sm font-semibold mb-3">② 选择生成类型</label>
+                    <label class="block text-sm font-semibold mb-3">③ 选择生成类型</label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="genType"></div>
                 </div>
                 <div class="mb-8">
-                    <label class="block text-sm font-semibold mb-3">③ 选择版本</label>
+                    <label class="block text-sm font-semibold mb-3">④ 选择版本</label>
                     <div class="flex gap-3">
                         <label class="flex-1 cursor-pointer"><input type="radio" name="ver" value="脱敏版" checked class="peer hidden"><div class="border border-slate-600 peer-checked:border-purple-500 peer-checked:bg-purple-500/10 rounded-lg px-4 py-3 text-center transition">🌍 脱敏版（对外）</div></label>
                         <label class="flex-1 cursor-pointer"><input type="radio" name="ver" value="涉密版" class="peer hidden"><div class="border border-slate-600 peer-checked:border-pink-500 peer-checked:bg-pink-500/10 rounded-lg px-4 py-3 text-center transition">🔐 涉密版（内部）</div></label>
@@ -157,6 +163,39 @@
             document.getElementById('genType').innerHTML = genTypes.map(t=>`<button data-t="${t[0]}" onclick="pickType('${t[0]}')" class="gt border border-slate-600 rounded-lg px-3 py-3 text-sm transition ${t[0]===selectedType?'border-purple-500 bg-purple-500/10':''}">${t[1]}</button>`).join('');
         }
         function pickType(t){ selectedType=t; renderGenTypes(); }
+
+        let currentBrief = null;
+        async function parseReq(){
+            const text = document.getElementById('genReq').value.trim();
+            const box = document.getElementById('parseResult');
+            const btn = document.getElementById('parseBtn');
+            if(!text){ box.innerHTML = '<div class="text-sm text-amber-400">请先输入需求描述。</div>'; return; }
+            btn.disabled = true; btn.classList.add('opacity-60');
+            box.innerHTML = '<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在解析需求...</div>';
+            try {
+                const resp = await fetch('/api/parse-requirement', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ requirement: text })
+                });
+                const j = await resp.json();
+                if(!j.ok) throw new Error(j.error||'解析失败');
+                currentBrief = j;
+                document.getElementById('genPark').value = j.parkId;
+                const chips = (arr,cls)=> (arr||[]).map(x=>`<span class="${cls} px-2 py-0.5 rounded-full text-xs mr-1 mb-1 inline-block">${x}</span>`).join('');
+                box.innerHTML = `<div class="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 text-sm">
+                    <div class="font-bold text-purple-300 mb-2">${j.icon} 已识别：${j.parkName} <span class="text-xs text-gray-400">（置信度 ${j.confidence}%）</span></div>
+                    ${j.client?`<div class="text-gray-300 mb-1">客户主体：<span class="text-pink-300">${j.client}</span></div>`:''}
+                    ${j.emphases.length?`<div class="mb-1">核心诉求：${chips(j.emphases,'bg-pink-500/20 text-pink-300')}</div>`:''}
+                    ${j.focusScenarios.length?`<div class="mb-1">重点场景：${chips(j.focusScenarios,'bg-purple-500/20 text-purple-300')}</div>`:''}
+                    <div class="text-gray-400 text-xs mt-2">${j.understanding}</div>
+                    <div class="text-green-300 text-xs mt-2">✓ 已自动选定园区，生成时将按此需求定制内容</div>
+                </div>`;
+            } catch(err){
+                box.innerHTML = `<div class="text-sm text-red-400">❌ ${err.message}</div>`;
+            } finally {
+                btn.disabled = false; btn.classList.remove('opacity-60');
+            }
+        }
         function showPark(id){
             const p = parks.find(x=>x.id===id);
             document.getElementById('modalContent').innerHTML = `
@@ -173,17 +212,21 @@
             const parkId = document.getElementById('genPark').value;
             const p = parks.find(x=>x.id===parkId);
             const ver = document.querySelector('input[name=ver]:checked').value;
+            const requirement = document.getElementById('genReq').value.trim();
             const t = genTypes.find(t=>t[0]===selectedType);
             const typeName = t[1], endpoint = t[2], ext = t[3];
             const r = document.getElementById('genResult');
             const btn = document.getElementById('genBtn');
             btn.disabled = true; btn.classList.add('opacity-60');
-            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-300 flex items-center gap-3"><span class="spinner"></span> 正在为「${p.name}」生成${typeName}（${ver}）并下载...</div>`;
+            const tip = requirement ? '（按需求定制）' : '';
+            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-300 flex items-center gap-3"><span class="spinner"></span> 正在为「${p.name}」生成${typeName}（${ver}）${tip}并下载...</div>`;
             try {
+                const payload = { parkId, version: ver };
+                if (requirement) payload.requirement = requirement;
                 const resp = await fetch(`/api/generate/${endpoint}`, {
                     method:'POST',
                     headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ parkId, version: ver })
+                    body: JSON.stringify(payload)
                 });
                 if(!resp.ok){
                     let msg = 'HTTP '+resp.status;
