@@ -21,14 +21,14 @@ const tasks = [
   { id: 'customize',   title: '方案定制（客户名称/项目名称/编制单位）', status: 'pending', phase: '深化', date: '', desc: '生成时注入客户信息到文档封面与正文，贴合真实投标' },
   { id: 'quote-gen',   title: '新增报价单生成（分项报价明细）',   status: 'pending',     phase: '深化',   date: '', desc: '基于功能模块自动生成 Excel 报价单' },
   { id: 'park-search', title: '园区搜索与分类过滤',               status: 'pending',     phase: '前端',   date: '', desc: '前端关键词搜索 + 标签筛选，快速定位方案' },
-  { id: 'domain',      title: '域名绑定 + HTTPS 证书',            status: 'blocked',     phase: '部署',   date: '', desc: '需先完成域名注册与大陆 ICP 备案；服务器已预装 certbot 与一键启用脚本' }
+  { id: 'domain',      title: '域名绑定 + HTTPS 证书',            status: 'in_progress', phase: '部署',   date: '2026-06-04', desc: '已装 certbot 2.9.0，已启用自签名 HTTPS(443)，已备一键脚本 enable-domain.sh；待办：腾讯云安全组放行443 + 域名解析 + ICP备案后一键签发正式证书' }
 ];
 
 // ---------- 代码版本 / 功能变更台账 ----------
 const versions = [
   { version: 'v2.2.0', date: '2026-06-04', branch: 'main', stage: '进行中',
-    title: '管理后台与功能深化',
-    features: ['新增管理后台（任务看板 + 版本台账 + 服务状态）', '服务器预装 certbot，提供一键域名/HTTPS 脚本', '规划：方案定制、报价单生成、园区搜索'],
+    title: '管理后台 · HTTPS · 功能深化',
+    features: ['新增管理后台（任务看板 + 版本台账 + 服务状态）', '服务器安装 certbot 2.9.0，启用自签名 HTTPS(443)', '新增 enable-domain.sh：域名解析+备案后一键签发正式证书', '规划：方案定制、报价单生成、园区搜索'],
     commit: '(开发中)' },
   { version: 'v2.1.0', date: '2026-06-04', branch: 'main', stage: '已发布',
     title: '服务器一键部署',
