@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>管理后台 · 园区Skill平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{background:#0f172a;}
+  .glass{background:rgba(30,41,59,.6);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.15);}
+  .scroll-thin::-webkit-scrollbar{width:6px;height:6px;}
+  .scroll-thin::-webkit-scrollbar-thumb{background:#475569;border-radius:3px;}
+</style>
+</head>
+<body class="text-slate-200 min-h-screen">
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+  <!-- 头部 -->
+  <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">🛠️ 园区Skill · 管理后台</h1>
+      <p class="text-slate-400 mt-1 text-sm">任务台账 · 代码版本功能 · 服务部署状态</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-sm px-4 py-2 rounded-lg bg-slate-700/60 hover:bg-slate-600 transition">← 返回平台</a>
+      <button id="refreshBtn" class="text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition">🔄 刷新</button>
+    </div>
+  </header>
+
+  <!-- 服务状态卡 -->
+  <section id="statusCards" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8"></section>
+
+  <!-- 任务看板 -->
+  <section class="mb-10">
+    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">📋 任务看板 <span id="taskCount" class="text-xs text-slate-400 font-normal"></span></h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="kanban"></div>
+  </section>
+
+  <!-- 代码版本 -->
+  <section class="mb-10">
+    <h2 class="text-xl font-semibold mb-4">🌿 代码版本与功能</h2>
+    <div id="branches" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5"></div>
+    <div id="versions" class="space-y-3"></div>
+  </section>
+
+  <!-- 实时 Git 提交 -->
+  <section class="mb-10">
+    <h2 class="text-xl font-semibold mb-4">🧾 最近提交记录（实时）</h2>
+    <div class="glass rounded-xl p-4 overflow-x-auto scroll-thin">
+      <table class="w-full text-sm">
+        <thead><tr class="text-slate-400 text-left border-b border-slate-700">
+          <th class="py-2 pr-4">Commit</th><th class="py-2 pr-4">作者</th><th class="py-2 pr-4">日期</th><th class="py-2">说明</th>
+        </tr></thead>
+        <tbody id="commits"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p id="updated" class="text-center text-xs text-slate-500"></p>
+</div>
+
+<script>
+const STATUS = {
+  done:        { label:'已完成', color:'emerald', dot:'bg-emerald-400' },
+  in_progress: { label:'进行中', color:'sky',     dot:'bg-sky-400' },
+  pending:     { label:'待办',   color:'amber',   dot:'bg-amber-400' },
+  blocked:     { label:'阻塞',   color:'rose',    dot:'bg-rose-400' }
+};
+const COLUMNS = ['done','in_progress','pending','blocked'];
+
+function card(label, value, sub){
+  return `<div class="glass rounded-xl p-4">
+    <div class="text-2xl font-bold text-white">${value}</div>
+    <div class="text-xs text-slate-400 mt-1">${label}</div>
+    ${sub?`<div class="text-[11px] text-slate-500 mt-1">${sub}</div>`:''}
+  </div>`;
+}
+
+function fmtUptime(s){
+  if(s==null) return '—';
+  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60);
+  return h>0?`${h}h ${m}m`:`${m}m`;
+}
+
+async function load(){
+  let d;
+  try{
+    const r = await fetch('/api/admin/overview', {cache:'no-store'});
+    d = await r.json();
+  }catch(e){
+    document.getElementById('statusCards').innerHTML =
+      `<div class="col-span-6 glass rounded-xl p-4 text-rose-300">无法连接服务：${e.message}</div>`;
+    return;
+  }
+
+  // 服务卡
+  const s = d.service || {};
+  document.getElementById('statusCards').innerHTML = [
+    card('服务状态', `<span class="text-emerald-400">${s.status==='online'?'● 在线':s.status}</span>`),
+    card('应用版本', 'v'+(s.appVersion||'-')),
+    card('运行时长', fmtUptime(s.uptimeSec)),
+    card('Node', s.nodeVersion||'-'),
+    card('内存占用', (s.memoryMB||'-')+' MB'),
+    card('园区数', (s.parks||'-')+' 个', (s.phases||0)+' 个阶段')
+  ].join('');
+
+  // 任务看板
+  const tasks = d.tasks||[];
+  document.getElementById('taskCount').textContent =
+    `共 ${tasks.length} 项 · 已完成 ${tasks.filter(t=>t.status==='done').length}`;
+  document.getElementById('kanban').innerHTML = COLUMNS.map(col=>{
+    const st = STATUS[col];
+    const items = tasks.filter(t=>t.status===col);
+    return `<div class="glass rounded-xl p-3">
+      <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
+        <span class="w-2 h-2 rounded-full ${st.dot}"></span>
+        <span class="font-semibold text-sm">${st.label}</span>
+        <span class="ml-auto text-xs text-slate-400">${items.length}</span>
+      </div>
+      <div class="space-y-2">
+        ${items.map(t=>`<div class="bg-slate-800/60 rounded-lg p-3 border-l-2 border-${st.color}-400/60">
+          <div class="text-sm font-medium text-slate-100">${t.title}</div>
+          <div class="text-xs text-slate-400 mt-1 leading-snug">${t.desc||''}</div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${t.phase||''}</span>
+            ${t.date?`<span class="text-[10px] text-slate-500">${t.date}</span>`:''}
+          </div>
+        </div>`).join('') || '<div class="text-xs text-slate-600 py-4 text-center">暂无</div>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  // 分支
+  document.getElementById('branches').innerHTML = (d.branches||[]).map(b=>`
+    <div class="glass rounded-xl p-4">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-indigo-300 font-semibold">${b.name}</span>
+        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">${b.role}</span>
+      </div>
+      <p class="text-xs text-slate-400 mt-2">${b.desc||''}</p>
+      ${(b.deployedTo||[]).map(u=>`<div class="text-[11px] text-slate-500 mt-1">🚀 ${u}</div>`).join('')}
+    </div>`).join('');
+
+  // 版本台账
+  document.getElementById('versions').innerHTML = (d.versions||[]).map(v=>`
+    <div class="glass rounded-xl p-4">
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <span class="font-mono font-bold text-purple-300">${v.version}</span>
+        <span class="text-sm text-slate-200">${v.title}</span>
+        <span class="text-[10px] px-2 py-0.5 rounded-full ${v.stage==='进行中'?'bg-sky-500/20 text-sky-300':v.stage==='已归档'?'bg-slate-600/40 text-slate-400':'bg-emerald-500/20 text-emerald-300'}">${v.stage}</span>
+        <span class="ml-auto text-xs text-slate-500 font-mono">${v.commit} · ${v.date}</span>
+      </div>
+      <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+        ${(v.features||[]).map(f=>`<li>${f}</li>`).join('')}
+      </ul>
+    </div>`).join('');
+
+  // 实时提交
+  const g = d.git||{};
+  document.getElementById('commits').innerHTML = (g.commits||[]).map(c=>`
+    <tr class="border-b border-slate-800/60">
+      <td class="py-2 pr-4 font-mono text-indigo-300">${c.hash||''}</td>
+      <td class="py-2 pr-4 text-slate-400">${c.author||''}</td>
+      <td class="py-2 pr-4 text-slate-500">${c.date||''}</td>
+      <td class="py-2 text-slate-300">${c.message||''}</td>
+    </tr>`).join('') || '<tr><td colspan="4" class="py-3 text-slate-600">（无 Git 信息）</td></tr>';
+
+  document.getElementById('updated').textContent =
+    '当前分支：' + (g.branch||'-') + ' · 更新于 ' + new Date().toLocaleString('zh-CN');
+}
+
+document.getElementById('refreshBtn').addEventListener('click', load);
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
