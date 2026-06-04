@@ -11,6 +11,7 @@ const { tasks, versions, branches } = require('./adminData');
 const { generateSolutionBuffer } = require('./docxGenerator');
 const { generatePptBuffer } = require('./pptGenerator');
 const { generatePlanBuffer } = require('./planGenerator');
+const { parseRequirement } = require('./requirementParser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,31 @@ function safeName(s) {
   return String(s).replace(/[^\w\u4e00-\u9fa5\-]/g, '_');
 }
 
+// 从请求体解析出 park 与 brief（支持自然语言需求）
+function resolveRequest(body) {
+  const { parkId, version = '脱敏版', requirement, client, projectName } = body || {};
+  let park = parkId ? getPark(parkId) : null;
+  let brief = null;
+  if (requirement && String(requirement).trim()) {
+    const parsed = parseRequirement(String(requirement));
+    if (parsed.ok) {
+      if (!park) park = getPark(parsed.parkId);
+      brief = {
+        rawText: String(requirement).trim(),
+        client: client || parsed.client,
+        projectName: projectName || parsed.projectName,
+        emphases: parsed.emphases,
+        focusScenarios: parsed.focusScenarios,
+        understanding: parsed.understanding
+      };
+    }
+  }
+  if (!brief && (client || projectName)) {
+    brief = { client, projectName };
+  }
+  return { park, version, brief };
+}
+
 // ---------- 数据查询 API ----------
 app.get('/api/parks', (req, res) => res.json(parks));
 
@@ -34,6 +60,19 @@ app.get('/api/parks/:id', (req, res) => {
 });
 
 app.get('/api/sales-phases', (req, res) => res.json(phases));
+
+// 解析自然语言需求 → 识别行业/客户/诉求/场景
+app.post('/api/parse-requirement', (req, res) => {
+  try {
+    const { requirement } = req.body || {};
+    const parsed = parseRequirement(requirement);
+    if (!parsed.ok) return res.status(400).json(parsed);
+    res.json(parsed);
+  } catch (e) {
+    console.error('需求解析失败:', e);
+    res.status(500).json({ ok: false, error: '解析失败', detail: e.message });
+  }
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), parks: parks.length });
@@ -84,10 +123,9 @@ app.get('/api/admin/overview', (req, res) => {
 // 生成方案文档 (.docx)
 app.post('/api/generate/solution', async (req, res) => {
   try {
-    const { parkId, version = '脱敏版' } = req.body;
-    const park = getPark(parkId);
-    if (!park) return res.status(404).json({ error: '未找到该园区' });
-    const buffer = await generateSolutionBuffer(park, version);
+    const { park, version, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const buffer = await generateSolutionBuffer(park, version, brief);
     const fname = encodeURIComponent(`${safeName(park.name)}-解决方案-${safeName(version)}.docx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
@@ -101,10 +139,9 @@ app.post('/api/generate/solution', async (req, res) => {
 // 生成PPT (.pptx)
 app.post('/api/generate/ppt', async (req, res) => {
   try {
-    const { parkId, version = '脱敏版' } = req.body;
-    const park = getPark(parkId);
-    if (!park) return res.status(404).json({ error: '未找到该园区' });
-    const buffer = await generatePptBuffer(park, version);
+    const { park, version, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const buffer = await generatePptBuffer(park, version, brief);
     const fname = encodeURIComponent(`${safeName(park.name)}-演示文稿-${safeName(version)}.pptx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
@@ -118,9 +155,8 @@ app.post('/api/generate/ppt', async (req, res) => {
 // 生成实施计划 (.xlsx)
 app.post('/api/generate/plan', async (req, res) => {
   try {
-    const { parkId, version = '脱敏版' } = req.body;
-    const park = getPark(parkId);
-    if (!park) return res.status(404).json({ error: '未找到该园区' });
+    const { park, version } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
     const buffer = await generatePlanBuffer(park, version);
     const fname = encodeURIComponent(`${safeName(park.name)}-实施计划-${safeName(version)}.xlsx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -135,13 +171,12 @@ app.post('/api/generate/plan', async (req, res) => {
 // 生成完整包 (.zip 包含 docx + pptx + xlsx)
 app.post('/api/generate/complete-package', async (req, res) => {
   try {
-    const { parkId, version = '脱敏版' } = req.body;
-    const park = getPark(parkId);
-    if (!park) return res.status(404).json({ error: '未找到该园区' });
+    const { park, version, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
 
     const [docBuf, pptBuf, planBuf] = await Promise.all([
-      generateSolutionBuffer(park, version),
-      generatePptBuffer(park, version),
+      generateSolutionBuffer(park, version, brief),
+      generatePptBuffer(park, version, brief),
       generatePlanBuffer(park, version)
     ]);
 
