@@ -45,11 +45,17 @@ async function generatePptBuffer(park, version, brief) {
   // 3 行业态势
   s = pres.addSlide();
   sectionTitle(s, '01  行业态势与政策背景', 'INDUSTRY TREND');
-  if (kb.background) s.addText(kb.background, { x: 0.6, y: 1.5, w: 12.1, h: 1.4, fontSize: 14, color: '334155', valign: 'top' });
-  s.addText('政策利好', { x: 0.6, y: 3.0, w: 5.9, h: 0.4, fontSize: 16, bold: true, color: PURPLE });
-  s.addText(KB.industryTrends.policies.map(x => '• ' + x).join('\n'), { x: 0.6, y: 3.5, w: 5.9, h: 3.2, fontSize: 12, color: '475569', valign: 'top', lineSpacingMultiple: 1.3 });
-  s.addText('发展优势', { x: 6.8, y: 3.0, w: 5.9, h: 0.4, fontSize: 16, bold: true, color: PURPLE });
-  s.addText(KB.industryTrends.advantages.map(x => '• ' + x).join('\n'), { x: 6.8, y: 3.5, w: 5.9, h: 3.2, fontSize: 12, color: '475569', valign: 'top', lineSpacingMultiple: 1.3 });
+  if (kb.background) s.addText(kb.background, { x: 0.6, y: 1.5, w: 12.1, h: 1.3, fontSize: 13, color: '334155', valign: 'top', lineSpacingMultiple: 1.2 });
+  const policies = (kb.policies && kb.policies.length) ? kb.policies : KB.industryTrends.policies;
+  s.addText('政策利好', { x: 0.6, y: 2.9, w: 6.0, h: 0.4, fontSize: 16, bold: true, color: PURPLE });
+  s.addText(policies.map(x => '• ' + x).join('\n'), { x: 0.6, y: 3.35, w: 6.0, h: 3.4, fontSize: 10, color: '475569', valign: 'top', lineSpacingMultiple: 1.15 });
+  s.addText(kb.marketData ? '市场机遇' : '发展优势', { x: 6.9, y: 2.9, w: 5.8, h: 0.4, fontSize: 16, bold: true, color: PURPLE });
+  if (kb.marketData) {
+    s.addText(kb.marketData, { x: 6.9, y: 3.35, w: 5.8, h: 1.6, fontSize: 11, color: 'BE123C', valign: 'top', lineSpacingMultiple: 1.2 });
+    s.addText(KB.industryTrends.advantages.map(x => '• ' + x).join('\n'), { x: 6.9, y: 4.9, w: 5.8, h: 1.85, fontSize: 9.5, color: '475569', valign: 'top', lineSpacingMultiple: 1.15 });
+  } else {
+    s.addText(KB.industryTrends.advantages.map(x => '• ' + x).join('\n'), { x: 6.9, y: 3.35, w: 5.8, h: 3.4, fontSize: 11, color: '475569', valign: 'top', lineSpacingMultiple: 1.3 });
+  }
 
   // 4 共性痛点
   s = pres.addSlide();
@@ -78,16 +84,25 @@ async function generatePptBuffer(park, version, brief) {
       { x: 2.2, y: cy, w: 8.9, h: 0.7, align: 'center', valign: 'middle', color: 'FFFFFF' });
   });
 
-  // 6 六大产品能力
+  // 6 五大产品核心能力
   s = pres.addSlide();
-  sectionTitle(s, KB.company.shortName + ' 六大产品能力', 'SIX MAJOR PRODUCT CAPABILITIES');
+  sectionTitle(s, KB.company.shortName + ' 五大产品核心能力', 'FIVE CORE PRODUCT CAPABILITIES');
   KB.capabilities.forEach((c, i) => {
     const cx = 0.6 + (i % 3) * 4.05, cy = 1.7 + Math.floor(i / 3) * 2.5;
     s.addShape('roundRect', { x: cx, y: cy, w: 3.85, h: 2.3, fill: { color: LIGHT }, line: { color: PURPLE, width: 1 }, rectRadius: 0.08 });
-    s.addText(c.name, { x: cx + 0.15, y: cy + 0.12, w: 3.55, h: 0.5, fontSize: 14, bold: true, color: PURPLE });
-    s.addText(c.desc, { x: cx + 0.15, y: cy + 0.62, w: 3.55, h: 0.7, fontSize: 9.5, color: '64748B', valign: 'top' });
-    s.addText(c.points.map(p => '· ' + p).join('\n'), { x: cx + 0.15, y: cy + 1.3, w: 3.55, h: 0.95, fontSize: 8.5, color: '475569', valign: 'top', lineSpacingMultiple: 1.1 });
+    s.addText(c.name, { x: cx + 0.15, y: cy + 0.12, w: 3.55, h: 0.6, fontSize: 13, bold: true, color: PURPLE, valign: 'top' });
+    s.addText(c.desc, { x: cx + 0.15, y: cy + 0.7, w: 3.55, h: 0.62, fontSize: 8.5, color: '64748B', valign: 'top' });
+    s.addText(c.points.map(p => '· ' + p).join('\n'), { x: cx + 0.15, y: cy + 1.32, w: 3.55, h: 0.93, fontSize: 7.8, color: '475569', valign: 'top', lineSpacingMultiple: 1.05 });
   });
+
+  // 6b 标准建设 + 实战力
+  s = pres.addSlide();
+  sectionTitle(s, '标准建设与实战力', 'STANDARDS & TRACK RECORD');
+  s.addShape('roundRect', { x: 0.6, y: 1.55, w: 12.1, h: 1.0, fill: { color: 'F5F3FF' }, rectRadius: 0.06 });
+  s.addText('★ ' + KB.company.scale, { x: 0.85, y: 1.62, w: 11.6, h: 0.86, fontSize: 12, bold: true, color: PURPLE, valign: 'middle' });
+  s.addText('标准建设', { x: 0.6, y: 2.7, w: 11.6, h: 0.4, fontSize: 15, bold: true, color: PURPLE });
+  s.addText(KB.standards.summary, { x: 0.6, y: 3.1, w: 12.1, h: 0.6, fontSize: 10.5, color: '334155', valign: 'top' });
+  s.addText(KB.standards.highlights.map(x => '• ' + x).join('\n'), { x: 0.6, y: 3.75, w: 12.1, h: 2.9, fontSize: 9.5, color: '475569', valign: 'top', lineSpacingMultiple: 1.15 });
 
   // 7 解决方案场景（每个场景一页或合并）
   const focus = (brief && brief.focusScenarios) || [];
@@ -103,6 +118,17 @@ async function generatePptBuffer(park, version, brief) {
     s.addText((sc.features || []).map(f => '· ' + f).join('\n'), { x: cx + 0.15, y: cy + 1.3, w: 3.55, h: 0.95, fontSize: 9, color: '475569', valign: 'top', lineSpacingMultiple: 1.1 });
   });
 
+  // 7b IOC 标准应用
+  s = pres.addSlide();
+  sectionTitle(s, 'IOC 标准应用', 'IOC STANDARD APPLICATIONS');
+  s.addText('园区 IOC 八大标准应用，对外服务形象提升、对内运营降本增效', { x: 0.6, y: 1.45, w: 12.1, h: 0.4, fontSize: 12, color: '334155' });
+  KB.iocApps.forEach((a, i) => {
+    const cx = 0.6 + (i % 4) * 3.05, cy = 2.0 + Math.floor(i / 4) * 2.2;
+    s.addShape('roundRect', { x: cx, y: cy, w: 2.85, h: 2.0, fill: { color: LIGHT }, line: { color: PURPLE, width: 1 }, rectRadius: 0.08 });
+    s.addText(a.name, { x: cx + 0.12, y: cy + 0.12, w: 2.6, h: 0.45, fontSize: 14, bold: true, color: PURPLE });
+    s.addText(a.desc, { x: cx + 0.12, y: cy + 0.6, w: 2.6, h: 1.3, fontSize: 9.5, color: '64748B', valign: 'top', lineSpacingMultiple: 1.1 });
+  });
+
   // 8 实施计划三阶段
   ['presales', 'midsales', 'delivery'].forEach(key => {
     const ph = phases[key];
@@ -116,15 +142,38 @@ async function generatePptBuffer(park, version, brief) {
     });
   });
 
-  // 9 落地案例
+  // 9 落地案例（每个真实案例独立成页：背景/价值/功能）
   s = pres.addSlide();
   sectionTitle(s, '05  落地案例', 'CASES');
-  (kb.cases || []).slice(0, 3).forEach((c, i) => {
-    const cy = 1.7 + i * 1.55;
-    s.addShape('roundRect', { x: 0.6, y: cy, w: 12.1, h: 1.4, fill: { color: LIGHT }, rectRadius: 0.06 });
-    s.addText('● ' + c.name, { x: 0.85, y: cy + 0.1, w: 11.6, h: 0.4, fontSize: 15, bold: true, color: PURPLE });
-    s.addText(c.desc, { x: 0.85, y: cy + 0.5, w: 11.6, h: 0.4, fontSize: 11, color: '475569' });
-    if (c.metrics) s.addText('成效：' + c.metrics.join('　|　'), { x: 0.85, y: cy + 0.92, w: 11.6, h: 0.4, fontSize: 11, bold: true, color: 'BE123C' });
+  s.addText(KB.company.scale, { x: 0.6, y: 1.5, w: 12.1, h: 0.9, fontSize: 12, color: '475569', valign: 'top', lineSpacingMultiple: 1.2 });
+  (kb.cases || []).slice(0, 4).forEach((c, i) => {
+    const cy = 2.5 + i * 1.05;
+    s.addShape('roundRect', { x: 0.6, y: cy, w: 12.1, h: 0.95, fill: { color: LIGHT }, rectRadius: 0.06 });
+    s.addText('● ' + c.name, { x: 0.85, y: cy + 0.08, w: 11.6, h: 0.4, fontSize: 14, bold: true, color: PURPLE });
+    if (c.metrics) s.addText(c.metrics.join('　|　'), { x: 0.85, y: cy + 0.5, w: 11.6, h: 0.4, fontSize: 10.5, bold: true, color: 'BE123C' });
+  });
+  // 每个案例详情页
+  (kb.cases || []).slice(0, 4).forEach((c) => {
+    s = pres.addSlide();
+    sectionTitle(s, c.name, 'CASE STUDY');
+    let y = 1.6;
+    if (c.bg) {
+      s.addText('项目背景', { x: 0.6, y, w: 12.1, h: 0.35, fontSize: 14, bold: true, color: PURPLE }); y += 0.4;
+      s.addText(c.bg, { x: 0.6, y, w: 12.1, h: 1.4, fontSize: 11, color: '334155', valign: 'top', lineSpacingMultiple: 1.2 }); y += 1.5;
+    }
+    const cv = c.value || c.desc;
+    if (cv) {
+      s.addText('项目价值', { x: 0.6, y, w: 12.1, h: 0.35, fontSize: 14, bold: true, color: PURPLE }); y += 0.4;
+      s.addText(cv, { x: 0.6, y, w: 12.1, h: 1.4, fontSize: 11, color: '334155', valign: 'top', lineSpacingMultiple: 1.2 }); y += 1.5;
+    }
+    if (c.funcs) {
+      s.addText('功能应用', { x: 0.6, y, w: 12.1, h: 0.35, fontSize: 14, bold: true, color: PURPLE }); y += 0.4;
+      s.addText(c.funcs, { x: 0.6, y, w: 12.1, h: 0.8, fontSize: 11, color: '475569', valign: 'top', lineSpacingMultiple: 1.2 }); y += 0.85;
+    }
+    if (c.metrics) {
+      s.addShape('roundRect', { x: 0.6, y, w: 12.1, h: 0.7, fill: { color: 'FEF2F2' }, line: { color: PINK, width: 1 }, rectRadius: 0.06 });
+      s.addText('建设成效：' + c.metrics.join('　|　'), { x: 0.85, y: y + 0.05, w: 11.6, h: 0.6, fontSize: 11.5, bold: true, color: 'BE123C', valign: 'middle' });
+    }
   });
 
   // 10 建设价值

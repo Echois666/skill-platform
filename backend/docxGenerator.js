@@ -47,16 +47,22 @@ function buildSolutionDoc(park, version, brief) {
   // ===== 目录 =====
   children.push(h('目录', HeadingLevel.HEADING_1));
   ['一、行业态势与政策背景', '二、需求理解与痛点分析', '三、总体架构与技术底座',
-   '四、解决方案与应用场景', '五、落地案例', '六、实施计划', '七、建设价值与成效',
-   '八、服务保障', '九、关于我们'].forEach(t => children.push(p(t, { size: 22, after: 60 })));
+   '四、解决方案与应用场景', '五、IOC 标准应用', '六、落地案例', '七、实施计划', '八、建设价值与成效',
+   '九、服务保障', '十、关于我们'].forEach(t => children.push(p(t, { size: 22, after: 60 })));
   children.push(new Paragraph({ text: '', pageBreakBefore: true }));
 
   // ===== 一、行业态势与政策背景 =====
   children.push(h('一、行业态势与政策背景', HeadingLevel.HEADING_1));
   if (kb.background) children.push(p(kb.background));
   children.push(p(KB.industryTrends.intro));
+  // 本行业真实政策（若有），否则用通用政策
+  const policies = (kb.policies && kb.policies.length) ? kb.policies : KB.industryTrends.policies;
   children.push(p('政策利好：', { bold: true }));
-  KB.industryTrends.policies.forEach(x => children.push(bullet(x)));
+  policies.forEach(x => children.push(bullet(x)));
+  if (kb.marketData) {
+    children.push(p('市场机遇：', { bold: true }));
+    children.push(p(kb.marketData, { color: '7C3AED' }));
+  }
   children.push(p('发展优势：', { bold: true }));
   KB.industryTrends.advantages.forEach(x => children.push(bullet(x)));
 
@@ -73,16 +79,22 @@ function buildSolutionDoc(park, version, brief) {
 
   // ===== 三、总体架构与技术底座 =====
   children.push(h('三、总体架构与技术底座', HeadingLevel.HEADING_1));
-  children.push(p('3.1  分层技术架构', { bold: true, size: 24 }));
-  children.push(p('本方案采用统一数字孪生底座的分层架构，自下而上包括：'));
+  children.push(p('3.1  ' + KB.company.shortName + ' 实战力', { bold: true, size: 24 }));
+  children.push(p(KB.company.scale, { color: '334155' }));
+  (KB.company.advantages || []).forEach(x => children.push(bullet(x)));
+  children.push(p('3.2  分层技术架构', { bold: true, size: 24 }));
+  children.push(p('本方案采用统一数字孪生底座的分层架构（AI + WDP + Copilot），自上而下包括：'));
   KB.architecture.forEach(l => children.push(bullet(`${l.layer}：${l.desc}`)));
-  children.push(p('3.2  ' + KB.company.shortName + ' 六大产品能力', { bold: true, size: 24 }));
-  children.push(p(`方案依托 ${KB.company.shortName} 自主研发的数字孪生底座，提供六大核心产品能力：`));
+  children.push(p('3.3  ' + KB.company.shortName + ' 五大产品核心能力', { bold: true, size: 24 }));
+  children.push(p(`方案依托 ${KB.company.shortName} 自主研发的数字孪生底座，五大产品核心能力环环相扣：`));
   KB.capabilities.forEach((c, i) => {
     children.push(p(`（${i + 1}）${c.name}`, { bold: true, color: '7C3AED', after: 40 }));
     children.push(p(c.desc, { size: 21, after: 40 }));
     c.points.forEach(pt => children.push(bullet(pt, { size: 20, level: 1 })));
   });
+  children.push(p('3.4  标准建设', { bold: true, size: 24 }));
+  children.push(p(KB.standards.summary, { color: '334155' }));
+  KB.standards.highlights.forEach(x => children.push(bullet(x, { size: 20 })));
 
   // ===== 四、解决方案与应用场景 =====
   children.push(h('四、解决方案与应用场景', HeadingLevel.HEADING_1));
@@ -95,21 +107,30 @@ function buildSolutionDoc(park, version, brief) {
     (sc.features || []).forEach(f => children.push(bullet(f)));
   });
 
-  // ===== 五、落地案例 =====
-  children.push(h('五、落地案例', HeadingLevel.HEADING_1));
+  // ===== 五、IOC 标准应用 =====
+  children.push(h('五、IOC 标准应用', HeadingLevel.HEADING_1));
+  children.push(p('通过智慧 IOC 驾驶舱建设实现对外服务形象提升、对内运营降本增效，建设新一代科技、高效、安全、绿色、健康的智慧' + park.name + '。园区 IOC 八大标准应用：'));
+  KB.iocApps.forEach(a => children.push(bullet(`${a.name}：${a.desc}`)));
+
+  // ===== 六、落地案例 =====
+  children.push(h('六、落地案例', HeadingLevel.HEADING_1));
+  children.push(p(KB.company.scale, { size: 20, color: '64748B' }));
   (kb.cases || []).forEach((c, i) => {
     children.push(p(`案例 ${i + 1}：${c.name}`, { bold: true, size: 23, color: '7C3AED' }));
-    children.push(p(c.desc));
-    if (c.metrics && c.metrics.length) children.push(p('建设成效：' + c.metrics.join('；'), { size: 21, color: '334155' }));
+    if (c.bg) children.push(p('项目背景：' + c.bg, { size: 21 }));
+    const cv = c.value || c.desc;
+    if (cv) children.push(p('项目价值：' + cv, { size: 21 }));
+    if (c.funcs) children.push(p('功能应用：' + c.funcs, { size: 21, color: '334155' }));
+    if (c.metrics && c.metrics.length) children.push(p('建设成效：' + c.metrics.join('；'), { size: 21, color: 'BE123C' }));
   });
   if (!kb.cases || !kb.cases.length) children.push(p(`${KB.company.shortName} 已在该领域服务多个标杆项目，可按需提供详细案例资料。`));
 
-  // ===== 六、实施计划 =====
-  children.push(h('六、实施计划', HeadingLevel.HEADING_1));
+  // ===== 七、实施计划 =====
+  children.push(h('七、实施计划', HeadingLevel.HEADING_1));
   children.push(p('项目实施分为售前、售中、交付三大阶段，各阶段关键环节与交付物如下：'));
   ['presales', 'midsales', 'delivery'].forEach((key, idx) => {
     const ph = phases[key];
-    children.push(h(`6.${idx + 1}  ${ph.name}`, HeadingLevel.HEADING_2));
+    children.push(h(`7.${idx + 1}  ${ph.name}`, HeadingLevel.HEADING_2));
     children.push(p(ph.desc, { color: '666666' }));
     ph.items.forEach(it => {
       children.push(p(`${it.name}（${it.duration}）`, { bold: true, after: 40 }));
@@ -118,8 +139,8 @@ function buildSolutionDoc(park, version, brief) {
     });
   });
 
-  // ===== 七、建设价值与成效 =====
-  children.push(h('七、建设价值与成效', HeadingLevel.HEADING_1));
+  // ===== 八、建设价值与成效 =====
+  children.push(h('八、建设价值与成效', HeadingLevel.HEADING_1));
   if (kb.valueMetrics && kb.valueMetrics.length) {
     children.push(p('量化价值：', { bold: true }));
     kb.valueMetrics.forEach(m => children.push(bullet(`${m.label} ${m.value}　——　${m.desc}`, { bold: true })));
@@ -127,13 +148,14 @@ function buildSolutionDoc(park, version, brief) {
   children.push(p('综合价值：', { bold: true }));
   (park.value || []).forEach(x => children.push(bullet(x)));
 
-  // ===== 八、服务保障 =====
-  children.push(h('八、服务保障', HeadingLevel.HEADING_1));
+  // ===== 九、服务保障 =====
+  children.push(h('九、服务保障', HeadingLevel.HEADING_1));
   ['7×24 小时技术支持响应', '专属项目经理全程跟踪', '定期巡检与健康度评估', '持续的功能迭代与升级', '完善的培训与知识转移体系'].forEach(x => children.push(bullet(x)));
 
-  // ===== 九、关于我们 =====
-  children.push(h('九、关于我们', HeadingLevel.HEADING_1));
+  // ===== 十、关于我们 =====
+  children.push(h('十、关于我们', HeadingLevel.HEADING_1));
   children.push(p(KB.company.intro));
+  children.push(p(KB.company.scale, { color: '334155' }));
   children.push(p(`${KB.company.shortName}　${KB.company.slogan}　${KB.company.site}`, { bold: true, color: '7C3AED', align: AlignmentType.CENTER, after: 200 }));
   children.push(p('—— 本方案为' + version + '，最终以双方确认的合同为准 ——', { size: 18, color: '999999', align: AlignmentType.CENTER }));
 
