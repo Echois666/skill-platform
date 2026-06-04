@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>园区Skill智能方案生成平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
         .gradient-text { background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .card-hover { transition: all .3s ease; }
@@ -14,6 +18,8 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; }
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; align-items:center; justify-content:center; padding:1rem; }
         .modal.active { display:flex; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation: spin .8s linear infinite; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 min-h-screen">
@@ -31,7 +37,8 @@
     <header class="pt-28 pb-10 px-4">
         <div class="max-w-6xl mx-auto text-center">
             <h1 class="text-5xl font-bold mb-4 gradient-text">智能方案生成平台</h1>
-            <p class="text-xl text-gray-300 mb-8">汇聚15+个园区类型的完整解决方案，助力快速生成专业方案和演示文稿</p>
+            <p class="text-xl text-gray-300 mb-3">汇聚15+个园区类型的完整解决方案，助力快速生成专业方案和演示文稿</p>
+            <p class="text-sm text-green-400 mb-8">✨ 浏览器端一键生成并下载真实的 Word / PPT / Excel 文件（无需服务器）</p>
             <div class="flex gap-4 justify-center mb-12">
                 <button onclick="scrollToSection('parks')" class="bg-purple-600 hover:bg-purple-700 px-8 py-3 rounded-lg font-semibold transition">浏览所有方案</button>
                 <button onclick="scrollToSection('generator')" class="border border-purple-500 hover:bg-purple-500/10 px-8 py-3 rounded-lg font-semibold transition">开始生成</button>
@@ -79,7 +86,7 @@
                         <label class="flex-1 cursor-pointer"><input type="radio" name="ver" value="涉密版" class="peer hidden"><div class="border border-slate-600 peer-checked:border-pink-500 peer-checked:bg-pink-500/10 rounded-lg px-4 py-3 text-center transition">🔐 涉密版（内部）</div></label>
                     </div>
                 </div>
-                <button onclick="generate()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-4 rounded-lg font-bold text-lg transition">✨ 一键生成</button>
+                <button id="genBtn" onclick="generate()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-4 rounded-lg font-bold text-lg transition">✨ 一键生成并下载</button>
                 <div id="genResult" class="mt-6"></div>
             </div>
         </div>
@@ -93,36 +100,107 @@
     </div>
 
     <footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
-        <p>🎯 园区Skill智能方案生成平台 v1.0.0 · 15个园区 · 100+资源 · 30+环节 · 50+交付物</p>
+        <p>🎯 园区Skill智能方案生成平台 v2.0.0 · 15个园区 · 100+资源 · 30+环节 · 50+交付物</p>
+        <p class="text-xs mt-2">浏览器端实时生成真实 Word/PPT/Excel 文档 · 数据全程不离开本地</p>
     </footer>
 
     <script>
-        const parks = [
-            {id:'smart-campus',icon:'🏫',name:'智慧校园',desc:'校园数字化全方位解决方案',res:7,tag:'涉密版',modules:['一卡通','教学管理','学生管理','后勤管理','数据分析']},
-            {id:'smart-hospital',icon:'🏥',name:'智慧医院',desc:'医疗信息系统和管理方案',res:8,tag:'涉密版',modules:['电子病历','挂号预约','医学影像','药房管理','质量管理']},
-            {id:'smart-park',icon:'🏢',name:'智慧园区',desc:'园区运营和管理平台',res:8,tag:'视频案例',modules:['综合管理','企业服务','产业分析','智能运营']},
-            {id:'smart-scenic',icon:'🎢',name:'智慧景区',desc:'景区游客服务和管理',res:7,tag:'脱敏版',modules:['游客体验','景区管理','智能导览','数据分析']},
-            {id:'smart-building',icon:'🏗️',name:'智慧建筑',desc:'楼宇智能化管理系统',res:7,tag:'涉密版',modules:['楼宇自控','能耗管理','安全管理','舒适体验']},
-            {id:'smart-logistics',icon:'🚚',name:'智慧物流',desc:'仓储运输配送全链条',res:9,tag:'涉密版',modules:['仓储管理','运输追踪','配送优化','成本控制']},
-            {id:'smart-rural',icon:'🌾',name:'智慧乡村',desc:'农业和乡村振兴方案',res:4,tag:'脱敏版',modules:['农业生产','乡村治理','产业发展','生活服务']},
-            {id:'smart-forestry',icon:'🌲',name:'智慧林业',desc:'生态保护和资源管理',res:4,tag:'脱敏版',modules:['生态保护','资源管理','防火预警','数据分析']},
-            {id:'carbon-park',icon:'♻️',name:'低碳园区',desc:'双碳和碳中和支持',res:7,tag:'涉密版',modules:['碳排放管理','能源优化','绿色发展','双碳目标']},
-            {id:'chemical-park',icon:'🏭',name:'化工园区',desc:'安全环保专业管理',res:7,tag:'涉密版',modules:['安全管理','环保监测','应急预案','产业协同']},
-            {id:'smart-venue',icon:'🎭',name:'智慧场馆',desc:'会议场馆运营管理',res:6,tag:'涉密版',modules:['会议管理','观众体验','运营管理','数据分析']},
-            {id:'smart-city',icon:'🌃',name:'智慧城市',desc:'数字孪生和CIM平台',res:4,tag:'脱敏版',modules:['数字孪生','城市治理','产业发展','居民服务']},
-            {id:'smart-realestate',icon:'🏘️',name:'智慧地产',desc:'地产全生命周期管理',res:2,tag:'涉密版',modules:['项目管理','销售管理','物业管理','客户服务']},
-            {id:'smart-park-public',icon:'🌳',name:'智慧公园',desc:'生态保护和访客管理',res:2,tag:'脱敏版',modules:['生态保护','访客管理','设施管理','数据分析']},
-            {id:'campus-construction',icon:'🎓',name:'校园建设方案',desc:'校园建设专项方案',res:3,tag:'脱敏版',modules:['基础设施','教育系统','管理平台','一体化方案']}
-        ];
-        const phases = [
-            {icon:'📋',name:'售前阶段',color:'purple',steps:[['需求调研','1-2周'],['方案设计','2-3周'],['商务洽谈','1-2周'],['签约启动','3-5天']],deliv:['需求分析报告','解决方案说明书','商务提案','合同文件']},
-            {icon:'🔨',name:'售中阶段',color:'blue',steps:[['项目启动','1周'],['详细设计','2-4周'],['开发集成','4-8周'],['测试优化','2-4周'],['培训文档','1-2周']],deliv:['项目计划书','详细设计文档','测试报告','培训手册']},
-            {icon:'🚀',name:'交付阶段',color:'green',steps:[['上线准备','1周'],['部署上线','1-3天'],['试运行支持','2-4周'],['验收总结','1周'],['运维优化','1年+']],deliv:['部署文档','验收报告','运维手册','服务计划']}
-        ];
-        const genTypes = [['proposal','📄 方案文档'],['ppt','📊 演示文稿'],['plan','📅 实施计划'],['package','📦 完整包']];
+        const DATA = {
+          parks: [
+            {id:'smart-campus',icon:'🏫',name:'智慧校园',desc:'校园数字化全方位解决方案',res:7,tag:'涉密版',
+              modules:['一卡通系统','智慧教学管理','学生综合管理','后勤保障平台','校园数据分析'],
+              pains:['信息孤岛严重，各系统数据无法互通','校园安全管理依赖人工，效率低下','后勤资源调度缺乏数据支撑','教学过程数据难以沉淀分析'],
+              value:['统一身份认证与一卡通，覆盖全场景消费与门禁','校园安防AI预警，事件响应效率提升60%','后勤能耗与资产可视化，运营成本下降25%','教学全过程数据沉淀，支撑教育质量评估']},
+            {id:'smart-hospital',icon:'🏥',name:'智慧医院',desc:'医疗信息系统和管理方案',res:8,tag:'涉密版',
+              modules:['电子病历(EMR)','挂号预约平台','医学影像(PACS)','智慧药房管理','医疗质量管理'],
+              pains:['患者就医流程繁琐，排队时间长','医疗数据分散，临床决策缺乏支撑','药品管理粗放，存在安全隐患','医院运营缺乏精细化数据分析'],
+              value:['全流程预约挂号，平均候诊时间缩短50%','电子病历与影像互通，辅助临床诊断','智慧药房闭环管理，杜绝用药差错','运营数据驾驶舱，支撑精细化管理']},
+            {id:'smart-park',icon:'🏢',name:'智慧园区',desc:'园区运营和管理平台',res:8,tag:'视频案例',
+              modules:['园区综合管理','企业服务平台','产业经济分析','智能运营中心','安防一体化'],
+              pains:['园区管理手段落后，依赖人工巡查','企业服务响应慢，招商缺乏数据','能源消耗高，缺乏统一管控','应急事件处置缺乏联动机制'],
+              value:['园区一张图可视化管理，运营效率提升40%','企业全生命周期服务，提升招商成功率','能源智能管控，综合能耗下降20%','多系统联动应急指挥，快速响应']},
+            {id:'smart-scenic',icon:'🎢',name:'智慧景区',desc:'景区游客服务和管理',res:7,tag:'脱敏版',
+              modules:['智慧票务系统','游客流量监测','智能导览服务','景区运营分析','应急指挥调度'],
+              pains:['节假日游客拥堵，安全压力大','游客服务体验差，投诉率高','景区营销缺乏精准数据','应急处置能力不足'],
+              value:['实时客流监测与预警，保障游览安全','智能导览提升游客满意度','游客画像支撑精准营销','一体化应急指挥，快速响应']},
+            {id:'smart-building',icon:'🏗️',name:'智慧建筑',desc:'楼宇智能化管理系统',res:7,tag:'涉密版',
+              modules:['楼宇自控(BA)','能耗管理系统','智慧安防','空间舒适管理','设备运维平台'],
+              pains:['楼宇能耗高，缺乏精细管控','设备运维被动，故障频发','安防系统割裂，难以联动','空间使用效率低'],
+              value:['楼宇自控+能耗管理，节能率达30%','设备预测性维护，降低故障率','安防全域联动，提升安全等级','空间智能调度，提高使用率']},
+            {id:'smart-logistics',icon:'🚚',name:'智慧物流',desc:'仓储运输配送全链条',res:9,tag:'涉密版',
+              modules:['智能仓储(WMS)','运输管理(TMS)','配送路径优化','货物全程追踪','物流成本分析'],
+              pains:['仓储管理效率低，错发漏发多','运输调度不合理，成本居高','货物追踪不透明','物流成本难以核算优化'],
+              value:['智能仓储管理，分拣效率提升50%','运输路径优化，物流成本下降18%','全程可视追踪，提升客户信任','成本精细核算，优化运营决策']},
+            {id:'smart-rural',icon:'🌾',name:'智慧乡村',desc:'农业和乡村振兴方案',res:4,tag:'脱敏版',
+              modules:['智慧农业生产','乡村数字治理','特色产业发展','便民生活服务','农产品溯源'],
+              pains:['农业生产靠经验，标准化低','乡村治理手段落后','农产品销售渠道有限','公共服务覆盖不足'],
+              value:['物联网精准农业，提升产量与品质','数字治理平台，提升乡村管理效能','电商+溯源，拓宽农产品销路','一站式便民服务，惠及村民']},
+            {id:'smart-forestry',icon:'🌲',name:'智慧林业',desc:'生态保护和资源管理',res:4,tag:'脱敏版',
+              modules:['林业资源管理','森林防火预警','生态环境监测','野生动物保护','林业数据分析'],
+              pains:['林业资源底数不清','森林火灾预警滞后','生态监测覆盖不足','管护人力成本高'],
+              value:['林业资源一张图，精准掌握底数','AI火情预警，提前发现处置','全域生态监测，守护绿水青山','智能管护，降低人力成本']},
+            {id:'carbon-park',icon:'♻️',name:'低碳园区',desc:'双碳和碳中和支持',res:7,tag:'涉密版',
+              modules:['碳排放管理','能源优化调度','绿色能源管理','碳资产管理','双碳数据分析'],
+              pains:['碳排放底数不清，难以核算','能源结构不合理','缺乏碳资产管理手段','双碳目标缺乏路径'],
+              value:['碳排放精准核算与监测','能源智能调度，提升清洁能源占比','碳资产数字化管理与交易','双碳目标路径规划与跟踪']},
+            {id:'chemical-park',icon:'🏭',name:'化工园区',desc:'安全环保专业管理',res:7,tag:'涉密版',
+              modules:['安全生产管理','环保在线监测','应急指挥调度','封闭化管理','风险预警分析'],
+              pains:['安全风险高，事故隐患多','环保监测不到位','应急处置能力弱','人车物管理粗放'],
+              value:['安全生产全要素管控，降低事故风险','环保实时监测预警，达标排放','一体化应急指挥，快速处置','封闭化智能管理，全程可溯']},
+            {id:'smart-venue',icon:'🎭',name:'智慧场馆',desc:'会议场馆运营管理',res:6,tag:'涉密版',
+              modules:['会议管理系统','观众服务平台','场馆运营管理','智能设备控制','运营数据分析'],
+              pains:['场馆利用率低','会议服务体验差','设备管理分散','运营缺乏数据支撑'],
+              value:['会议全流程数字化，提升利用率','智能观众服务，提升满意度','设备集中智控，降低运维成本','运营数据分析，优化决策']},
+            {id:'smart-city',icon:'🌃',name:'智慧城市',desc:'数字孪生和CIM平台',res:4,tag:'脱敏版',
+              modules:['城市数字孪生','CIM基础平台','城市运行管理','产业经济分析','民生服务平台'],
+              pains:['城市管理碎片化','缺乏统一数据底座','城市运行难以全局感知','民生服务不便捷'],
+              value:['城市数字孪生，全域可视可管','CIM统一底座，数据融合共享','城市运行一网统管','民生服务一网通办']},
+            {id:'smart-realestate',icon:'🏘️',name:'智慧地产',desc:'地产全生命周期管理',res:2,tag:'涉密版',
+              modules:['项目开发管理','智慧销售平台','智慧物业管理','客户服务系统','资产运营分析'],
+              pains:['项目管理粗放','销售去化压力大','物业服务体验差','资产运营效率低'],
+              value:['项目全周期数字化管理','智慧营销提升去化率','智慧物业提升业主满意度','资产运营数据化决策']},
+            {id:'smart-park-public',icon:'🌳',name:'智慧公园',desc:'生态保护和访客管理',res:2,tag:'脱敏版',
+              modules:['生态环境监测','访客服务管理','设施智能管理','安防监控系统','运营数据分析'],
+              pains:['生态监测不足','访客管理薄弱','设施维护被动','运营缺乏数据'],
+              value:['生态实时监测，保护自然环境','智能访客服务，提升游园体验','设施智能管理，降低维护成本','运营数据分析，科学决策']},
+            {id:'campus-construction',icon:'🎓',name:'校园建设方案',desc:'校园建设专项方案',res:3,tag:'脱敏版',
+              modules:['基础设施建设','教育信息化系统','统一管理平台','智慧教学环境','一体化运维'],
+              pains:['基础设施薄弱','教育信息化滞后','系统建设缺乏统筹','运维保障不足'],
+              value:['新型基础设施统一规划建设','教育信息化全面升级','统一平台避免重复建设','一体化运维保障稳定运行']}
+          ],
+          phases: {
+            presales: { name:'售前阶段', desc:'从客户需求挖掘到合同签订，奠定项目成功基础', items:[
+              { name:'需求调研', duration:'1-2周', activities:['客户需求座谈','现场实地调研','技术现状评估','组织架构分析'], deliverables:['需求分析报告','调研记录','技术评估报告'] },
+              { name:'方案设计', duration:'2-3周', activities:['总体架构设计','功能模块设计','技术选型','实施规划','成本预估'], deliverables:['解决方案说明书','系统架构图','功能规格说明','投资估算表'] },
+              { name:'商务洽谈', duration:'1-2周', activities:['方案评审汇报','价格商务谈判','付款条件协商','合同条款确认'], deliverables:['商务提案','报价单','付款计划'] },
+              { name:'签约启动', duration:'3-5天', activities:['合同签署','启动会准备','资源分配','团队组建'], deliverables:['正式合同','项目章程','项目计划书'] }
+            ]},
+            midsales: { name:'售中阶段', desc:'从项目启动到系统交付，确保高质量实施', items:[
+              { name:'项目启动', duration:'1周', activities:['项目启动大会','团队介绍','计划讲解','沟通机制建立'], deliverables:['启动会纪要','沟通计划','风险管理计划'] },
+              { name:'详细设计', duration:'2-4周', activities:['需求详细分析','数据库设计','接口设计','安全设计'], deliverables:['详细设计文档','数据库设计说明','接口文档'] },
+              { name:'开发集成', duration:'4-8周', activities:['模块开发','单元测试','系统集成','集成测试'], deliverables:['源代码','开发文档','API文档'] },
+              { name:'测试优化', duration:'2-4周', activities:['功能测试','性能测试','安全测试','问题修复'], deliverables:['测试计划','测试报告','缺陷记录'] },
+              { name:'培训文档', duration:'1-2周', activities:['培训计划制定','分角色培训','文档编写','FAQ准备'], deliverables:['培训资料','用户手册','管理员手册'] }
+            ]},
+            delivery: { name:'交付阶段', desc:'从上线部署到长期运维，保障价值持续交付', items:[
+              { name:'上线准备', duration:'1周', activities:['上线计划制定','数据准备','回滚方案','应急预案'], deliverables:['上线实施计划','数据迁移方案','应急预案'] },
+              { name:'部署上线', duration:'1-3天', activities:['环境准备','系统部署','数据迁移','上线验证'], deliverables:['部署文档','迁移日志','上线验证记录'] },
+              { name:'试运行支持', duration:'2-4周', activities:['日常运行支持','问题监测','性能监控','持续优化'], deliverables:['运行日报','性能报告','试运行总结'] },
+              { name:'验收总结', duration:'1周', activities:['验收会议','文档检查','运维移交','知识转移'], deliverables:['项目验收单','项目完成报告','运维文档'] },
+              { name:'后期运维', duration:'1年+', activities:['技术支持','系统监控','性能优化','功能更新'], deliverables:['月度运维报告','年度总结报告','升级方案'] }
+            ]}
+          }
+        };
+        const parks = DATA.parks, phases = DATA.phases;
+        const phaseKeys = ['presales','midsales','delivery'];
+        const PURPLE='7C3AED', PINK='EC4899', DARK='1E1B4B', GRAY='64748B';
+
+        // type -> [显示名, 扩展名]
+        const genTypes = [['proposal','📄 方案文档','docx'],['ppt','📊 演示文稿','pptx'],['plan','📅 实施计划','xlsx'],['package','📦 完整包','zip']];
         let selectedType = 'proposal';
 
         function scrollToSection(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+        function nowDate(){ return new Date().toLocaleDateString('zh-CN'); }
 
         function renderParks(){
             document.getElementById('parkGrid').innerHTML = parks.map(p=>`
@@ -135,13 +213,16 @@
             document.getElementById('genPark').innerHTML = parks.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
         }
         function renderPhases(){
-            document.getElementById('phaseGrid').innerHTML = phases.map(ph=>`
-                <div class="bg-${ph.color}-500/10 border border-${ph.color}-500/30 rounded-xl p-8">
-                    <div class="text-3xl mb-4">${ph.icon}</div>
-                    <h3 class="text-2xl font-bold mb-6 text-${ph.color}-300">${ph.name}</h3>
-                    <div class="space-y-4">${ph.steps.map(s=>`<div class="timeline-item"><div class="font-semibold">${s[0]}</div><div class="text-xs text-gray-400">${s[1]}</div></div>`).join('')}</div>
-                    <div class="mt-8 pt-6 border-t border-${ph.color}-500/20"><div class="text-sm font-semibold mb-3">交付物:</div><ul class="text-xs text-gray-400 space-y-1">${ph.deliv.map(d=>`<li>✓ ${d}</li>`).join('')}</ul></div>
-                </div>`).join('');
+            const meta = { presales:['📋','purple'], midsales:['🔨','blue'], delivery:['🚀','green'] };
+            document.getElementById('phaseGrid').innerHTML = phaseKeys.map(k=>{
+                const ph = phases[k], ic = meta[k][0], color = meta[k][1];
+                return `<div class="bg-${color}-500/10 border border-${color}-500/30 rounded-xl p-8">
+                    <div class="text-3xl mb-4">${ic}</div>
+                    <h3 class="text-2xl font-bold mb-6 text-${color}-300">${ph.name}</h3>
+                    <div class="space-y-4">${ph.items.map(s=>`<div class="timeline-item"><div class="font-semibold">${s.name}</div><div class="text-xs text-gray-400">${s.duration}</div></div>`).join('')}</div>
+                    <div class="mt-8 pt-6 border-t border-${color}-500/20"><div class="text-sm font-semibold mb-3">关键交付物:</div><ul class="text-xs text-gray-400 space-y-1">${ph.items.map(s=>`<li>✓ ${s.deliverables[0]}</li>`).join('')}</ul></div>
+                </div>`;
+            }).join('');
         }
         function renderGenTypes(){
             document.getElementById('genType').innerHTML = genTypes.map(t=>`<button data-t="${t[0]}" onclick="pickType('${t[0]}')" class="gt border border-slate-600 rounded-lg px-3 py-3 text-sm transition ${t[0]===selectedType?'border-purple-500 bg-purple-500/10':''}">${t[1]}</button>`).join('');
@@ -155,26 +236,201 @@
                 <p class="text-gray-400 text-center mb-6">${p.desc}</p>
                 <div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div class="bg-slate-900 rounded-lg p-3 text-center">📁 ${p.res} 个资源</div><div class="bg-slate-900 rounded-lg p-3 text-center">✅ ${p.tag}</div></div>
                 <div class="text-sm font-semibold mb-2">核心功能模块:</div>
-                <div class="flex flex-wrap gap-2">${p.modules.map(m=>`<span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs">${m}</span>`).join('')}</div>`;
+                <div class="flex flex-wrap gap-2 mb-4">${p.modules.map(m=>`<span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs">${m}</span>`).join('')}</div>
+                <div class="text-sm font-semibold mb-2">核心价值:</div>
+                <ul class="text-xs text-gray-300 space-y-1">${p.value.map(v=>`<li>✓ ${v}</li>`).join('')}</ul>`;
             document.getElementById('parkModal').classList.add('active');
         }
-        function generate(){
-            const p = parks.find(x=>x.id===document.getElementById('genPark').value);
+
+        // ---------- 浏览器端真实文档生成 ----------
+        function downloadBlob(blob, fileName){
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = fileName;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(()=>URL.revokeObjectURL(url), 4000);
+        }
+
+        async function genDocxBlob(park, version){
+            const d = docx;
+            const A = d.AlignmentType, H = d.HeadingLevel;
+            const h = (text, level)=> new d.Paragraph({ text, heading: level, spacing:{ before:240, after:120 } });
+            const p = (text, o={})=> new d.Paragraph({ children:[new d.TextRun({ text, size:o.size||22, bold:!!o.bold, color:o.color })], spacing:{ after:o.after||80 }, alignment:o.align });
+            const bullet = (text)=> new d.Paragraph({ text, bullet:{ level:0 }, spacing:{ after:40 } });
+            const c = [];
+            c.push(new d.Paragraph({ text:'', spacing:{ before:1200 } }));
+            c.push(p(`${park.icon}  ${park.name}`, { bold:true, size:56, align:A.CENTER, after:200 }));
+            c.push(p('数字化解决方案', { bold:true, size:40, color:PURPLE, align:A.CENTER, after:600 }));
+            c.push(p(park.desc, { size:24, align:A.CENTER, after:200 }));
+            c.push(p(`版本：${version}`, { size:22, align:A.CENTER }));
+            c.push(p(`生成日期：${nowDate()}`, { size:22, align:A.CENTER, after:400 }));
+            c.push(new d.Paragraph({ text:'', pageBreakBefore:true }));
+            c.push(h('一、项目概述', H.HEADING_1));
+            c.push(p(`本方案面向${park.name}场景，围绕"${park.desc}"的核心目标，结合行业最佳实践与数字孪生、物联网、大数据、人工智能等先进技术，为客户打造一套完整、可落地的数字化解决方案。`));
+            c.push(h('二、需求与痛点分析', H.HEADING_1));
+            c.push(p('当前客户在业务运营中普遍面临以下挑战：', { bold:true }));
+            park.pains.forEach(x=>c.push(bullet(x)));
+            c.push(h('三、建设目标与价值', H.HEADING_1));
+            c.push(p('通过本方案的实施，将为客户带来以下核心价值：', { bold:true }));
+            park.value.forEach(x=>c.push(bullet(x)));
+            c.push(h('四、核心功能模块', H.HEADING_1));
+            park.modules.forEach((m,i)=>{
+                c.push(h(`4.${i+1}  ${m}`, H.HEADING_2));
+                c.push(p(`${m}是本方案的核心组成部分，提供完善的功能支撑，满足${park.name}在该领域的业务需求，实现数据互通、流程优化与智能决策。`));
+            });
+            c.push(h('五、技术架构', H.HEADING_1));
+            c.push(p('本方案采用分层架构设计，自下而上包括：'));
+            ['感知层：通过物联网设备、传感器实现全域数据采集','网络层：基于5G/光纤等构建高速稳定的数据传输通道','平台层：提供数据中台、AI中台、统一身份认证等基础能力','应用层：面向业务场景的各功能模块与可视化大屏','展现层：PC端、移动端、大屏多终端统一呈现'].forEach(x=>c.push(bullet(x)));
+            c.push(h('六、实施计划', H.HEADING_1));
+            c.push(p('项目实施分为售前、售中、交付三大阶段，各阶段关键环节与交付物如下：'));
+            phaseKeys.forEach((key,idx)=>{
+                const ph = phases[key];
+                c.push(h(`6.${idx+1}  ${ph.name}`, H.HEADING_2));
+                c.push(p(ph.desc, { color:'666666' }));
+                ph.items.forEach(it=>{
+                    c.push(p(`${it.name}（${it.duration}）`, { bold:true, after:40 }));
+                    c.push(p('主要活动：' + it.activities.join('、'), { size:20, after:20 }));
+                    c.push(p('交付物：' + it.deliverables.join('、'), { size:20, color:PURPLE }));
+                });
+            });
+            c.push(h('七、服务保障', H.HEADING_1));
+            ['7×24小时技术支持响应','专属项目经理全程跟踪','定期巡检与健康度评估','持续的功能迭代与升级','完善的培训与知识转移体系'].forEach(x=>c.push(bullet(x)));
+            c.push(new d.Paragraph({ text:'', spacing:{ before:400 } }));
+            c.push(p('—— 本方案为' + version + '，最终以双方确认的合同为准 ——', { size:18, color:'999999', align:A.CENTER }));
+            const doc = new d.Document({ creator:'园区Skill平台', title:`${park.name}数字化解决方案`, sections:[{ children:c }] });
+            return await d.Packer.toBlob(doc);
+        }
+
+        async function genPptxBlob(park, version){
+            const pres = new PptxGenJS();
+            pres.author='园区Skill平台'; pres.title=`${park.name}解决方案`; pres.layout='LAYOUT_WIDE';
+            let s = pres.addSlide(); s.background={ color:DARK };
+            s.addText(park.icon,{ x:0.5,y:1.6,w:12.3,h:1.5,fontSize:80,align:'center',color:'FFFFFF' });
+            s.addText(park.name,{ x:0.5,y:3.0,w:12.3,h:1,fontSize:44,bold:true,align:'center',color:'FFFFFF' });
+            s.addText('数字化解决方案',{ x:0.5,y:4.0,w:12.3,h:0.8,fontSize:28,align:'center',color:'A78BFA' });
+            s.addText(park.desc,{ x:0.5,y:4.9,w:12.3,h:0.5,fontSize:16,align:'center',color:'CBD5E1' });
+            s.addText(`${version}  ·  ${nowDate()}`,{ x:0.5,y:6.4,w:12.3,h:0.4,fontSize:12,align:'center',color:GRAY });
+            s = pres.addSlide();
+            s.addText('需求与痛点分析',{ x:0.5,y:0.4,w:12.3,h:0.8,fontSize:32,bold:true,color:PURPLE });
+            park.pains.forEach((x,i)=> s.addText([{text:'⚠ ',options:{color:PINK}},{text:x,options:{color:'334155'}}],{ x:0.8,y:1.5+i*1.0,w:11.5,h:0.8,fontSize:18,valign:'middle' }));
+            s = pres.addSlide();
+            s.addText('建设目标与核心价值',{ x:0.5,y:0.4,w:12.3,h:0.8,fontSize:32,bold:true,color:PURPLE });
+            park.value.forEach((x,i)=> s.addText([{text:'✓ ',options:{color:'22C55E'}},{text:x,options:{color:'334155'}}],{ x:0.8,y:1.5+i*1.0,w:11.5,h:0.8,fontSize:18,valign:'middle' }));
+            s = pres.addSlide();
+            s.addText('核心功能模块',{ x:0.5,y:0.4,w:12.3,h:0.8,fontSize:32,bold:true,color:PURPLE });
+            const cols=3;
+            park.modules.forEach((m,i)=>{
+                const cx=0.6+(i%cols)*4.1, cy=1.6+Math.floor(i/cols)*1.7;
+                s.addShape(pres.ShapeType.roundRect,{ x:cx,y:cy,w:3.8,h:1.4,fill:{color:'F1F5F9'},line:{color:PURPLE,width:1},rectRadius:0.1 });
+                s.addText(m,{ x:cx,y:cy,w:3.8,h:1.4,fontSize:16,bold:true,align:'center',valign:'middle',color:DARK });
+            });
+            s = pres.addSlide();
+            s.addText('技术架构',{ x:0.5,y:0.4,w:12.3,h:0.8,fontSize:32,bold:true,color:PURPLE });
+            [['展现层','PC端 · 移动端 · 可视化大屏','A78BFA'],['应用层','各业务功能模块与场景应用','818CF8'],['平台层','数据中台 · AI中台 · 统一认证','60A5FA'],['网络层','5G · 光纤高速数据传输','34D399'],['感知层','物联网设备 · 传感器全域采集','FBBF24']].forEach((l,i)=>{
+                s.addShape(pres.ShapeType.roundRect,{ x:2.5,y:1.5+i*1.0,w:8.3,h:0.85,fill:{color:l[2]},rectRadius:0.05 });
+                s.addText([{text:l[0]+'  ',options:{bold:true,fontSize:18}},{text:l[1],options:{fontSize:13}}],{ x:2.5,y:1.5+i*1.0,w:8.3,h:0.85,align:'center',valign:'middle',color:'FFFFFF' });
+            });
+            phaseKeys.forEach(key=>{
+                const ph = phases[key]; s = pres.addSlide();
+                s.addText(`实施计划 · ${ph.name}`,{ x:0.5,y:0.4,w:12.3,h:0.7,fontSize:30,bold:true,color:PURPLE });
+                s.addText(ph.desc,{ x:0.5,y:1.1,w:12.3,h:0.5,fontSize:14,color:GRAY });
+                ph.items.forEach((it,i)=>{
+                    const y=1.8+i*1.0;
+                    s.addText(`${it.name}`,{ x:0.6,y,w:2.2,h:0.9,fontSize:15,bold:true,color:DARK,valign:'middle' });
+                    s.addText(it.duration,{ x:0.6,y:y+0.45,w:2.2,h:0.4,fontSize:11,color:PINK });
+                    s.addText('交付物：'+it.deliverables.join('、'),{ x:3.0,y,w:9.7,h:0.9,fontSize:13,color:'475569',valign:'middle' });
+                });
+            });
+            s = pres.addSlide();
+            s.addText('服务保障',{ x:0.5,y:0.4,w:12.3,h:0.8,fontSize:32,bold:true,color:PURPLE });
+            ['7×24小时技术支持响应','专属项目经理全程跟踪','定期巡检与健康度评估','持续功能迭代与升级','完善培训与知识转移'].forEach((x,i)=> s.addText('★ '+x,{ x:0.8,y:1.6+i*0.9,w:11.5,h:0.7,fontSize:18,color:'334155',valign:'middle' }));
+            s = pres.addSlide(); s.background={ color:DARK };
+            s.addText('谢谢观看',{ x:0.5,y:2.8,w:12.3,h:1,fontSize:44,bold:true,align:'center',color:'FFFFFF' });
+            s.addText('园区Skill智能方案生成平台',{ x:0.5,y:4.0,w:12.3,h:0.6,fontSize:18,align:'center',color:'A78BFA' });
+            return await pres.write({ outputType:'blob' });
+        }
+
+        async function genXlsxBlob(park, version){
+            const wb = new ExcelJS.Workbook(); wb.creator='园区Skill平台';
+            const ws = wb.addWorksheet('实施计划');
+            ws.columns = [
+                { header:'阶段', key:'stage', width:14 },
+                { header:'环节', key:'phase', width:16 },
+                { header:'周期', key:'duration', width:12 },
+                { header:'主要活动', key:'activities', width:50 },
+                { header:'交付物', key:'deliverables', width:45 }
+            ];
+            ws.getRow(1).eachCell(cell=>{
+                cell.font={ bold:true, color:{argb:'FFFFFFFF'}, size:12 };
+                cell.fill={ type:'pattern', pattern:'solid', fgColor:{argb:'FF7C3AED'} };
+                cell.alignment={ vertical:'middle', horizontal:'center' };
+            });
+            ws.spliceRows(1,0,[`${park.icon} ${park.name} 数字化解决方案 - 实施计划（${version}）`]);
+            ws.mergeCells('A1:E1');
+            const tc = ws.getCell('A1');
+            tc.font={ bold:true, size:16, color:{argb:'FF1E1B4B'} };
+            tc.alignment={ vertical:'middle', horizontal:'center' };
+            ws.getRow(1).height=30;
+            const stageColors={ presales:'FFEDE9FE', midsales:'FFDBEAFE', delivery:'FFD1FAE5' };
+            phaseKeys.forEach(key=>{
+                const ph = phases[key];
+                ph.items.forEach((it,idx)=>{
+                    const row = ws.addRow({ stage: idx===0?ph.name:'', phase:it.name, duration:it.duration, activities:it.activities.join('、'), deliverables:it.deliverables.join('、') });
+                    row.eachCell(cell=>{
+                        cell.alignment={ vertical:'middle', wrapText:true };
+                        cell.fill={ type:'pattern', pattern:'solid', fgColor:{argb:stageColors[key]} };
+                        cell.border={ top:{style:'thin',color:{argb:'FFCBD5E1'}}, bottom:{style:'thin',color:{argb:'FFCBD5E1'}} };
+                    });
+                    row.getCell('stage').font={ bold:true };
+                });
+            });
+            const buf = await wb.xlsx.writeBuffer();
+            return new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        }
+
+        async function generate(){
+            const parkId = document.getElementById('genPark').value;
+            const p = parks.find(x=>x.id===parkId);
             const ver = document.querySelector('input[name=ver]:checked').value;
-            const typeName = genTypes.find(t=>t[0]===selectedType)[1];
+            const t = genTypes.find(t=>t[0]===selectedType);
+            const typeName = t[1], ext = t[2];
             const r = document.getElementById('genResult');
-            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-400">⏳ 正在为「${p.name}」生成${typeName}（${ver}）...</div>`;
-            setTimeout(()=>{
-                const files = selectedType==='package'
-                    ? ['方案文档.docx','演示文稿.pptx','实施计划.xlsx']
-                    : [typeName.replace(/^.. /,'')+ (selectedType==='ppt'?'.pptx':selectedType==='plan'?'.xlsx':'.docx')];
+            const btn = document.getElementById('genBtn');
+            btn.disabled = true; btn.classList.add('opacity-60');
+            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-300 flex items-center gap-3"><span class="spinner"></span> 正在为「${p.name}」生成${typeName}（${ver}）...</div>`;
+            try {
+                let blob, fileName;
+                const base = `${p.name}-${typeName.replace(/^.. /,'')}-${ver}`;
+                if (selectedType==='proposal'){ blob = await genDocxBlob(p,ver); fileName = base+'.docx'; }
+                else if (selectedType==='ppt'){ blob = await genPptxBlob(p,ver); fileName = base+'.pptx'; }
+                else if (selectedType==='plan'){ blob = await genXlsxBlob(p,ver); fileName = base+'.xlsx'; }
+                else {
+                    const [doc,ppt,xls] = await Promise.all([genDocxBlob(p,ver), genPptxBlob(p,ver), genXlsxBlob(p,ver)]);
+                    const zip = new JSZip();
+                    zip.file(`${p.name}-解决方案-${ver}.docx`, doc);
+                    zip.file(`${p.name}-演示文稿-${ver}.pptx`, ppt);
+                    zip.file(`${p.name}-实施计划-${ver}.xlsx`, xls);
+                    blob = await zip.generateAsync({ type:'blob' });
+                    fileName = `${p.name}-完整方案包-${ver}.zip`;
+                }
+                downloadBlob(blob, fileName);
+                const sizeKB = (blob.size/1024).toFixed(1);
                 r.innerHTML = `<div class="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
-                    <div class="font-bold text-green-300 mb-3">✅ 生成成功！</div>
+                    <div class="font-bold text-green-300 mb-3">✅ 生成成功，文件已开始下载！</div>
                     <div class="text-sm text-gray-300 mb-3">${p.icon} ${p.name} · ${ver}</div>
-                    ${files.map(f=>`<div class="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2 mb-2"><span class="text-sm">📄 ${p.name}-${f}</span><span class="text-xs text-purple-400">下载</span></div>`).join('')}
-                    <p class="text-xs text-gray-500 mt-2">提示：此为演示版生成结果，实际文件生成需连接后端服务。</p>
+                    <div class="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2"><span class="text-sm">📄 ${fileName}</span><span class="text-xs text-purple-400">${sizeKB} KB</span></div>
+                    <p class="text-xs text-gray-500 mt-3">文件在您的浏览器本地实时生成，数据不会上传到任何服务器。</p>
                 </div>`;
-            }, 900);
+            } catch(err){
+                r.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-5">
+                    <div class="font-bold text-red-300 mb-2">❌ 生成失败</div>
+                    <div class="text-sm text-gray-300">${err && err.message ? err.message : err}</div>
+                    <p class="text-xs text-gray-500 mt-2">请刷新页面后重试（需联网加载文档生成库）。</p>
+                </div>`;
+                console.error(err);
+            } finally {
+                btn.disabled = false; btn.classList.remove('opacity-60');
+            }
         }
         renderParks(); renderPhases(); renderGenTypes();
     </script>
