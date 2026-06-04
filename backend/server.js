@@ -48,9 +48,9 @@ function readGitInfo() {
     catch (e) { return ''; }
   };
   const branch = run('git rev-parse --abbrev-ref HEAD') || 'unknown';
-  const branchListRaw = run('git branch -a --format=%(refname:short)');
+  const branchListRaw = run('git branch -a "--format=%(refname:short)"');
   const branchList = branchListRaw ? branchListRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-  const logRaw = run('git log -15 --pretty=format:%h|%an|%ad|%s --date=short');
+  const logRaw = run('git log -15 "--pretty=format:%h|%an|%ad|%s" --date=short');
   const commits = logRaw ? logRaw.split('\n').map(line => {
     const [hash, author, date, ...rest] = line.split('|');
     return { hash, author, date, message: rest.join('|') };
