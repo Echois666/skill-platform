@@ -4,8 +4,10 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const archiver = require('archiver');
+const { execSync } = require('child_process');
 
 const { parks, phases, getPark } = require('../data/content');
+const { tasks, versions, branches } = require('./adminData');
 const { generateSolutionBuffer } = require('./docxGenerator');
 const { generatePptBuffer } = require('./pptGenerator');
 const { generatePlanBuffer } = require('./planGenerator');
@@ -35,6 +37,47 @@ app.get('/api/sales-phases', (req, res) => res.json(phases));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), parks: parks.length });
+});
+
+// ---------- 管理后台 API ----------
+// 读取本地 Git 仓库的实时信息（固定命令，无外部输入，安全）
+function readGitInfo() {
+  const repoDir = path.join(__dirname, '..');
+  const run = (cmd) => {
+    try { return execSync(cmd, { cwd: repoDir, encoding: 'utf8', timeout: 4000 }).trim(); }
+    catch (e) { return ''; }
+  };
+  const branch = run('git rev-parse --abbrev-ref HEAD') || 'unknown';
+  const branchListRaw = run('git branch -a --format=%(refname:short)');
+  const branchList = branchListRaw ? branchListRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+  const logRaw = run('git log -15 --pretty=format:%h|%an|%ad|%s --date=short');
+  const commits = logRaw ? logRaw.split('\n').map(line => {
+    const [hash, author, date, ...rest] = line.split('|');
+    return { hash, author, date, message: rest.join('|') };
+  }) : [];
+  const lastCommit = commits[0] || null;
+  return { branch, branchList, commits, lastCommit };
+}
+
+app.get('/api/admin/overview', (req, res) => {
+  const mem = process.memoryUsage();
+  res.json({
+    service: {
+      status: 'online',
+      appVersion: require('../package.json').version,
+      nodeVersion: process.version,
+      pid: process.pid,
+      uptimeSec: Math.round(process.uptime()),
+      memoryMB: +(mem.rss / 1024 / 1024).toFixed(1),
+      parks: parks.length,
+      phases: Object.keys(phases).length,
+      serverTime: new Date().toISOString()
+    },
+    git: readGitInfo(),
+    tasks,
+    versions,
+    branches
+  });
 });
 
 // ---------- 文档生成与下载 ----------
