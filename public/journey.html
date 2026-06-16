@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI赋能大湾区 · 全链路作战驾驶舱</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .gradient-text { background: linear-gradient(135deg,#22d3ee 0%,#a78bfa 50%,#f472b6 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif; }
+  .card-hover { transition:all .3s ease; }
+  .card-hover:hover { transform:translateY(-5px); box-shadow:0 18px 38px rgba(124,58,237,.25); }
+  .stage-card { transition:all .3s ease; }
+  .stage-card:hover { transform:translateY(-4px); }
+  .spinner { display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .flow-arrow::after { content:'→'; color:#7c3aed; font-size:1.5rem; }
+  input[type=range]{ accent-color:#a78bfa; }
+</style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 min-h-screen">
+
+<nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div class="flex items-center gap-3"><span class="text-3xl">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text">AI赋能大湾区 · 全链路驾驶舱</span></div>
+    <div class="flex items-center gap-2 md:gap-4">
+      <button onclick="scrollTo2('stages')" class="hidden md:block hover:text-purple-400 transition text-sm">五段链路</button>
+      <button onclick="scrollTo2('radar')" class="hidden md:block hover:text-purple-400 transition text-sm">客户雷达</button>
+      <button onclick="scrollTo2('brand')" class="hidden md:block hover:text-purple-400 transition text-sm">品牌升级</button>
+      <button onclick="scrollTo2('enable')" class="hidden md:block hover:text-purple-400 transition text-sm">作战手册</button>
+      <button onclick="scrollTo2('success')" class="hidden md:block hover:text-purple-400 transition text-sm">客户成功</button>
+      <a href="/" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold">⚙️ 方案生成</a>
+    </div>
+  </div>
+</nav>
+
+<header class="pt-28 pb-10 px-4">
+  <div class="max-w-6xl mx-auto text-center">
+    <div class="inline-block px-4 py-1 mb-5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm">🌉 粤港澳大湾区 · AI 一站式服务</div>
+    <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text leading-tight">从挖掘客户 到 客户成功</h1>
+    <p class="text-lg md:text-xl text-gray-300 mb-3">AI 赋能大湾区企业，助力客户<strong class="text-pink-300">品牌升级</strong>与<strong class="text-amber-300">团队升级</strong>，打通获客到成功的全链路</p>
+    <p class="text-sm text-green-400 mb-8" id="heroSub">✨ 以园区Skill方案引擎为核心，向前延伸到客户挖掘、向后延伸到客户成功</p>
+    <div class="flex flex-wrap gap-3 justify-center mb-10">
+      <button onclick="scrollTo2('radar')" class="bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 px-7 py-3 rounded-lg font-semibold transition">🛰️ 体验AI客户雷达</button>
+      <button onclick="scrollTo2('stages')" class="border border-purple-500 hover:bg-purple-500/10 px-7 py-3 rounded-lg font-semibold transition">查看全链路</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="statGrid"></div>
+  </div>
+</header>
+
+<!-- 五段链路 -->
+<section id="stages" class="py-16 px-4">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">全链路五段作战地图</h2>
+    <p class="text-center text-gray-400 mb-12">挖掘客户 → 品牌升级 → 转化成交 → 团队升级 → 客户成功，每段都有可交付的AI能力</p>
+    <div id="stageGrid" class="grid grid-cols-1 md:grid-cols-5 gap-4"></div>
+  </div>
+</section>
+
+<!-- 大湾区城市带 -->
+<section class="py-12 px-4 bg-slate-800/40">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl md:text-3xl font-bold mb-3 text-center gradient-text">🌉 大湾区 11 城产业地图</h2>
+    <p class="text-center text-gray-400 mb-8">按城市主导产业精准匹配可切入的园区方案</p>
+    <div id="cityGrid" class="flex flex-wrap justify-center gap-3"></div>
+  </div>
+</section>
+
+<!-- 段1 客户雷达 -->
+<section id="radar" class="py-16 px-4">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+      <span class="text-4xl">🛰️</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段一 · AI 客户雷达</h2>
+      <p class="text-gray-400">选择行业与大湾区城市，一键生成精准目标客户清单与个性化触达话术</p>
+    </div>
+    <div class="bg-slate-800/60 border border-cyan-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="radarPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">目标城市</label><select id="radarCity" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">线索数量</label><select id="radarCount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option>4</option><option>6</option><option>8</option></select></div>
+        <div class="flex items-end"><button onclick="runRadar()" id="radarBtn" class="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">🛰️ 生成线索</button></div>
+      </div>
+      <div id="radarResult"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 段2 品牌升级 -->
+<section id="brand" class="py-16 px-4 bg-slate-800/40">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+      <span class="text-4xl">✨</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段二 · AI 品牌升级一页纸</h2>
+      <p class="text-gray-400">基于行业知识库，一键生成品牌价值主张 + 能力背书 + 标杆案例，并下载可对外的 Word 一页纸</p>
+    </div>
+    <div class="bg-slate-800/60 border border-pink-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="brandPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">客户主体（选填）</label><input id="brandClient" placeholder="如：某某产业园" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div class="flex items-end"><button onclick="runBrand()" id="brandBtn" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">✨ 生成品牌一页纸</button></div>
+      </div>
+      <div id="brandResult"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 段3 转化成交 直连 -->
+<section class="py-12 px-4">
+  <div class="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-8">
+    <span class="text-4xl">🎯</span>
+    <h2 class="text-2xl md:text-3xl font-bold mt-2 mb-2 gradient-text">段三 · AI 方案生成（核心引擎）</h2>
+    <p class="text-gray-300 mb-2">自然语言描述需求 → 自动识别行业/客户/场景 → 一键生成真实 Word / PPT / Excel 完整方案包</p>
+    <p class="text-sm text-gray-400 mb-6">这是平台已上线的核心能力，全链路的"成交"环节直接复用它。</p>
+    <a href="/#generator" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-3 rounded-lg font-bold transition">前往方案生成器 →</a>
+  </div>
+</section>
+
+<!-- 段4 作战手册 -->
+<section id="enable" class="py-16 px-4">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+      <span class="text-4xl">🎓</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段四 · AI 团队作战手册</h2>
+      <p class="text-gray-400">把顶尖打法标准化：开场白、价值话术、异议应对、Demo脚本，一键复制给整个团队</p>
+    </div>
+    <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="enablePark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">受众团队</label><select id="enableAudience" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option>销售</option><option>售前</option><option>交付</option></select></div>
+        <div class="flex items-end"><button onclick="runEnable()" id="enableBtn" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">🎓 生成作战手册</button></div>
+      </div>
+      <div id="enableResult"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 段5 客户成功 -->
+<section id="success" class="py-16 px-4 bg-slate-800/40">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+      <span class="text-4xl">📈</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段五 · AI 客户成功驾驶舱</h2>
+      <p class="text-gray-400">量化健康度 + ROI 测算 + 智能增购建议，把一次性项目变成持续订阅</p>
+    </div>
+    <div class="bg-slate-800/60 border border-green-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="csPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div id="csSliders" class="space-y-3"></div>
+      </div>
+      <button onclick="runCS()" id="csBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 px-4 py-3 rounded-lg font-bold transition">📈 评估客户健康度</button>
+      <div id="csResult" class="mt-6"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 商业模式 -->
+<section class="py-16 px-4">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">商业模式：从项目制走向订阅制</h2>
+    <p class="text-center text-gray-400 mb-12">引流 → 主营 → 复利，客户成功占比越高，公司越值钱</p>
+    <div id="bizGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+  </div>
+</section>
+
+<footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
+  <p>🛰️ AI赋能大湾区 · 全链路作战驾驶舱 · 挖掘客户 → 品牌升级 → 转化成交 → 团队升级 → 客户成功</p>
+  <p class="text-xs mt-2">以园区Skill方案引擎为核心 · 数据由 51WORLD 行业知识库驱动</p>
+</footer>
+
+<script>
+const colorMap = {
+  cyan:['cyan-500/10','cyan-500/30','cyan-300'], pink:['pink-500/10','pink-500/30','pink-300'],
+  purple:['purple-500/10','purple-500/30','purple-300'], amber:['amber-500/10','amber-500/30','amber-300'],
+  green:['green-500/10','green-500/30','green-300']
+};
+let PARKS = [], JOURNEY = null;
+
+function scrollTo2(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+async function init(){
+  const [pRes, jRes] = await Promise.all([fetch('/api/parks'), fetch('/api/journey')]);
+  PARKS = await pRes.json();
+  JOURNEY = await jRes.json();
+  // 下拉
+  const opts = PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
+  ['radarPark','enablePark','csPark','brandPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
+  document.getElementById('radarCity').innerHTML = `<option value="">大湾区全域</option>` + JOURNEY.cities.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  // 统计
+  const s = JOURNEY.stats;
+  document.getElementById('statGrid').innerHTML = [
+    ['5','全链路环节','cyan'],[s.cities,'大湾区城市','purple'],[s.parks,'行业方案','pink'],['1','站式服务','green']
+  ].map(([n,l,c])=>`<div class="bg-${c}-500/10 border border-${c}-500/20 rounded-lg p-5"><div class="text-3xl font-bold text-${c}-400">${n}</div><div class="text-gray-300 mt-1 text-sm">${l}</div></div>`).join('');
+  renderStages(); renderCities(); renderBiz(); renderSliders();
+}
+
+function renderStages(){
+  document.getElementById('stageGrid').innerHTML = JOURNEY.stages.map((st,i)=>{
+    const [bg,bd,tx] = colorMap[st.color] || colorMap.purple;
+    const link = st.tool==='convert' ? '/#generator' : '#'+st.tool;
+    return `<div class="stage-card bg-${bg} border border-${bd} rounded-xl p-5 flex flex-col cursor-pointer" onclick="goStage('${st.tool}')">
+      <div class="flex items-center justify-between mb-2"><span class="text-3xl">${st.icon}</span><span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-gray-300">第${st.step}段</span></div>
+      <h3 class="text-lg font-bold text-${tx} mb-1">${st.name}</h3>
+      <div class="text-xs text-gray-400 mb-3">${st.subtitle}</div>
+      <p class="text-xs text-gray-300 mb-3 flex-1"><span class="text-red-300">痛点：</span>${esc(st.customerPain)}</p>
+      <div class="flex flex-wrap gap-1 mb-3">${st.deliverables.map(d=>`<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/60 text-gray-300">${d}</span>`).join('')}</div>
+      <div class="flex gap-2 text-[11px] mb-2">${st.kpis.map(k=>`<span class="text-${tx}">▸ ${k.label} <b>${k.value}</b></span>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+function goStage(tool){
+  if(tool==='convert'){ location.href='/#generator'; return; }
+  scrollTo2(tool);
+}
+
+function renderCities(){
+  document.getElementById('cityGrid').innerHTML = JOURNEY.cities.map(c=>
+    `<div class="card-hover bg-slate-800/70 border border-purple-500/20 rounded-xl px-4 py-3 text-center cursor-pointer" onclick="quickRadar('${c.id}')">
+      <div class="font-bold text-purple-200">${c.name}</div>
+      <div class="text-[10px] text-gray-400 mt-1 max-w-[140px]">${c.pillars.slice(0,3).join(' · ')}</div>
+    </div>`).join('');
+}
+function quickRadar(cityId){ document.getElementById('radarCity').value = cityId; scrollTo2('radar'); runRadar(); }
+
+function renderBiz(){
+  const tierColor = {'引流':'cyan','主营':'purple','复利':'green'};
+  document.getElementById('bizGrid').innerHTML = JOURNEY.businessModel.map(b=>{
+    const c = tierColor[b.tier]||'purple';
+    return `<div class="bg-${c}-500/10 border border-${c}-500/30 rounded-xl p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-3"><span class="text-xs px-2 py-1 rounded-full bg-${c}-600/40 text-${c}-200 font-bold">${b.tier}</span><span class="text-xs text-gray-400">${b.price}</span></div>
+      <h3 class="text-xl font-bold text-${c}-200 mb-2">${b.name}</h3>
+      <p class="text-sm text-gray-300 mb-3 flex-1">${esc(b.desc)}</p>
+      <div class="text-xs text-gray-400">🔗 ${b.stage}</div>
+    </div>`;
+  }).join('');
+}
+
+// 段5 滑块
+const SLIDERS = [
+  ['modulesLive','上线模块数',1,8,3],['activeRate','活跃使用率(%)',0,100,60],
+  ['satisfaction','客户满意度(1-5)',1,5,4],['sponsor','高层支持(1-5)',1,5,3],['dataIntegration','数据接入完整度(%)',0,100,60]
+];
+function renderSliders(){
+  document.getElementById('csSliders').innerHTML = SLIDERS.map(([id,label,min,max,def])=>
+    `<div><div class="flex justify-between text-xs mb-1"><span>${label}</span><span id="${id}Val" class="text-green-300 font-bold">${def}</span></div>
+     <input id="${id}" type="range" min="${min}" max="${max}" value="${def}" step="${id==='satisfaction'||id==='sponsor'?1:(id==='modulesLive'?1:5)}" class="w-full" oninput="document.getElementById('${id}Val').textContent=this.value"></div>`).join('');
+}
+
+// ===== 段1 客户雷达 =====
+async function runRadar(){
+  const btn=document.getElementById('radarBtn'), box=document.getElementById('radarResult');
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 雷达扫描中...</div>';
+  try{
+    const r = await fetch('/api/lead/radar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      parkId:document.getElementById('radarPark').value, city:document.getElementById('radarCity').value, count:+document.getElementById('radarCount').value
+    })});
+    const j = await r.json();
+    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
+    const pri = {'高':'red','中':'amber','观察':'slate'};
+    box.innerHTML = `<div class="mb-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-sm text-cyan-100">${j.icon} <b>${esc(j.parkName)} · ${esc(j.city)}</b>　${esc(j.summary)}<div class="text-xs text-gray-400 mt-1">📍 ${esc(j.cityNote)}</div></div>
+    <div class="space-y-3">${j.leads.map(l=>{const c=pri[l.priority]||'slate';return `
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div><div class="font-bold text-cyan-200">${esc(l.name)}</div><div class="text-xs text-gray-400">🎯 决策人：${esc(l.decisionMaker)} · 📍 ${esc(l.region)}</div></div>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-${c}-500/20 text-${c}-300 whitespace-nowrap">${l.priority}优先</span>
+        </div>
+        <div class="text-xs text-gray-300 mb-2"><span class="text-purple-300">契合点：</span>${esc(l.fitReason)}</div>
+        <div class="text-xs mb-2"><span class="text-red-300">痛点钩子：</span>${esc(l.painHook)}　<span class="text-green-300">→ 价值：</span>${esc(l.valueHook)}</div>
+        <div class="text-xs bg-slate-800/80 border border-slate-700 rounded-lg p-3 text-gray-200"><span class="text-cyan-300 font-semibold">💬 触达话术：</span>${esc(l.outreach)}
+          <button onclick="copyTxt(this)" data-txt="${esc(l.outreach)}" class="ml-2 text-[10px] px-2 py-0.5 rounded bg-cyan-600/60 hover:bg-cyan-500">复制</button></div>
+      </div>`;}).join('')}</div>
+    <div class="mt-4 text-sm text-center"><a href="${j.nextStep.link}" class="text-purple-300 hover:underline">下一步：${esc(j.nextStep.action)} →</a></div>`;
+  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
+  finally{ btn.disabled=false; }
+}
+function copyTxt(el){ navigator.clipboard.writeText(el.dataset.txt); el.textContent='已复制'; setTimeout(()=>el.textContent='复制',1500); }
+
+// ===== 段2 品牌升级 =====
+async function runBrand(){
+  const btn=document.getElementById('brandBtn'), box=document.getElementById('brandResult');
+  const parkId=document.getElementById('brandPark').value, client=document.getElementById('brandClient').value.trim();
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 生成品牌内容...</div>';
+  try{
+    const r = await fetch('/api/brand/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client})});
+    const j = await r.json();
+    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
+    box.innerHTML = `
+    <div class="mb-3 p-4 rounded-xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 text-center">
+      <div class="text-xs text-pink-300 mb-1">${esc(j.company)} · ${esc(j.positioning)}</div>
+      <div class="text-xl font-bold text-pink-100 mb-1">${j.icon} ${esc(j.parkName)} · 品牌一页纸</div>
+      <div class="text-sm text-gray-300">${esc(j.tagline)}</div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-pink-300 font-semibold text-sm mb-2">🎯 一句话价值主张</div>
+        <p class="text-sm text-gray-100 font-semibold mb-4">${esc(j.valueProp)}</p>
+        <div class="text-pink-300 font-semibold text-sm mb-2">💡 我们为客户解决</div>
+        <ul class="text-xs text-gray-300 space-y-1">${j.solves.map(s=>`<li>▸ ${esc(s)}</li>`).join('')}</ul>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-pink-300 font-semibold text-sm mb-2">🏆 能力背书</div>
+        <p class="text-[11px] text-gray-400 mb-2">${esc(j.proof.scale).slice(0,90)}…</p>
+        <ul class="text-xs text-gray-300 space-y-1 mb-3">${j.proof.advantages.map(a=>`<li>▸ ${esc(a)}</li>`).join('')}</ul>
+        <div class="text-pink-300 font-semibold text-sm mb-2">🌟 标杆案例</div>
+        ${(j.cases.length?j.cases:[{name:'多个标杆项目',value:'可按需提供详细案例',metrics:[]}]).map(c=>`<div class="text-xs text-gray-300 mb-1"><b class="text-purple-300">${esc(c.name)}</b>${c.metrics&&c.metrics.length?` <span class="text-rose-300">${esc(c.metrics.join('；')).slice(0,40)}</span>`:''}</div>`).join('')}
+      </div>
+    </div>
+    ${j.valueMetrics&&j.valueMetrics.length?`<div class="mt-3 flex flex-wrap gap-2 justify-center">${j.valueMetrics.map(m=>`<span class="text-[11px] px-2 py-1 rounded bg-pink-500/10 border border-pink-500/20 text-pink-200">${esc(m.label)} ${esc(m.value)}</span>`).join('')}</div>`:''}
+    <div class="mt-4 p-3 rounded-lg bg-pink-500/10 border border-pink-500/20 text-xs text-pink-100 text-center">📞 ${esc(j.cta)}</div>
+    <button onclick="downloadBrand('${parkId}','${esc(client)}')" id="brandDlBtn" class="mt-4 w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 px-4 py-3 rounded-lg font-bold transition">⬇️ 下载品牌一页纸 (.docx)</button>`;
+  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
+  finally{ btn.disabled=false; }
+}
+async function downloadBrand(parkId, client){
+  const dl=document.getElementById('brandDlBtn'); const old=dl.textContent;
+  dl.disabled=true; dl.textContent='⏳ 生成中...';
+  try{
+    const r = await fetch('/api/generate/brand',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client, requirement: client?`为${client}做品牌升级`:''})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.error||('HTTP '+r.status)); }
+    const blob = await r.blob();
+    const name = (PARKS.find(p=>p.id===parkId)||{}).name || '品牌';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name+'-品牌一页纸.docx';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    dl.textContent='✅ 已下载'; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},1800);
+  }catch(e){ dl.textContent='❌ '+e.message; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},2500); }
+}
+
+// ===== 段4 作战手册 =====
+async function runEnable(){
+  const btn=document.getElementById('enableBtn'), box=document.getElementById('enableResult');
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 生成作战手册...</div>';
+  try{
+    const r = await fetch('/api/enablement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      parkId:document.getElementById('enablePark').value, audience:document.getElementById('enableAudience').value
+    })});
+    const j = await r.json();
+    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
+    box.innerHTML = `
+    <div class="mb-3 text-lg font-bold text-amber-200">${j.icon} ${esc(j.title)}</div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-amber-300 font-semibold text-sm mb-2">🎤 开场白</div><p class="text-xs text-gray-200">${esc(j.opening)}</p>
+        <div class="text-amber-300 font-semibold text-sm mt-4 mb-2">💡 价值话术</div>
+        <div class="space-y-2">${j.valueTalk.map(v=>`<div class="text-xs text-gray-300"><span class="text-red-300">痛：</span>${esc(v.pain)}<br><span class="text-green-300">攻：</span>${esc(v.pitch)}</div>`).join('')}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-amber-300 font-semibold text-sm mb-2">🛡️ 异议应对库</div>
+        <div class="space-y-2">${j.objections.map(o=>`<details class="text-xs"><summary class="cursor-pointer text-gray-200 hover:text-amber-200">Q：${esc(o.q)}</summary><div class="text-gray-400 mt-1 pl-3">A：${esc(o.a)}</div></details>`).join('')}</div>
+      </div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4 mt-4">
+      <div class="text-amber-300 font-semibold text-sm mb-2">🎬 演示Demo脚本</div>
+      <div class="grid md:grid-cols-2 gap-2">${j.demoScript.map(d=>`<div class="text-xs text-gray-300"><span class="text-amber-200 font-semibold">${d.step}. ${esc(d.scene)}</span> — ${esc(d.say)}<div class="text-[11px] text-cyan-300 mt-0.5">★ ${esc(d.highlight)}</div></div>`).join('')}</div>
+    </div>
+    <div class="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-100">🏁 ${esc(j.closing)}<div class="text-gray-400 mt-1">${esc(j.deliverableNote)}</div></div>`;
+  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
+  finally{ btn.disabled=false; }
+}
+
+// ===== 段5 客户成功 =====
+async function runCS(){
+  const btn=document.getElementById('csBtn'), box=document.getElementById('csResult');
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 评估中...</div>';
+  try{
+    const payload = { parkId:document.getElementById('csPark').value };
+    SLIDERS.forEach(([id])=> payload[id] = +document.getElementById(id).value);
+    const r = await fetch('/api/customer-success/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const j = await r.json();
+    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
+    const lc = {green:'green',amber:'amber',red:'red'}[j.levelColor]||'green';
+    box.innerHTML = `
+    <div class="grid md:grid-cols-3 gap-4 mb-4">
+      <div class="bg-${lc}-500/10 border border-${lc}-500/30 rounded-xl p-5 text-center flex flex-col justify-center">
+        <div class="text-5xl font-bold text-${lc}-300">${j.health}</div>
+        <div class="text-sm text-${lc}-200 mt-1">健康度 · <b>${esc(j.level)}</b></div>
+      </div>
+      <div class="md:col-span-2 bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-sm font-semibold text-gray-200 mb-2">评分构成</div>
+        ${j.breakdown.map(b=>`<div class="mb-1"><div class="flex justify-between text-[11px] text-gray-400"><span>${esc(b.label)} <span class="text-gray-500">(${b.weight})</span></span><span>${b.score}</span></div><div class="h-1.5 bg-slate-700 rounded"><div class="h-1.5 rounded bg-${lc}-400" style="width:${b.score}%"></div></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-sm font-semibold text-red-300 mb-2">⚠️ 风险信号 · <span class="text-${lc}-300">${esc(j.renewal.signal)}</span></div>
+        <ul class="text-xs text-gray-300 list-disc pl-4 space-y-1">${j.risks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+        <div class="text-xs text-gray-400 mt-2">👉 ${esc(j.advice)}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+        <div class="text-sm font-semibold text-green-300 mb-2">📈 ROI 价值</div>
+        <p class="text-xs text-gray-300 mb-2">${esc(j.roi.statement)}</p>
+        <div class="flex flex-wrap gap-2 mb-2">${j.roi.metrics.map(m=>`<span class="text-[11px] px-2 py-1 rounded bg-green-500/10 border border-green-500/20 text-green-200">${esc(m.label)} ${esc(m.value)}</span>`).join('')}</div>
+        <div class="text-xs text-gray-400">${esc(j.roi.estimate)}</div>
+      </div>
+    </div>
+    <div class="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 mt-4">
+      <div class="text-sm font-semibold text-purple-300 mb-2">🚀 智能增购建议</div>
+      <div class="grid md:grid-cols-2 gap-3 text-xs">
+        <div><div class="text-gray-400 mb-1">待上线模块：</div>${(j.upsell.modules.length?j.upsell.modules:[{name:'已全部上线',why:''}]).map(m=>`<div class="text-gray-200">▸ ${esc(m.name)} <span class="text-gray-500">${esc(m.why)}</span></div>`).join('')}</div>
+        <div><div class="text-gray-400 mb-1">可扩展场景：</div>${j.upsell.scenarios.map(s=>`<div class="text-gray-200">▸ ${esc(s.name)} <span class="text-gray-500">${esc(s.why).slice(0,28)}…</span></div>`).join('')}</div>
+      </div>
+    </div>`;
+  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
+  finally{ btn.disabled=false; }
+}
+
+init();
+</script>
+</body>
+</html>
