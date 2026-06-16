@@ -5,13 +5,18 @@ const cors = require('cors');
 const path = require('path');
 const archiver = require('archiver');
 const { execSync } = require('child_process');
+const fs = require('fs');
 
 const { parks, phases, getPark } = require('../data/content');
 const { tasks, versions, branches } = require('./adminData');
 const { generateSolutionBuffer } = require('./docxGenerator');
 const { generatePptBuffer } = require('./pptGenerator');
 const { generatePlanBuffer } = require('./planGenerator');
+const { generateBrandBuffer } = require('./brandGenerator');
+const { generateTemplateBuffer } = require('./templateGenerator');
+const { listByStage } = require('../data/deliverableTemplates');
 const { parseRequirement } = require('./requirementParser');
+const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, buildBrandPreview } = require('./journeyEngine');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,7 +32,7 @@ function safeName(s) {
 
 // 从请求体解析出 park 与 brief（支持自然语言需求）
 function resolveRequest(body) {
-  const { parkId, version = '脱敏版', requirement, client, projectName } = body || {};
+  const { parkId, version = '专业版', requirement, client, projectName } = body || {};
   let park = parkId ? getPark(parkId) : null;
   let brief = null;
   if (requirement && String(requirement).trim()) {
@@ -61,6 +66,65 @@ app.get('/api/parks/:id', (req, res) => {
 
 app.get('/api/sales-phases', (req, res) => res.json(phases));
 
+// ---------- 交付物模板中心 API ----------
+// 列出按阶段分组的交付物模板（含写作指南）
+app.get('/api/deliverables', (req, res) => {
+  try {
+    res.json(listByStage());
+  } catch (e) {
+    console.error('deliverables失败:', e);
+    res.status(500).json({ error: '获取交付物模板失败', detail: e.message });
+  }
+});
+
+// 下载某个交付物的 Word 模板（含写作指引与占位）
+app.post('/api/generate/template', async (req, res) => {
+  try {
+    const { key } = req.body || {};
+    if (!key) return res.status(400).json({ error: '缺少模板 key' });
+    const { buffer, name } = await generateTemplateBuffer(key);
+    const fname = encodeURIComponent(`${safeName(name)}-模板.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('template生成失败:', e);
+    res.status(e.message && e.message.includes('未找到') ? 404 : 500).json({ error: '生成失败', detail: e.message });
+  }
+});
+
+// 列出某园区板块的可下载资料（脱敏方案/案例卡 PDF）
+app.get('/api/materials/:parkId', (req, res) => {
+  try {
+    const parkId = String(req.params.parkId).replace(/[^\w\-]/g, '');
+    const dir = path.join(__dirname, '..', 'public', 'materials', parkId);
+    if (!fs.existsSync(dir)) return res.json({ parkId, files: [] });
+    const files = fs.readdirSync(dir)
+      .filter(f => /\.(pdf|pptx|docx|xlsx)$/i.test(f))
+      .map(f => {
+        const st = fs.statSync(path.join(dir, f));
+        const ext = (f.split('.').pop() || '').toLowerCase();
+        let kind = '资料';
+        if (/案例卡/.test(f)) kind = '案例卡';
+        else if (/解决方案|方案/.test(f)) kind = '解决方案';
+        else if (/功能/.test(f)) kind = '功能介绍';
+        else if (/一页纸/.test(f)) kind = '一页纸';
+        return {
+          name: f,
+          ext,
+          kind,
+          sizeMB: +(st.size / 1024 / 1024).toFixed(1),
+          url: `/materials/${parkId}/${encodeURIComponent(f)}`
+        };
+      })
+      .sort((a, b) => b.sizeMB - a.sizeMB);
+    res.json({ parkId, count: files.length, files });
+  } catch (e) {
+    console.error('读取资料失败:', e);
+    res.status(500).json({ error: '读取资料失败', detail: e.message });
+  }
+});
+
 // 解析自然语言需求 → 识别行业/客户/诉求/场景
 app.post('/api/parse-requirement', (req, res) => {
   try {
@@ -76,6 +140,65 @@ app.post('/api/parse-requirement', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), parks: parks.length });
+});
+
+// ---------- 全链路驾驶舱 API（挖掘客户 → 客户成功）----------
+// 全链路蓝图：5段旅程 + 大湾区城市 + 商业模式
+app.get('/api/journey', (req, res) => {
+  try {
+    res.json(getJourney());
+  } catch (e) {
+    console.error('journey失败:', e);
+    res.status(500).json({ error: '获取全链路蓝图失败', detail: e.message });
+  }
+});
+
+// 段1 · AI客户雷达：按行业+城市生成目标客户与触达话术
+app.post('/api/lead/radar', (req, res) => {
+  try {
+    const result = buildLeadRadar(req.body || {});
+    if (!result.ok) return res.status(400).json(result);
+    res.json(result);
+  } catch (e) {
+    console.error('lead/radar失败:', e);
+    res.status(500).json({ ok: false, error: '客户雷达生成失败', detail: e.message });
+  }
+});
+
+// 段2 · 品牌升级一页纸内容预览（下载走 /api/generate/brand）
+app.post('/api/brand/preview', (req, res) => {
+  try {
+    const result = buildBrandPreview(req.body || {});
+    if (!result.ok) return res.status(400).json(result);
+    res.json(result);
+  } catch (e) {
+    console.error('brand/preview失败:', e);
+    res.status(500).json({ ok: false, error: '品牌内容生成失败', detail: e.message });
+  }
+});
+
+// 段4 · AI团队作战手册：按行业+受众生成话术/异议应对/Demo脚本
+app.post('/api/enablement', (req, res) => {
+  try {
+    const result = buildEnablement(req.body || {});
+    if (!result.ok) return res.status(400).json(result);
+    res.json(result);
+  } catch (e) {
+    console.error('enablement失败:', e);
+    res.status(500).json({ ok: false, error: '作战手册生成失败', detail: e.message });
+  }
+});
+
+// 段5 · AI客户成功评分：健康度 + ROI + 增购建议
+app.post('/api/customer-success/score', (req, res) => {
+  try {
+    const result = scoreCustomerSuccess(req.body || {});
+    if (!result.ok) return res.status(400).json(result);
+    res.json(result);
+  } catch (e) {
+    console.error('customer-success/score失败:', e);
+    res.status(500).json({ ok: false, error: '客户成功评分失败', detail: e.message });
+  }
 });
 
 // ---------- 管理后台 API ----------
@@ -164,6 +287,22 @@ app.post('/api/generate/plan', async (req, res) => {
     res.send(buffer);
   } catch (e) {
     console.error('plan生成失败:', e);
+    res.status(500).json({ error: '生成失败', detail: e.message });
+  }
+});
+
+// 生成品牌一页纸 (.docx) —— 全链路第②段 品牌升级
+app.post('/api/generate/brand', async (req, res) => {
+  try {
+    const { park, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const buffer = await generateBrandBuffer(park, brief);
+    const fname = encodeURIComponent(`${safeName(park.name)}-品牌一页纸.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('brand生成失败:', e);
     res.status(500).json({ error: '生成失败', detail: e.message });
   }
 });
