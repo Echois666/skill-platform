@@ -22,10 +22,14 @@
     <nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3"><span class="text-3xl">🎯</span><span class="text-xl font-bold gradient-text">园区Skill平台</span></div>
-            <div class="hidden md:flex gap-6">
-                <button onclick="scrollToSection('parks')" class="hover:text-purple-400 transition">园区方案</button>
-                <button onclick="scrollToSection('timeline')" class="hover:text-purple-400 transition">三阶段流程</button>
-                <button onclick="scrollToSection('generator')" class="hover:text-purple-400 transition">生成工具</button>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex gap-6">
+                    <button onclick="scrollToSection('parks')" class="hover:text-purple-400 transition">园区方案</button>
+                    <button onclick="scrollToSection('timeline')" class="hover:text-purple-400 transition">交付物模板</button>
+                    <button onclick="scrollToSection('generator')" class="hover:text-purple-400 transition">方案生成工具</button>
+                </div>
+                <a href="/journey.html" class="text-sm px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 transition font-semibold">🛰️ 全链路驾驶舱</a>
+                <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold">🛠️ 管理后台</a>
             </div>
         </div>
     </nav>
@@ -42,14 +46,24 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-purple-500/10 border border-purple-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-purple-400">15</div><div class="text-gray-300 mt-2">园区类型</div></div>
                 <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-blue-400">100+</div><div class="text-gray-300 mt-2">资料文件</div></div>
-                <div class="bg-green-500/10 border border-green-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-green-400">30+</div><div class="text-gray-300 mt-2">流程环节</div></div>
-                <div class="bg-pink-500/10 border border-pink-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-pink-400">50+</div><div class="text-gray-300 mt-2">交付物模板</div></div>
+                <div class="bg-green-500/10 border border-green-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-green-400">14</div><div class="text-gray-300 mt-2">流程环节</div></div>
+                <div class="bg-pink-500/10 border border-pink-500/20 rounded-lg p-6"><div class="text-4xl font-bold text-pink-400">43</div><div class="text-gray-300 mt-2">交付物</div></div>
             </div>
         </div>
     </header>
 
     <section id="parks" class="py-16 px-4">
         <div class="max-w-6xl mx-auto">
+            <a href="/journey.html" class="block mb-12 group">
+              <div class="bg-gradient-to-r from-cyan-600/20 via-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 group-hover:border-cyan-400/50 transition">
+                <div>
+                  <div class="text-xs text-cyan-300 mb-1">🌉 AI赋能大湾区 · 一站式服务</div>
+                  <h3 class="text-2xl md:text-3xl font-bold gradient-text mb-1">从挖掘客户 → 客户成功，全链路作战驾驶舱</h3>
+                  <p class="text-sm text-gray-300">以本平台的方案引擎为核心，向前延伸 AI客户雷达，向后延伸 客户成功，覆盖获客到复购的五段链路。</p>
+                </div>
+                <span class="whitespace-nowrap bg-gradient-to-r from-cyan-600 to-purple-600 px-6 py-3 rounded-lg font-bold group-hover:opacity-90 transition">🛰️ 进入驾驶舱 →</span>
+              </div>
+            </a>
             <h2 class="text-4xl font-bold mb-12 text-center gradient-text">园区解决方案库</h2>
             <div id="parkGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
         </div>
@@ -57,15 +71,16 @@
 
     <section id="timeline" class="py-16 px-4 bg-slate-800/40">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold mb-4 text-center gradient-text">销售全流程管理</h2>
-            <p class="text-center text-gray-400 mb-12">售前 → 售中 → 交付，每个环节都有明确的交付物</p>
-            <div id="phaseGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+            <h2 class="text-4xl font-bold mb-4 text-center gradient-text">交付物模板中心</h2>
+            <p class="text-center text-gray-400 mb-2">需求 → 设计 → 执行 → 验收 → 售后，每个阶段的标准交付文档，点击即可查看写作指南并下载 Word 模板</p>
+            <p class="text-center text-xs text-purple-300/80 mb-12">📐 对齐 51WORLD CMMI DEV V2.0 L3 标准化交付流程，告诉你每份文档该怎么写</p>
+            <div id="deliverableGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </section>
 
     <section id="generator" class="py-16 px-4">
         <div class="max-w-4xl mx-auto">
-            <h2 class="text-4xl font-bold mb-12 text-center gradient-text">智能生成工具</h2>
+            <h2 class="text-4xl font-bold mb-12 text-center gradient-text">方案生成工具</h2>
             <div class="bg-slate-800/60 border border-purple-500/20 rounded-2xl p-8">
                 <div class="mb-6">
                     <label class="block text-sm font-semibold mb-3">① 描述您的需求（智能解析）</label>
@@ -81,28 +96,30 @@
                     <label class="block text-sm font-semibold mb-3">③ 选择生成类型</label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="genType"></div>
                 </div>
-                <div class="mb-8">
-                    <label class="block text-sm font-semibold mb-3">④ 选择版本</label>
-                    <div class="flex gap-3">
-                        <label class="flex-1 cursor-pointer"><input type="radio" name="ver" value="脱敏版" checked class="peer hidden"><div class="border border-slate-600 peer-checked:border-purple-500 peer-checked:bg-purple-500/10 rounded-lg px-4 py-3 text-center transition">🌍 脱敏版（对外）</div></label>
-                        <label class="flex-1 cursor-pointer"><input type="radio" name="ver" value="涉密版" class="peer hidden"><div class="border border-slate-600 peer-checked:border-pink-500 peer-checked:bg-pink-500/10 rounded-lg px-4 py-3 text-center transition">🔐 涉密版（内部）</div></label>
-                    </div>
-                </div>
                 <button id="genBtn" onclick="generate()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-4 rounded-lg font-bold text-lg transition">✨ 一键生成并下载</button>
                 <div id="genResult" class="mt-6"></div>
             </div>
         </div>
     </section>
 
+    <section id="integrations" class="py-16 px-4 bg-slate-800/40">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-4xl font-bold mb-4 text-center gradient-text">生态对接（规划中）</h2>
+            <p class="text-center text-gray-400 mb-12">以园区方案为基础盘，打通报价、设计、原型全链路，方案产出后一键流转到下游平台</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="integrationGrid"></div>
+            <p class="text-center text-xs text-gray-500 mt-8">如需接入，请提供目标平台的访问地址与接口文档，我们将完成对接联调。</p>
+        </div>
+    </section>
+
     <div id="parkModal" class="modal" onclick="if(event.target===this)this.classList.remove('active')">
-        <div class="bg-slate-800 border border-purple-500/30 rounded-2xl p-8 max-w-lg w-full">
+        <div class="bg-slate-800 border border-purple-500/30 rounded-2xl p-8 max-w-2xl w-full max-h-[88vh] overflow-y-auto">
             <div id="modalContent"></div>
             <button onclick="document.getElementById('parkModal').classList.remove('active')" class="mt-6 w-full bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition">关闭</button>
         </div>
     </div>
 
     <footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
-        <p>🎯 园区Skill智能方案生成平台 v2.0.0 · 15个园区 · 100+资源 · 30+环节 · 50+交付物</p>
+        <p>🎯 园区Skill智能方案生成平台 v2.4.0 · 15个园区 · 5阶段18份标准交付文档模板 · 全链路驾驶舱</p>
         <p class="text-xs mt-2">完整版后端：真实 Word/PPT/Excel 文档生成</p>
     </footer>
 
@@ -123,11 +140,6 @@
             {id:'smart-realestate',icon:'🏘️',name:'智慧地产',desc:'地产全生命周期管理',res:2,tag:'涉密版',modules:['项目管理','销售管理','物业管理','客户服务']},
             {id:'smart-park-public',icon:'🌳',name:'智慧公园',desc:'生态保护和访客管理',res:2,tag:'脱敏版',modules:['生态保护','访客管理','设施管理','数据分析']},
             {id:'campus-construction',icon:'🎓',name:'校园建设方案',desc:'校园建设专项方案',res:3,tag:'脱敏版',modules:['基础设施','教育系统','管理平台','一体化方案']}
-        ];
-        const phases = [
-            {icon:'📋',name:'售前阶段',color:'purple',steps:[['需求调研','1-2周'],['方案设计','2-3周'],['商务洽谈','1-2周'],['签约启动','3-5天']],deliv:['需求分析报告','解决方案说明书','商务提案','合同文件']},
-            {icon:'🔨',name:'售中阶段',color:'blue',steps:[['项目启动','1周'],['详细设计','2-4周'],['开发集成','4-8周'],['测试优化','2-4周'],['培训文档','1-2周']],deliv:['项目计划书','详细设计文档','测试报告','培训手册']},
-            {icon:'🚀',name:'交付阶段',color:'green',steps:[['上线准备','1周'],['部署上线','1-3天'],['试运行支持','2-4周'],['验收总结','1周'],['运维优化','1年+']],deliv:['部署文档','验收报告','运维手册','服务计划']}
         ];
         // type -> [显示名, 后端endpoint, 扩展名]
         const genTypes = [
@@ -150,17 +162,92 @@
                 </div>`).join('');
             document.getElementById('genPark').innerHTML = parks.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
         }
-        function renderPhases(){
-            document.getElementById('phaseGrid').innerHTML = phases.map(ph=>`
-                <div class="bg-${ph.color}-500/10 border border-${ph.color}-500/30 rounded-xl p-8">
-                    <div class="text-3xl mb-4">${ph.icon}</div>
-                    <h3 class="text-2xl font-bold mb-6 text-${ph.color}-300">${ph.name}</h3>
-                    <div class="space-y-4">${ph.steps.map(s=>`<div class="timeline-item"><div class="font-semibold">${s[0]}</div><div class="text-xs text-gray-400">${s[1]}</div></div>`).join('')}</div>
-                    <div class="mt-8 pt-6 border-t border-${ph.color}-500/20"><div class="text-sm font-semibold mb-3">交付物:</div><ul class="text-xs text-gray-400 space-y-1">${ph.deliv.map(d=>`<li>✓ ${d}</li>`).join('')}</ul></div>
-                </div>`).join('');
+        function renderDeliverables(){
+            const grid = document.getElementById('deliverableGrid');
+            if(!grid) return;
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-8">正在加载交付物模板…</div>';
+            fetch('/api/deliverables').then(r=>r.json()).then(stages=>{
+                window._deliverables = {};
+                stages.forEach(st=> st.items.forEach(it=> window._deliverables[it.key]=it));
+                grid.innerHTML = stages.map(st=>`
+                    <div class="bg-${st.color}-500/10 border border-${st.color}-500/30 rounded-xl p-6 flex flex-col">
+                        <div class="flex items-center gap-2 mb-1"><span class="text-3xl">${st.icon}</span><h3 class="text-2xl font-bold text-${st.color}-300">${st.stage}</h3></div>
+                        <p class="text-xs text-gray-400 mb-4">${st.desc}　·　${st.items.length}份文档</p>
+                        <div class="space-y-2">${st.items.map(it=>`
+                            <button onclick="showTemplate('${it.key}')" class="w-full text-left bg-slate-800/60 hover:bg-${st.color}-500/15 border border-slate-700 hover:border-${st.color}-500/40 rounded-lg px-3 py-2.5 transition group">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-gray-100 text-sm">${it.icon} ${it.name}</span>
+                                    <span class="text-[10px] text-${st.color}-300 opacity-0 group-hover:opacity-100 transition">查看 →</span>
+                                </div>
+                                <div class="text-[11px] text-gray-400 mt-1 line-clamp-1">${it.purpose}</div>
+                            </button>`).join('')}</div>
+                    </div>`).join('');
+            }).catch(e=>{ grid.innerHTML = '<div class="col-span-full text-center text-red-400 py-8">加载失败：'+e.message+'</div>'; });
+        }
+        function escTpl(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+        function showTemplate(key){
+            const it = (window._deliverables||{})[key];
+            if(!it) return;
+            const html = `
+                <div class="flex items-center gap-3 mb-1"><span class="text-4xl">${it.icon}</span><div>
+                    <h3 class="text-2xl font-bold text-purple-200">${escTpl(it.name)}</h3>
+                    <div class="text-xs text-gray-400">${escTpl(it.stage||'')} · ${escTpl(it.phase)}</div></div></div>
+                <div class="mt-4 p-3 rounded-lg bg-slate-900/60 border border-slate-700">
+                    <div class="text-sm text-gray-200"><span class="text-purple-300 font-semibold">用途：</span>${escTpl(it.purpose)}</div>
+                    <div class="text-sm text-gray-200 mt-1"><span class="text-purple-300 font-semibold">读者：</span>${escTpl(it.audience)}</div>
+                    ${it.source?`<div class="text-[11px] text-gray-500 mt-1">参考：${escTpl(it.source)}（51WORLD 真实模板库）</div>`:''}
+                </div>
+                <div class="mt-4">
+                    <div class="text-sm font-semibold text-amber-300 mb-2">✍️ 写作要点</div>
+                    <ul class="space-y-1">${(it.tips||[]).map(t=>`<li class="text-xs text-gray-300 flex gap-2"><span class="text-amber-400">▸</span>${escTpl(t)}</li>`).join('')}</ul>
+                </div>
+                <div class="mt-4">
+                    <div class="text-sm font-semibold text-cyan-300 mb-2">📑 标准目录与写法</div>
+                    <div class="space-y-2">${(it.outline||[]).map(sec=>`
+                        <div class="bg-slate-900/40 border border-slate-700 rounded-lg p-3">
+                            <div class="text-sm font-semibold text-gray-100">${escTpl(sec.section)}</div>
+                            ${sec.guide?`<div class="text-[11px] text-purple-300/90 mt-1">💡 ${escTpl(sec.guide)}</div>`:''}
+                            <div class="mt-1 flex flex-wrap gap-1">${(sec.points||[]).map(pt=>`<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/60 text-gray-300">${escTpl(pt)}</span>`).join('')}</div>
+                        </div>`).join('')}</div>
+                </div>
+                <button onclick="downloadTemplate('${key}', this)" class="mt-5 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-4 py-3 rounded-lg font-bold transition">⬇️ 下载 Word 模板（含写作指引）</button>`;
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('parkModal').classList.add('active');
+        }
+        async function downloadTemplate(key, btn){
+            const old = btn.textContent; btn.disabled=true; btn.textContent='⏳ 生成中…';
+            try{
+                const r = await fetch('/api/generate/template',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+                if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.error||('HTTP '+r.status)); }
+                const blob = await r.blob();
+                const it = (window._deliverables||{})[key]||{name:'模板'};
+                const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=it.name+'-模板.docx';
+                document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+                btn.textContent='✅ 已下载'; setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1800);
+            }catch(e){ btn.textContent='❌ '+e.message; setTimeout(()=>{btn.textContent=old; btn.disabled=false;},2500); }
         }
         function renderGenTypes(){
             document.getElementById('genType').innerHTML = genTypes.map(t=>`<button data-t="${t[0]}" onclick="pickType('${t[0]}')" class="gt border border-slate-600 rounded-lg px-3 py-3 text-sm transition ${t[0]===selectedType?'border-purple-500 bg-purple-500/10':''}">${t[1]}</button>`).join('');
+        }
+        const integrations = [
+            {icon:'💰',name:'报价平台',color:'amber',desc:'方案功能模块自动映射分项报价，一键生成投标报价单与成本测算。',cap:['功能-报价映射','分项明细生成','成本测算联动']},
+            {icon:'🎨',name:'UI设计平台',color:'pink',desc:'依据行业方案风格联动 UI 设计平台，快速产出界面视觉与设计规范。',cap:['风格联动','视觉稿产出','设计规范输出']},
+            {icon:'🧩',name:'原型设计平台',color:'cyan',desc:'方案场景结构直接生成交互原型，加速客户评审与需求确认。',cap:['场景转原型','交互流程','在线评审']}
+        ];
+        function renderIntegrations(){
+            const el = document.getElementById('integrationGrid');
+            if(!el) return;
+            el.innerHTML = integrations.map(it=>`
+                <div class="bg-${it.color}-500/10 border border-${it.color}-500/30 rounded-xl p-6 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="text-4xl">${it.icon}</div>
+                        <span class="text-[11px] px-2 py-1 rounded-full bg-slate-700 text-gray-300">规划中</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-${it.color}-300">${it.name}</h3>
+                    <p class="text-sm text-gray-400 mb-4 flex-1">${it.desc}</p>
+                    <div class="space-y-2">${it.cap.map(c=>`<div class="text-[12px] text-gray-300 flex items-center gap-2"><span class="text-${it.color}-300">▸</span>${c}</div>`).join('')}</div>
+                    <button onclick="alert('「${it.name}」对接规划中。请提供目标平台访问地址与接口文档，我们将完成对接联调。')" class="mt-5 text-sm px-4 py-2 rounded-lg bg-${it.color}-600/80 hover:bg-${it.color}-500 transition font-semibold">了解对接</button>
+                </div>`).join('');
         }
         function pickType(t){ selectedType=t; renderGenTypes(); }
 
@@ -204,14 +291,41 @@
                 <p class="text-gray-400 text-center mb-6">${p.desc}</p>
                 <div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div class="bg-slate-900 rounded-lg p-3 text-center">📁 ${p.res} 个资源</div><div class="bg-slate-900 rounded-lg p-3 text-center">✅ ${p.tag}</div></div>
                 <div class="text-sm font-semibold mb-2">核心功能模块:</div>
-                <div class="flex flex-wrap gap-2">${p.modules.map(m=>`<span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs">${m}</span>`).join('')}</div>`;
+                <div class="flex flex-wrap gap-2 mb-6">${p.modules.map(m=>`<span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs">${m}</span>`).join('')}</div>
+                <div class="text-sm font-semibold mb-2 flex items-center gap-2">📂 板块资料 <span class="text-xs text-gray-500">(可在线预览/下载)</span></div>
+                <div id="materialList" class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在加载资料...</div>`;
             document.getElementById('parkModal').classList.add('active');
+            loadMaterials(id);
+        }
+        const kindIcon = { '解决方案':'📊', '案例卡':'🗂️', '功能介绍':'🧩', '一页纸':'📄', '资料':'📎' };
+        async function loadMaterials(id){
+            const box = document.getElementById('materialList');
+            try {
+                const resp = await fetch(`/api/materials/${id}`);
+                const j = await resp.json();
+                if(!j.files || j.files.length===0){
+                    box.innerHTML = '<div class="text-xs text-gray-500">该板块暂未上传可分享资料（涉密资料仅限内部线下获取）。</div>';
+                    return;
+                }
+                box.innerHTML = `<div class="space-y-2">${j.files.map(f=>`
+                    <div class="flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2">
+                        <div class="min-w-0">
+                            <div class="text-xs text-gray-200 truncate" title="${f.name}">${kindIcon[f.kind]||'📎'} ${f.name}</div>
+                            <div class="text-[11px] text-gray-500">${f.kind} · ${f.ext.toUpperCase()} · ${f.sizeMB}MB</div>
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            ${f.ext==='pdf'?`<a href="${f.url}" target="_blank" class="text-[11px] px-2 py-1 rounded bg-blue-600/80 hover:bg-blue-500 transition">预览</a>`:''}
+                            <a href="${f.url}" download class="text-[11px] px-2 py-1 rounded bg-purple-600/80 hover:bg-purple-500 transition">下载</a>
+                        </div>
+                    </div>`).join('')}</div>`;
+            } catch(err){
+                box.innerHTML = `<div class="text-xs text-red-400">资料加载失败：${err.message}</div>`;
+            }
         }
 
         async function generate(){
             const parkId = document.getElementById('genPark').value;
             const p = parks.find(x=>x.id===parkId);
-            const ver = document.querySelector('input[name=ver]:checked').value;
             const requirement = document.getElementById('genReq').value.trim();
             const t = genTypes.find(t=>t[0]===selectedType);
             const typeName = t[1], endpoint = t[2], ext = t[3];
@@ -219,9 +333,9 @@
             const btn = document.getElementById('genBtn');
             btn.disabled = true; btn.classList.add('opacity-60');
             const tip = requirement ? '（按需求定制）' : '';
-            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-300 flex items-center gap-3"><span class="spinner"></span> 正在为「${p.name}」生成${typeName}（${ver}）${tip}并下载...</div>`;
+            r.innerHTML = `<div class="bg-slate-900 border border-purple-500/30 rounded-lg p-4 text-gray-300 flex items-center gap-3"><span class="spinner"></span> 正在为「${p.name}」生成${typeName}${tip}并下载...</div>`;
             try {
-                const payload = { parkId, version: ver };
+                const payload = { parkId };
                 if (requirement) payload.requirement = requirement;
                 const resp = await fetch(`/api/generate/${endpoint}`, {
                     method:'POST',
@@ -234,7 +348,7 @@
                     throw new Error(msg);
                 }
                 const blob = await resp.blob();
-                const fileName = `${p.name}-${typeName.replace(/^.. /,'')}-${ver}.${ext}`;
+                const fileName = `${p.name}-${typeName.replace(/^.. /,'')}.${ext}`;
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; a.download = fileName;
@@ -244,7 +358,7 @@
                 const sizeKB = (blob.size/1024).toFixed(1);
                 r.innerHTML = `<div class="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
                     <div class="font-bold text-green-300 mb-3">✅ 生成成功，文件已开始下载！</div>
-                    <div class="text-sm text-gray-300 mb-3">${p.icon} ${p.name} · ${ver}</div>
+                    <div class="text-sm text-gray-300 mb-3">${p.icon} ${p.name}</div>
                     <div class="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2"><span class="text-sm">📄 ${fileName}</span><span class="text-xs text-purple-400">${sizeKB} KB</span></div>
                     <p class="text-xs text-gray-500 mt-3">若浏览器未自动下载，请检查弹窗拦截设置。</p>
                 </div>`;
@@ -258,7 +372,7 @@
                 btn.disabled = false; btn.classList.remove('opacity-60');
             }
         }
-        renderParks(); renderPhases(); renderGenTypes();
+        renderParks(); renderDeliverables(); renderGenTypes(); renderIntegrations();
     </script>
 </body>
 </html>
