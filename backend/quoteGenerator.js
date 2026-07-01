@@ -165,12 +165,12 @@ function computeQuote({ selections = [] } = {}) {
 
 const KEYWORD_RULES = [
   { id: 'digital-twin-1', words: ['数字孪生', 'IOC', '可视化', '三维', '一张图', '驾驶舱', '智慧园区', '智慧校园', '智慧医院', '智慧城市', 'CIM', 'BIM', '孪生平台'] },
-  { id: 'digital-twin-2', words: ['城市底板', '大场景', '城市级', 'CIM', '底板还原'] },
+  { id: 'digital-twin-2', words: ['城市底板', '大场景', '城市级', 'CIM', '底板还原', '底板', '地图底座', '园区底座'] },
   { id: 'digital-twin-3', words: ['周边环境', '地面铺装', '园区环境', '建筑周边'] },
-  { id: 'digital-twin-4', words: ['外立面L3', '建筑外立面', '重点建筑'] },
+  { id: 'digital-twin-4', words: ['外立面L3', '建筑外立面', '重点建筑', '建筑', '楼栋', '楼宇外立面'] },
   { id: 'digital-twin-5', words: ['外立面L4', '精细外立面', '高精度外立面'] },
   { id: 'digital-twin-6', words: ['室内L2', '基础承重', '室内基础'] },
-  { id: 'digital-twin-7', words: ['室内L3', '室内还原', '楼层', '室内空间'] },
+  { id: 'digital-twin-7', words: ['室内L3', '室内还原', '楼层', '室内空间', '室内'] },
   { id: 'digital-twin-8', words: ['展厅', 'L4', '室内展厅', '标杆展厅'] },
   { id: 'digital-twin-9', words: ['设备还原', '设备模型', '关键设备'] },
   { id: 'digital-twin-10', words: ['夜景', '灯光', '楼宇夜景'] },
