@@ -20,7 +20,7 @@ const { parseRequirement } = require('./requirementParser');
 const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, buildBrandPreview } = require('./journeyEngine');
 const { fetchTenderRadar } = require('./tenderRadar');
 const { listSections, industryPresets, TAX_RATE } = require('../data/pricing');
-const { generateQuoteBuffer, computeQuote } = require('./quoteGenerator');
+const { generateQuoteBuffer, computeQuote, recommendQuoteSelections } = require('./quoteGenerator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -93,6 +93,18 @@ app.post('/api/quote/compute', (req, res) => {
   } catch (e) {
     console.error('quote/compute失败:', e);
     res.status(500).json({ ok: false, error: '报价计算失败', detail: e.message });
+  }
+});
+
+// 根据自然语言需求推荐报价项（仅推荐，不默认锁定；前端仍可删改）
+app.post('/api/quote/recommend', (req, res) => {
+  try {
+    const result = recommendQuoteSelections(req.body || {});
+    if (!result.ok) return res.status(400).json(result);
+    res.json(result);
+  } catch (e) {
+    console.error('quote/recommend失败:', e);
+    res.status(500).json({ ok: false, error: '需求生成报价失败', detail: e.message });
   }
 });
 

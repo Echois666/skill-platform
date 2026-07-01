@@ -187,14 +187,26 @@
     <div class="text-center mb-8">
       <span class="text-4xl">💰</span>
       <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段五 · V1.0 产品报价生成器</h2>
-      <p class="text-gray-400">直接使用 51WORLD V1.0 产品报价清单：勾选板块/模块、填写数量，实时计算含税报价并导出同格式 Excel。</p>
-      <p class="text-xs text-amber-200/80 mt-2">说明：产品条目来自 V1.0 报价表；行业套餐是按行业场景做的推荐映射，不是报价表原生字段；选择“不预选”会清空全部条目。</p>
+      <p class="text-gray-400">直接使用 51WORLD V1.0 产品报价清单：可手动勾选，也可导入/输入需求后自动推荐报价项，最终仍可手动删改并导出 Excel。</p>
+      <p class="text-xs text-amber-200/80 mt-2">说明：产品条目来自 V1.0 报价表；需求推荐依据关键词匹配生成，不再使用行业套餐预选。</p>
     </div>
     <div class="bg-slate-800/60 border border-green-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div><label class="block text-sm font-semibold mb-2">项目名称（选填）</label><input id="quoteProject" placeholder="如：某某产业园数字孪生项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
         <div><label class="block text-sm font-semibold mb-2">客户主体（选填）</label><input id="quoteClient" placeholder="如：某某集团" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
-        <div><label class="block text-sm font-semibold mb-2">按行业套餐预选</label><select id="quotePreset" onchange="applyQuotePreset()" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+      </div>
+      <div class="mb-5 bg-slate-900/50 border border-amber-500/20 rounded-xl p-4">
+        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end mb-3">
+          <div>
+            <label class="block text-sm font-semibold mb-2">导入需求文件（可选）</label>
+            <input id="quoteFile" type="file" accept=".txt,.md,.csv,.json" onchange="importQuoteFile()" class="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-amber-600 file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-amber-500">
+            <div class="text-[11px] text-gray-500 mt-1">支持 txt / md / csv / json 等文本文件；Word/PDF 可先复制正文到下方输入框。</div>
+          </div>
+          <button onclick="clearQuoteSelections()" class="ghost-btn px-4 py-2.5 rounded-lg font-bold transition">清空已选</button>
+        </div>
+        <label class="block text-sm font-semibold mb-2">需求描述</label>
+        <textarea id="quoteRequirement" rows="4" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-3" placeholder="例如：建设智慧园区数字孪生IOC，接入视频监控、门禁停车、能耗双碳、设备运维、招商运营，并需要AI智能问答助手。"></textarea>
+        <button onclick="generateQuoteFromRequirement()" id="quoteAiBtn" class="mt-3 w-full gold-btn px-4 py-3 rounded-lg font-bold transition">🧠 根据需求生成报价项</button>
       </div>
       <div id="quoteSections" class="space-y-4"></div>
       <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/60 border border-amber-500/30 rounded-xl p-5">
@@ -512,13 +524,11 @@ function findQuoteItem(id){
 }
 function initQuoteCenter(){
   const wrap = document.getElementById('quoteSections');
-  const preset = document.getElementById('quotePreset');
-  if(!wrap || !preset) return;
+  if(!wrap) return;
   if(!PRICING || !PRICING.ok){
     wrap.innerHTML = '<div class="text-red-400 text-sm">报价数据加载失败，请刷新页面重试。</div>';
     return;
   }
-  preset.innerHTML = '<option value="">— 不预选 —</option>' + PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
   wrap.innerHTML = PRICING.sections.map(sec=>`
     <details class="bg-slate-900/40 border border-slate-700 rounded-xl overflow-hidden" ${sec.optional?'':'open'}>
       <summary class="cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-slate-800/60">
@@ -557,25 +567,66 @@ function setQuoteQty(id, val){
   if(ck) ck.checked = v>0;
   recomputeQuote();
 }
-function applyQuotePreset(){
-  const pid = document.getElementById('quotePreset').value;
-  const secIds = pid && PRICING && PRICING.presets ? (PRICING.presets[pid] || []) : [];
-  PRICING.sections.forEach(sec=>{
-    const on = secIds.includes(sec.id);
-    sec.items.forEach(it=>{
-      const ck=document.getElementById('qck_'+it.id), qi=document.getElementById('qqty_'+it.id);
-      if(on && it.type !== 'tiered'){
-        if(ck) ck.checked=true;
-        if(qi && it.type !== 'tiered') qi.value=1;
-        quoteQty[it.id]=1;
-      } else {
-        if(ck) ck.checked=false;
-        if(qi && it.type !== 'tiered') qi.value=0;
-        quoteQty[it.id]=0;
-      }
-    });
+function applyQuoteSelections(selections){
+  clearQuoteSelections(false);
+  (selections || []).forEach(sel=>{
+    const item = findQuoteItem(sel.id);
+    if(!item) return;
+    const qty = Math.max(1, +sel.qty || 1);
+    quoteQty[sel.id]=qty;
+    const ck=document.getElementById('qck_'+sel.id), qi=document.getElementById('qqty_'+sel.id);
+    if(ck) ck.checked=true;
+    if(qi && item.type !== 'tiered') qi.value=qty;
   });
   recomputeQuote();
+}
+function clearQuoteSelections(run=true){
+  Object.keys(quoteQty).forEach(k=>delete quoteQty[k]);
+  if(PRICING && PRICING.sections){
+    PRICING.sections.forEach(sec=>sec.items.forEach(it=>{
+      const ck=document.getElementById('qck_'+it.id), qi=document.getElementById('qqty_'+it.id);
+      if(ck) ck.checked=false;
+      if(qi && it.type !== 'tiered') qi.value=0;
+    }));
+  }
+  if(run) recomputeQuote();
+}
+async function importQuoteFile(){
+  const input=document.getElementById('quoteFile');
+  const file=input && input.files && input.files[0];
+  if(!file) return;
+  const box=document.getElementById('quoteResult');
+  try{
+    const text=await file.text();
+    if(!text.trim()) throw new Error('文件没有可读取的文本内容');
+    const area=document.getElementById('quoteRequirement');
+    area.value = (area.value.trim() ? area.value.trim() + '\n\n' : '') + text.trim();
+    box.innerHTML=`<div class="text-green-300 text-sm">✅ 已导入文件：${esc(file.name)}，可继续编辑需求后生成报价。</div>`;
+  }catch(e){
+    box.innerHTML=`<div class="text-red-400 text-sm">文件导入失败：${esc(e.message)}。目前建议导入 txt/md/csv/json，Word/PDF 可复制正文到输入框。</div>`;
+  }
+}
+async function generateQuoteFromRequirement(){
+  const btn=document.getElementById('quoteAiBtn'), box=document.getElementById('quoteResult');
+  const requirement=document.getElementById('quoteRequirement').value.trim();
+  if(!requirement){ box.innerHTML='<div class="text-amber-300 text-sm">请先输入需求描述，或导入文本需求文件。</div>'; return; }
+  const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ 正在分析需求...';
+  try{
+    const r=await fetch('/api/quote/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requirement})});
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error || '生成报价失败');
+    applyQuoteSelections(j.selections);
+    const top=(j.explain||[]).slice(0,8).map(x=>`<div class="text-xs text-gray-300">▸ ${esc(x.section)} / ${esc(x.category)} <span class="text-gray-500">命中：${esc((x.reasons||[]).join('、'))}</span></div>`).join('');
+    box.innerHTML=`<div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+      <div class="text-amber-200 font-bold text-sm mb-2">✅ 已根据需求推荐 ${j.count} 个报价项，含税合计 ${fmtMoney(j.taxed)}</div>
+      <div class="space-y-1">${top}</div>
+      <div class="text-[11px] text-gray-500 mt-2">推荐结果可继续手动取消勾选、调整数量后再导出 Excel。</div>
+    </div>`;
+  }catch(e){
+    box.innerHTML=`<div class="text-red-400 text-sm">需求生成报价失败：${esc(e.message)}</div>`;
+  }finally{
+    btn.disabled=false; btn.textContent=old;
+  }
 }
 let quoteTimer=null;
 function recomputeQuote(){

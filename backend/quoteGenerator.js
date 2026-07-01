@@ -163,4 +163,105 @@ function computeQuote({ selections = [] } = {}) {
   return { lines, subtotal: pretax, taxRate: TAX_RATE, taxed, count: lines.length };
 }
 
-module.exports = { generateQuoteBuffer, computeQuote };
+const KEYWORD_RULES = [
+  { id: 'digital-twin-1', words: ['数字孪生', 'IOC', '可视化', '三维', '一张图', '驾驶舱', '智慧园区', '智慧校园', '智慧医院', '智慧城市', 'CIM', 'BIM', '孪生平台'] },
+  { id: 'digital-twin-2', words: ['城市底板', '大场景', '城市级', 'CIM', '底板还原'] },
+  { id: 'digital-twin-3', words: ['周边环境', '地面铺装', '园区环境', '建筑周边'] },
+  { id: 'digital-twin-4', words: ['外立面L3', '建筑外立面', '重点建筑'] },
+  { id: 'digital-twin-5', words: ['外立面L4', '精细外立面', '高精度外立面'] },
+  { id: 'digital-twin-6', words: ['室内L2', '基础承重', '室内基础'] },
+  { id: 'digital-twin-7', words: ['室内L3', '室内还原', '楼层', '室内空间'] },
+  { id: 'digital-twin-8', words: ['展厅', 'L4', '室内展厅', '标杆展厅'] },
+  { id: 'digital-twin-9', words: ['设备还原', '设备模型', '关键设备'] },
+  { id: 'digital-twin-10', words: ['夜景', '灯光', '楼宇夜景'] },
+  { id: 'digital-twin-11', words: ['水晶体', '剖切', '透明楼宇'] },
+  { id: 'digital-twin-12', words: ['拆楼', '分层', '楼层拆解'] },
+  { id: 'iot-1', words: ['物联网', 'IoT', '传感器', '设备接入', '感知设备'] },
+  { id: 'iot-2', words: ['协议', '协议解析', 'Modbus', 'BACnet', 'OPC'] },
+  { id: 'iot-3', words: ['边缘计算', '边缘网关', '网关'] },
+  { id: 'iot-4', words: ['APP', '移动端', '手机端', '移动应用'] },
+  { id: 'data-platform-1', words: ['时序数据', '实时数据采集', '传感数据'] },
+  { id: 'data-platform-2', words: ['文件数据', '日志', '图片', '视频文件', '音视频'] },
+  { id: 'data-platform-3', words: ['流式计算', '流数据', '实时流'] },
+  { id: 'data-platform-4', words: ['实时计算', '实时汇总'] },
+  { id: 'data-platform-5', words: ['离线计算', '批量计算', '定时任务'] },
+  { id: 'data-platform-6', words: ['时序存储', '时序数据库'] },
+  { id: 'data-platform-7', words: ['结构化数据', '业务数据库'] },
+  { id: 'data-platform-8', words: ['文件存储', '对象存储'] },
+  { id: 'data-platform-9', words: ['消防', '机房消防'] },
+  { id: 'data-platform-10', words: ['信息化平台', '现有系统', '业务系统'] },
+  { id: 'data-platform-11', words: ['物业', '物业管理'] },
+  { id: 'data-platform-12', words: ['信息发布', '引导发布'] },
+  { id: 'data-platform-13', words: ['楼宇能效', '能效系统'] },
+  { id: 'data-platform-14', words: ['安防综合', '安防平台'] },
+  { id: 'data-platform-15', words: ['视频监控', '摄像头', '监控'] },
+  { id: 'data-platform-16', words: ['门禁', '出入口', '闸机', '通行'] },
+  { id: 'data-platform-17', words: ['访客', '一卡通'] },
+  { id: 'data-platform-18', words: ['停车', '车位'] },
+  { id: 'data-platform-19', words: ['空调', '新风'] },
+  { id: 'data-platform-20', words: ['照明'] },
+  { id: 'data-platform-21', words: ['入侵报警', '报警'] },
+  { id: 'data-platform-22', words: ['给排水', '水泵', '水位'] },
+  { id: 'data-platform-23', words: ['冷热源', '冷源', '热源'] },
+  { id: 'data-platform-24', words: ['变配电', '配电', '电力'] },
+  { id: 'carbon-1', words: ['碳源', '碳排放源'] },
+  { id: 'carbon-2', words: ['业态探测', '业态'] },
+  { id: 'carbon-3', words: ['区域碳', '碳计算', '碳核算'] },
+  { id: 'carbon-4', words: ['减碳措施', '减碳'] },
+  { id: 'carbon-5', words: ['碳趋势', '碳预测'] },
+  { id: 'carbon-6', words: ['降碳策略', '双碳', '低碳', '碳中和', 'ESG', '能源'] },
+  { id: 'ai-agent-1', words: ['自然语言', '语义交流', 'AI问答', '智能问答'] },
+  { id: 'ai-agent-2', words: ['Clonova', '大模型', '空间智算', '深度分析', 'AI助手', '智能体', 'Agent'] },
+  { id: 'ai-agent-3', words: ['数据训练', '模型训练', '知识库训练', '专属训练', 'RAG'] },
+  { id: 'ioc-1', words: ['综合态势', '总览', '运营态势'] },
+  { id: 'ioc-2', words: ['通行', '安防', '人车', '门禁'] },
+  { id: 'ioc-3', words: ['空间管理', '会议室', '办公空间'] },
+  { id: 'ioc-4', words: ['设备运维', '设备管理', '巡检', '工单'] },
+  { id: 'ioc-5', words: ['能效', '能耗', '双碳'] },
+  { id: 'ioc-6', words: ['信息服务', '服务门户'] },
+  { id: 'ioc-7', words: ['数字展厅', '企业展厅', '展厅'] },
+  { id: 'ioc-8', words: ['招商', '物业运营', '租赁', '去化'] }
+];
+
+function normalizeText(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function recommendQuoteSelections({ requirement = '', limit = 24 } = {}) {
+  const text = normalizeText(requirement);
+  if (!text) return { ok: false, error: '请输入需求描述或先导入需求文件内容' };
+  const scores = new Map();
+  const reasons = new Map();
+  KEYWORD_RULES.forEach(rule => {
+    rule.words.forEach(w => {
+      if (text.toLowerCase().includes(String(w).toLowerCase())) {
+        scores.set(rule.id, (scores.get(rule.id) || 0) + 1);
+        if (!reasons.has(rule.id)) reasons.set(rule.id, []);
+        reasons.get(rule.id).push(w);
+      }
+    });
+  });
+  const generalDigitalTwin = /园区|校园|医院|楼宇|城市|景区|场馆|物流|乡村|林业|地产|公园|化工|平台|建设|方案/.test(text);
+  if (generalDigitalTwin && !scores.has('digital-twin-1')) {
+    scores.set('digital-twin-1', 1);
+    reasons.set('digital-twin-1', ['行业数字化/平台建设']);
+  }
+  const selections = Array.from(scores.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, Math.max(1, Math.min(60, Number(limit) || 24)))
+    .map(([id]) => ({ id, qty: 1 }));
+  const quote = computeQuote({ selections });
+  const explain = selections.map(sel => {
+    const found = getItem(sel.id);
+    return {
+      id: sel.id,
+      section: found ? found.section.name : '',
+      content: found ? found.item.content : '',
+      category: found ? found.item.category : '',
+      reasons: reasons.get(sel.id) || []
+    };
+  });
+  return { ok: true, selections, explain, ...quote };
+}
+
+module.exports = { generateQuoteBuffer, computeQuote, recommendQuoteSelections };
