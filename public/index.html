@@ -495,8 +495,17 @@
                 const resp=await fetch('/api/quote/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requirement})});
                 const j=await resp.json(); if(!j.ok) throw new Error(j.error||'生成报价失败');
                 applyQuoteSelections(j.selections);
-                const top=(j.explain||[]).slice(0,8).map(x=>`<div class="text-xs text-gray-300">▸ ${escQ(x.section)} / ${escQ(x.category)} <span class="text-gray-500">命中：${escQ((x.reasons||[]).join('、'))}</span></div>`).join('');
-                box.innerHTML=`<div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4"><div class="text-amber-200 font-bold text-sm mb-2">✅ 已根据需求推荐 ${j.count} 个报价项，含税合计 ${fmtMoney(j.taxed)}</div>${top}<div class="text-[11px] text-gray-500 mt-2">推荐结果可继续手动取消勾选、调整数量后再导出 Excel。</div></div>`;
+                const top=(j.explain||[]).map(x=>`
+                    <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="text-sm font-semibold text-amber-100">▸ ${escQ(x.section)} / ${escQ(x.category)}</div>
+                            <div class="text-xs text-amber-300">数量：${escQ(x.qty)} ${escQ(x.unit||'')} · ${fmtMoney(x.amount)}</div>
+                        </div>
+                        <div class="text-xs text-gray-300 mt-1">对应需求：${escQ(x.demandPart||'')}</div>
+                        <div class="text-xs text-gray-400 mt-1">选择原因：${escQ(x.why||'')}</div>
+                        <div class="text-xs text-gray-500 mt-1">数量依据：${escQ(x.qtyReason||'')}</div>
+                    </div>`).join('');
+                box.innerHTML=`<div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4"><div class="text-amber-200 font-bold text-sm mb-2">✅ 已根据需求推荐 ${j.count} 个报价项，含税合计 ${fmtMoney(j.taxed)}</div><div class="space-y-2 max-h-[420px] overflow-y-auto pr-1">${top}</div><div class="text-[11px] text-gray-500 mt-2">推荐结果可继续手动取消勾选、调整数量后再导出 Excel。</div></div>`;
             }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">需求生成报价失败：${escQ(e.message)}</div>`; }
             finally{ btn.disabled=false; btn.textContent=old; }
         }

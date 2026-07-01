@@ -227,6 +227,59 @@ function normalizeText(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+function unique(arr) {
+  return Array.from(new Set((arr || []).filter(Boolean)));
+}
+
+function demandSnippet(text, words) {
+  const source = normalizeText(text);
+  const hit = (words || []).find(w => source.toLowerCase().includes(String(w).toLowerCase()));
+  if (!hit) return source.slice(0, 80);
+  const idx = source.toLowerCase().indexOf(String(hit).toLowerCase());
+  const start = Math.max(0, idx - 24);
+  const end = Math.min(source.length, idx + String(hit).length + 36);
+  return (start > 0 ? '…' : '') + source.slice(start, end) + (end < source.length ? '…' : '');
+}
+
+function firstNumber(text, patterns) {
+  for (const re of patterns) {
+    const m = String(text || '').match(re);
+    if (m) {
+      const n = Number(m[1] || m[2]);
+      if (Number.isFinite(n) && n > 0) return Math.min(Math.round(n), 999999);
+    }
+  }
+  return null;
+}
+
+function inferQty(item, text) {
+  const unit = item.unit || '';
+  const scope = `${item.content || ''} ${item.category || ''} ${item.desc || ''}`;
+  if (unit.includes('元/栋')) {
+    const n = firstNumber(text, [/(\d+)\s*(?:栋|幢)/, /(?:建筑|楼宇)[^\d]{0,8}(\d+)\s*(?:个|栋|幢)/]);
+    if (n) return { qty: n, qtyReason: `需求中识别到 ${n} 栋/幢建筑，按 ${n} 计量` };
+  }
+  if (unit.includes('元/个')) {
+    const n = /设备/.test(scope)
+      ? firstNumber(text, [/(\d+)\s*(?:个|台|套)\s*(?:设备|关键设备)/, /(?:设备|关键设备)[^\d]{0,8}(\d+)\s*(?:个|台|套)/])
+      : firstNumber(text, [/(\d+)\s*(?:个|台)/]);
+    if (n) return { qty: n, qtyReason: `需求中识别到数量 ${n}，按 ${n} 计量` };
+  }
+  if (unit.includes('元/m²') || unit.includes('元/10W方')) {
+    const n = firstNumber(text, [/(\d+)\s*(?:平方米|平米|m²|㎡)/i, /面积[^\d]{0,8}(\d+)/]);
+    if (n && unit.includes('元/m²')) return { qty: n, qtyReason: `需求中识别到面积 ${n}㎡，按面积计量` };
+    if (n && unit.includes('元/10W方')) {
+      const blocks = Math.max(1, Math.ceil(n / 100000));
+      return { qty: blocks, qtyReason: `需求中识别到面积 ${n}㎡，按 ${blocks} 个10万方计量` };
+    }
+  }
+  if (unit.includes('元/套')) {
+    const n = firstNumber(text, [new RegExp(`${item.category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^\\d]{0,8}(\\d+)\\s*套`)]);
+    if (n) return { qty: n, qtyReason: `需求中识别到 ${item.category} ${n} 套，按 ${n} 计量` };
+  }
+  return { qty: 1, qtyReason: '需求命中该能力，未识别到明确数量，先按 1 套/项估列' };
+}
+
 function recommendQuoteSelections({ requirement = '', limit = 24 } = {}) {
   const text = normalizeText(requirement);
   if (!text) return { ok: false, error: '请输入需求描述或先导入需求文件内容' };
@@ -249,16 +302,28 @@ function recommendQuoteSelections({ requirement = '', limit = 24 } = {}) {
   const selections = Array.from(scores.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, Math.max(1, Math.min(60, Number(limit) || 24)))
-    .map(([id]) => ({ id, qty: 1 }));
+    .map(([id]) => {
+      const found = getItem(id);
+      const q = found ? inferQty(found.item, text) : { qty: 1, qtyReason: '默认按 1 项估列' };
+      return { id, qty: q.qty, qtyReason: q.qtyReason };
+    });
   const quote = computeQuote({ selections });
   const explain = selections.map(sel => {
     const found = getItem(sel.id);
+    const rs = unique(reasons.get(sel.id) || []);
+    const amountLine = quote.lines.find(x => x.category === (found && found.item.category) && x.content === (found && found.item.content));
     return {
       id: sel.id,
+      qty: sel.qty,
       section: found ? found.section.name : '',
       content: found ? found.item.content : '',
       category: found ? found.item.category : '',
-      reasons: reasons.get(sel.id) || []
+      unit: found ? found.item.unit : '',
+      amount: amountLine ? amountLine.amount : 0,
+      reasons: rs,
+      demandPart: demandSnippet(text, rs),
+      qtyReason: sel.qtyReason || '默认按 1 项估列',
+      why: found ? `需求中出现「${rs.join('、') || '相关能力'}」，对应报价表中的「${found.section.name} / ${found.item.category}」。` : ''
     };
   });
   return { ok: true, selections, explain, ...quote };
