@@ -62,8 +62,8 @@ async function generateQuoteBuffer({ selections = [], projectName, client } = {}
   };
 
   sections.forEach(sec => {
-    // 只输出包含选中项的板块；必选板块即便没选也输出基础项
-    const chosen = sec.items.filter(it => qtyMap[it.id] > 0 || (it.required && !sec.optional));
+    // 只输出用户实际勾选（数量>0）的项，不默认计入任何必选项
+    const chosen = sec.items.filter(it => qtyMap[it.id] > 0);
     if (chosen.length === 0) return;
 
     // 板块标题行
@@ -75,7 +75,7 @@ async function generateQuoteBuffer({ selections = [], projectName, client } = {}
 
     let secSubtotal = 0;
     chosen.forEach(it => {
-      const qty = qtyMap[it.id] != null ? qtyMap[it.id] : (it.required ? 1 : 0);
+      const qty = qtyMap[it.id] != null ? qtyMap[it.id] : 0;
       let priceCell, subtotal = 0, qtyDisp = qty;
       if (it.type === 'tiered') {
         priceCell = it.priceText;
@@ -114,12 +114,13 @@ async function generateQuoteBuffer({ selections = [], projectName, client } = {}
     setRow(['未选择任何产品项，请在报价生成器中勾选板块/产品并填写数量后重新生成。'], { bold: true });
   }
 
-  // ===== 含税总计 =====
-  const taxed = Math.round(grandTotal * (1 + TAX_RATE));
+  // ===== 含税总计（各项报价已含 6% 税，直接汇总即为含税总价） =====
+  const taxIncl = grandTotal;
+  const pretax = Math.round(grandTotal / (1 + TAX_RATE));
   ws.mergeCells(`A${r}:E${r}`);
   const totalRow = ws.getRow(r);
-  totalRow.getCell(1).value = `合同含税价格总计（税点${(TAX_RATE * 100).toFixed(0)}%，不含运营服务费）：`;
-  totalRow.getCell(6).value = taxed;
+  totalRow.getCell(1).value = `合同含税价格总计（已含税点${(TAX_RATE * 100).toFixed(0)}%，不含运营服务费）：`;
+  totalRow.getCell(6).value = taxIncl;
   totalRow.getCell(6).numFmt = '#,##0';
   totalRow.eachCell(cell => {
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTAL_FILL } };
@@ -131,7 +132,7 @@ async function generateQuoteBuffer({ selections = [], projectName, client } = {}
 
   // 备注
   ws.mergeCells(`A${r}:G${r}`);
-  setRow([`说明：税前合计 ${grandTotal.toLocaleString()} 元；含税(${(TAX_RATE * 100).toFixed(0)}%)合计 ${taxed.toLocaleString()} 元。阶梯计价项（标"按方案"）以实际工程量结算，本表按起步基准估列。`],
+  setRow([`说明：各项报价均为含税(${(TAX_RATE * 100).toFixed(0)}%)价。含税合计 ${taxIncl.toLocaleString()} 元，其中不含税 ${pretax.toLocaleString()} 元、税额 ${(taxIncl - pretax).toLocaleString()} 元。阶梯计价项（标"按方案"）以实际工程量结算，本表按起步基准估列。`],
     { bold: false });
   ws.getCell(`A${r - 1}`).font = { italic: true, size: 10, color: { argb: 'FF94A3B8' } };
 
@@ -148,17 +149,18 @@ function computeQuote({ selections = [] } = {}) {
   sections.forEach(sec => {
     sec.items.forEach(it => {
       const qty = qtyMap[it.id];
-      const include = qty > 0 || (it.required && !sec.optional && qty == null);
-      if (!include) return;
+      if (!(qty > 0)) return;   // 仅统计用户实际勾选的项，不默认计入必选项
       let amount = 0, qtyDisp = qty;
       if (it.type === 'tiered') { amount = it.tierExample || 0; qtyDisp = '按方案'; }
-      else { amount = (it.price || 0) * (qty || (it.required ? 1 : 0)); }
+      else { amount = (it.price || 0) * qty; }
       subtotalSum += amount;
       lines.push({ section: sec.name, content: it.content, category: it.category, unit: it.unit, qty: qtyDisp, amount, tiered: it.type === 'tiered' });
     });
   });
-  const taxed = Math.round(subtotalSum * (1 + TAX_RATE));
-  return { lines, subtotal: subtotalSum, taxRate: TAX_RATE, taxed, count: lines.length };
+  // 各项报价已含 6% 税：含税合计即为汇总值，税前由含税反算
+  const taxed = subtotalSum;
+  const pretax = Math.round(subtotalSum / (1 + TAX_RATE));
+  return { lines, subtotal: pretax, taxRate: TAX_RATE, taxed, count: lines.length };
 }
 
 module.exports = { generateQuoteBuffer, computeQuote };

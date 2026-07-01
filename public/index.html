@@ -422,16 +422,14 @@
                     </summary>
                     <div class="px-4 pb-4 space-y-1">${sec.items.map(it=>`
                         <div class="flex items-center gap-3 py-1.5 border-b border-slate-800/60">
-                            <input type="checkbox" id="ck_${it.id}" ${it.required?'checked':''} onchange="toggleItem('${it.id}', this.checked)" class="accent-amber-500 w-4 h-4">
+                            <input type="checkbox" id="ck_${it.id}" onchange="toggleItem('${it.id}', this.checked)" class="accent-amber-500 w-4 h-4">
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm text-gray-100 truncate">${escQ(it.category)} ${it.required?'<span class=\'text-[10px] text-pink-400\'>必选</span>':''}</div>
                                 <div class="text-[11px] text-gray-500 truncate">${escQ(it.content)} · ${it.type==='tiered'?'<span class=\'text-cyan-400\'>阶梯计价</span>':fmtMoney(it.price)+'/'+escQ(it.unit.replace('元/',''))}</div>
                             </div>
-                            <input type="number" min="0" value="${it.required?1:0}" id="qty_${it.id}" oninput="setQty('${it.id}', this.value)" ${it.type==='tiered'?'disabled title=\'阶梯计价按方案估列\'':''} class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-center ${it.type==='tiered'?'opacity-40':''}">
+                            <input type="number" min="0" value="0" id="qty_${it.id}" oninput="setQty('${it.id}', this.value)" ${it.type==='tiered'?'disabled title=\'阶梯计价按方案估列\'':''} class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-center ${it.type==='tiered'?'opacity-40':''}">
                         </div>`).join('')}</div>
                 </details>`).join('');
-            // 必选项默认计数
-            PRICING.sections.forEach(sec=>sec.items.forEach(it=>{ if(it.required) quoteQty[it.id]=1; }));
             recomputeQuote();
         }
         function toggleItem(id, checked){
@@ -457,7 +455,7 @@
                 const on = secIds.includes(sec.id);
                 sec.items.forEach(it=>{
                     const ck=document.getElementById('ck_'+it.id), qi=document.getElementById('qty_'+it.id);
-                    if(it.required || (on && it.type!=='tiered')){ if(ck)ck.checked=true; if(qi&&it.type!=='tiered')qi.value=1; quoteQty[it.id]=1; }
+                    if(on && it.type!=='tiered'){ if(ck)ck.checked=true; if(qi&&it.type!=='tiered')qi.value=1; quoteQty[it.id]=1; }
                     else { if(ck)ck.checked=false; if(qi&&it.type!=='tiered')qi.value=0; quoteQty[it.id]=0; }
                 });
             });
