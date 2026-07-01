@@ -107,7 +107,7 @@
         <div class="max-w-5xl mx-auto">
             <h2 class="text-4xl font-bold mb-3 text-center gradient-text">产品报价生成器</h2>
             <p class="text-center text-gray-400 mb-2">勾选产品板块与模块、填写数量 → 自动算价 → 一键导出同格式报价清单 Excel</p>
-            <p class="text-center text-xs text-purple-300/80 mb-10">💰 数据源：51WORLD 产品报价清单（含税点 6%）· 阶梯计价项按起步基准估列，以实际工程量结算</p>
+            <p class="text-center text-xs text-purple-300/80 mb-10">💰 数据源：51WORLD 产品报价清单（含税点 6%）· 行业套餐为推荐映射，“不预选”即清空全部条目 · 阶梯计价项按起步基准估列，以实际工程量结算</p>
             <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
                 <div class="flex flex-wrap items-end gap-4 mb-6">
                     <div class="flex-1 min-w-[180px]"><label class="block text-sm font-semibold mb-2">项目名称（选填）</label><input id="quoteProject" placeholder="如：某某产业园数字孪生项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
@@ -450,7 +450,7 @@
             if(!PRICING) return;
             // 简单映射：根据 parks id 选板块（与后端 industryPresets 对齐的常用集）
             const map = { 'smart-park':['digital-twin','ioc','data-platform'],'chemical-park':['digital-twin','ioc','iot','data-platform'],'carbon-park':['digital-twin','carbon','ioc'],'smart-building':['digital-twin','ioc','iot'],'smart-hospital':['digital-twin','ioc','data-platform'],'smart-city':['digital-twin','ioc','data-platform','carbon'] };
-            const secIds = map[pid] || ['digital-twin','ioc'];
+            const secIds = pid ? (map[pid] || []) : [];
             PRICING.sections.forEach(sec=>{
                 const on = secIds.includes(sec.id);
                 sec.items.forEach(it=>{
