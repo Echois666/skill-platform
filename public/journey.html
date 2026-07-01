@@ -48,7 +48,8 @@
 <body class="text-gray-100 min-h-screen">
 
 <nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-end items-center">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div class="flex items-center gap-3"><span class="text-3xl">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text">云TB百科全书</span></div>
     <div class="flex items-center gap-2 md:gap-4">
       <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg gold-btn transition font-semibold">🛠️ 管理后台</a>
     </div>
@@ -60,7 +61,6 @@
 
 <header class="home-only pt-36 pb-10 px-4">
   <div class="max-w-6xl mx-auto text-center">
-    <div class="inline-block px-4 py-1 mb-5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-200 text-sm">BLACK GOLD THEME · 商机 · 一张图 · 方案 · 文档 · 报价</div>
     <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text leading-tight">五阶段行业方案作战台</h1>
     <p class="text-lg md:text-xl text-gray-300 mb-3">从最新招标信息开始，到行业方案一张图、正式方案包、客户手册、报价测算，形成售前到商务闭环。</p>
     <p class="text-sm text-green-400 mb-8" id="heroSub">✨ 进入页面先看真实行业机会，再把机会转成可交付材料</p>
@@ -68,7 +68,6 @@
       <button onclick="showStage('radar')" class="gold-btn px-7 py-3 rounded-lg font-semibold transition">🛰️ 实时招标雷达</button>
       <button onclick="showStage('convert')" class="ghost-btn px-7 py-3 rounded-lg font-semibold transition">直接生成方案</button>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="statGrid"></div>
   </div>
 </header>
 
@@ -259,11 +258,6 @@ async function init(){
   const opts = PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
   ['brandPark','genPark','docPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
   document.getElementById('radarPark').innerHTML = `<option value="">🌐 全部行业(综合)</option>` + opts;
-  // 统计
-  const s = JOURNEY.stats;
-  document.getElementById('statGrid').innerHTML = [
-    ['5','作战阶段','cyan'],[s.cities,'大湾区城市','purple'],[s.parks,'行业方案','pink'],['18+','文档模板','green']
-  ].map(([n,l,c])=>`<div class="bg-${c}-500/10 border border-${c}-500/20 rounded-lg p-5"><div class="text-3xl font-bold text-${c}-400">${n}</div><div class="text-gray-300 mt-1 text-sm">${l}</div></div>`).join('');
   renderStages(); renderCities(); renderDocCenter(); initQuoteCenter(); showStage(activeStage, true); runRadar();
 }
 
