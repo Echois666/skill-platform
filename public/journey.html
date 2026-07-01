@@ -166,6 +166,19 @@
       </div>
       <div id="docCenter"></div>
     </div>
+
+    <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8 mt-6">
+      <div class="mb-4">
+        <div class="text-lg font-bold text-amber-200">🗂️ 昌平标准交付模板库（真实交付范本）</div>
+        <div class="text-xs text-gray-400 mt-1">提炼自「昌平项目·验收材料合稿」8 个子项目、9 阶段真实交付文档，格式与训练素材统一（封面 + 文档修改记录 + 目录 + 章节）。填写项目信息后一键下载空白可填写 .docx 模板。</div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">上级/采购项目名称</label><input id="cpTop" placeholder="如：2023年农村综合性改革试点试验项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">项目名称</label><input id="cpProj" placeholder="如：优质草莓种苗繁育基地建设项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">封面日期</label><input id="cpDate" placeholder="如：二〇二四年七月" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+      </div>
+      <div id="cpTemplates"></div>
+    </div>
   </div>
 </section>
 
@@ -254,7 +267,7 @@ async function init(){
   const opts = PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
   ['brandPark','genPark','docPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
   document.getElementById('radarPark').innerHTML = `<option value="">🌐 全部行业(综合)</option>` + opts;
-  renderStages(); renderCities(); renderDocCenter(); initQuoteCenter(); showStage(activeStage, true); runRadar();
+  renderStages(); renderCities(); renderDocCenter(); renderChangpingTemplates(); initQuoteCenter(); showStage(activeStage, true); runRadar();
 }
 
 function renderStages(){
@@ -470,6 +483,47 @@ async function downloadTemplate(key){
     if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
     const blob=await r.blob();
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${customer}-${key}-文档模板.docx`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  }catch(e){ alert('下载失败：'+e.message); }
+}
+
+// ===== 阶段四 · 昌平标准交付模板库 =====
+let CHANGPING = null;
+async function renderChangpingTemplates(){
+  const box=document.getElementById('cpTemplates');
+  if(!box) return;
+  if(!CHANGPING){
+    try{ const r=await fetch('/api/changping/templates'); CHANGPING=await r.json(); }
+    catch(e){ box.innerHTML='<div class="text-red-400 text-sm">昌平模板加载失败：'+esc(e.message)+'</div>'; return; }
+  }
+  if(!CHANGPING || !CHANGPING.ok){ box.innerHTML='<div class="text-amber-300 text-sm">昌平模板暂不可用。</div>'; return; }
+  box.innerHTML = `<div class="space-y-3">${CHANGPING.stages.map(stage=>`
+    <details class="bg-slate-900/60 border border-slate-700 rounded-xl overflow-hidden">
+      <summary class="cursor-pointer px-4 py-3 flex items-center justify-between gap-3">
+        <span class="font-bold text-amber-200">${stage.icon||'📁'} ${esc(stage.stage)} <span class="text-[11px] px-1.5 py-0.5 rounded ${stage.env==='售前'?'bg-cyan-500/15 text-cyan-300':'bg-emerald-500/15 text-emerald-300'}">${esc(stage.env||'')}</span></span>
+        <span class="text-xs text-gray-400">${stage.items.length}份</span>
+      </summary>
+      <div class="grid md:grid-cols-2 gap-3 p-4 pt-0">
+        ${stage.items.map(item=>`
+          <div class="bg-slate-800/70 border border-slate-700 rounded-lg p-3 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="font-semibold text-sm text-gray-100 truncate">📄 ${esc(item.docName)}</div>
+              <div class="text-[11px] text-amber-300 mt-0.5">${esc(item.stageNo)} · ${esc(item.type)} · ${item.sectionCount}节</div>
+            </div>
+            <button onclick="downloadChangping('${esc(item.key)}','${esc(item.docName)}')" class="text-xs px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white whitespace-nowrap">下载</button>
+          </div>`).join('')}
+      </div>
+    </details>`).join('')}</div>`;
+}
+async function downloadChangping(key, docName){
+  const topName=(document.getElementById('cpTop').value||'').trim();
+  const projName=(document.getElementById('cpProj').value||'').trim();
+  const dateName=(document.getElementById('cpDate').value||'').trim();
+  try{
+    const r=await fetch('/api/generate/changping-template',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key, topName, projName, dateName})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
+    const blob=await r.blob();
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${projName?projName+'-':''}${docName}（空白模板）.docx`;
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }catch(e){ alert('下载失败：'+e.message); }
 }

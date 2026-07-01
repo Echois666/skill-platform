@@ -21,6 +21,8 @@ const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, build
 const { fetchTenderRadar } = require('./tenderRadar');
 const { listSections, industryPresets, TAX_RATE } = require('../data/pricing');
 const { generateQuoteBuffer, computeQuote, recommendQuoteSelections } = require('./quoteGenerator');
+const { listByStage: listChangpingByStage } = require('../data/changpingTemplates');
+const { generateChangpingTemplateBuffer } = require('./changpingTemplateGenerator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -121,6 +123,33 @@ app.post('/api/generate/quote', async (req, res) => {
   } catch (e) {
     console.error('quote生成失败:', e);
     res.status(500).json({ ok: false, error: '报价清单生成失败', detail: e.message });
+  }
+});
+
+// ---------- 昌平标准交付模板库 API（真实版式空白模板）----------
+// 列出按 9 阶段分组的昌平标准模板
+app.get('/api/changping/templates', (req, res) => {
+  try {
+    res.json({ ok: true, stages: listChangpingByStage() });
+  } catch (e) {
+    console.error('changping/templates失败:', e);
+    res.status(500).json({ ok: false, error: '获取昌平模板失败', detail: e.message });
+  }
+});
+
+// 下载昌平标准格式空白模板（封面+文档修改记录+目录+章节，复刻训练素材版式）
+app.post('/api/generate/changping-template', async (req, res) => {
+  try {
+    const { key, topName, projName, dateName } = req.body || {};
+    if (!key) return res.status(400).json({ error: '缺少模板 key' });
+    const { buffer, name } = await generateChangpingTemplateBuffer(key, { topName, projName, dateName });
+    const fname = encodeURIComponent(`${safeName(name)}（空白模板）.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('changping-template生成失败:', e);
+    res.status(e.message && e.message.includes('未找到') ? 404 : 500).json({ error: '生成失败', detail: e.message });
   }
 });
 
