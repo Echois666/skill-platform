@@ -172,6 +172,12 @@ const STAGE_META = {
 };
 const STAGE_ORDER = ['需求阶段','设计阶段','测试阶段','安装部署阶段','用户使用阶段','培训阶段','初验阶段','试运行阶段','项目总结'];
 
+// 脱敏参考正文内容库（离线预生成，项目名/单位/人名/金额/数字已脱敏）
+let CONTENT = {};
+try { CONTENT = require('./changpingContent.json'); } catch (e) { CONTENT = {}; }
+function getContent(key) { return CONTENT[key] || null; }
+function hasContent(key) { return !!(CONTENT[key] && CONTENT[key].items && CONTENT[key].items.length); }
+
 function listByStage() {
   return STAGE_ORDER.map(stage => ({
     stage,
@@ -180,10 +186,12 @@ function listByStage() {
     items: DOCS.filter(d => d.stage === stage).map(d => ({
       key: d.key, docName: d.docName, stageNo: d.stageNo,
       type: d.tableDoc ? '表格型' : '章节型',
-      sectionCount: d.tableDoc ? d.tableDoc.cols.length : (d.sections||[]).length
+      sectionCount: d.tableDoc ? d.tableDoc.cols.length : (d.sections||[]).length,
+      hasContent: hasContent(d.key),
+      contentChars: CONTENT[d.key] ? (CONTENT[d.key].chars || 0) : 0
     }))
   }));
 }
 function getDoc(key) { return DOCS.find(d => d.key === key) || null; }
 
-module.exports = { DOCS, STAGE_META, STAGE_ORDER, listByStage, getDoc };
+module.exports = { DOCS, STAGE_META, STAGE_ORDER, listByStage, getDoc, getContent, hasContent };

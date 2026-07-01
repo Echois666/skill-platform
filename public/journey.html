@@ -505,25 +505,33 @@ async function renderChangpingTemplates(){
       </summary>
       <div class="grid md:grid-cols-2 gap-3 p-4 pt-0">
         ${stage.items.map(item=>`
-          <div class="bg-slate-800/70 border border-slate-700 rounded-lg p-3 flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <div class="font-semibold text-sm text-gray-100 truncate">📄 ${esc(item.docName)}</div>
-              <div class="text-[11px] text-amber-300 mt-0.5">${esc(item.stageNo)} · ${esc(item.type)} · ${item.sectionCount}节</div>
+          <div class="bg-slate-800/70 border border-slate-700 rounded-lg p-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-semibold text-sm text-gray-100 truncate">📄 ${esc(item.docName)}</div>
+                <div class="text-[11px] text-amber-300 mt-0.5">${esc(item.stageNo)} · ${esc(item.type)} · ${item.sectionCount}节${item.hasContent?` · <span class="text-emerald-300">含脱敏参考正文</span>`:''}</div>
+              </div>
             </div>
-            <button onclick="downloadChangping('${esc(item.key)}','${esc(item.docName)}')" class="text-xs px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white whitespace-nowrap">下载</button>
+            <div class="flex gap-2 mt-2">
+              <button onclick="downloadChangping('${esc(item.key)}','${esc(item.docName)}','ref')" class="flex-1 text-xs px-2 py-1.5 rounded ${item.hasContent?'bg-emerald-600 hover:bg-emerald-500':'bg-slate-600 cursor-not-allowed'} text-white" ${item.hasContent?'':'disabled'}>⬇ 脱敏参考版</button>
+              <button onclick="downloadChangping('${esc(item.key)}','${esc(item.docName)}','blank')" class="flex-1 text-xs px-2 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-white">⬇ 空白模板</button>
+            </div>
           </div>`).join('')}
       </div>
     </details>`).join('')}</div>`;
 }
-async function downloadChangping(key, docName){
+async function downloadChangping(key, docName, mode){
   const topName=(document.getElementById('cpTop').value||'').trim();
   const projName=(document.getElementById('cpProj').value||'').trim();
   const dateName=(document.getElementById('cpDate').value||'').trim();
+  const isRef = mode==='ref';
+  const url = isRef ? '/api/generate/changping-reference' : '/api/generate/changping-template';
+  const suffix = isRef ? '（脱敏参考版）' : '（空白模板）';
   try{
-    const r=await fetch('/api/generate/changping-template',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key, topName, projName, dateName})});
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key, topName, projName, dateName})});
     if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
     const blob=await r.blob();
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${projName?projName+'-':''}${docName}（空白模板）.docx`;
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${projName?projName+'-':''}${docName}${suffix}.docx`;
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }catch(e){ alert('下载失败：'+e.message); }
 }

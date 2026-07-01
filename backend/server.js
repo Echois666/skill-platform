@@ -22,7 +22,7 @@ const { fetchTenderRadar } = require('./tenderRadar');
 const { listSections, industryPresets, TAX_RATE } = require('../data/pricing');
 const { generateQuoteBuffer, computeQuote, recommendQuoteSelections } = require('./quoteGenerator');
 const { listByStage: listChangpingByStage } = require('../data/changpingTemplates');
-const { generateChangpingTemplateBuffer } = require('./changpingTemplateGenerator');
+const { generateChangpingTemplateBuffer, generateChangpingReferenceBuffer } = require('./changpingTemplateGenerator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -150,6 +150,22 @@ app.post('/api/generate/changping-template', async (req, res) => {
   } catch (e) {
     console.error('changping-template生成失败:', e);
     res.status(e.message && e.message.includes('未找到') ? 404 : 500).json({ error: '生成失败', detail: e.message });
+  }
+});
+
+// 下载昌平脱敏参考版（真实交付正文脱敏后，套用同版式）
+app.post('/api/generate/changping-reference', async (req, res) => {
+  try {
+    const { key, topName, projName, dateName } = req.body || {};
+    if (!key) return res.status(400).json({ error: '缺少模板 key' });
+    const { buffer, name } = await generateChangpingReferenceBuffer(key, { topName, projName, dateName });
+    const fname = encodeURIComponent(`${safeName(name)}（脱敏参考版）.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('changping-reference生成失败:', e);
+    res.status(e.message && (e.message.includes('未找到') || e.message.includes('暂无')) ? 404 : 500).json({ error: '生成失败', detail: e.message });
   }
 });
 
