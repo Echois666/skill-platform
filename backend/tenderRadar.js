@@ -21,8 +21,9 @@ const KEYWORD_MAP = {
   'smart-park-public': '智慧公园'
 };
 
-// 行业下拉之外的「综合」入口，覆盖全网各行业数字化项目
-const ALL_KEYWORD = '数字孪生';
+// 行业下拉之外的「综合」入口：抓取信息化全量项目（多关键词合并去重），再由「数字孪生」做筛选
+const ALL_KEYWORD = '信息化';
+const ALL_KEYWORDS = ['信息化', '智慧', '数字化', '智能化', '平台'];
 
 const CACHE = new Map();
 const CACHE_TTL = 20 * 60 * 1000; // 20 分钟
@@ -153,28 +154,66 @@ function buildUrl(kw, timeType) {
     `&start_time=&end_time=&timeType=${timeType}&displayZone=&zoneId=&pppStatus=0&agentName=`;
 }
 
+// 抓取单个关键词的公告（带缓存）
+async function fetchKeywordItems(kw, timeType) {
+  const cacheKey = `${kw}|${timeType}`;
+  const cachedItems = getCache(cacheKey);
+  if (cachedItems) return { items: cachedItems, cached: true, error: null };
+  try {
+    const html = await httpGet(buildUrl(kw, timeType));
+    const items = parseTenders(html);
+    setCache(cacheKey, items);
+    return { items, cached: false, error: null };
+  } catch (e) {
+    return { items: [], cached: false, error: e.message };
+  }
+}
+
 // 主入口：抓取真实招标公告
 // parkId 行业(可选) / keyword 自定义关键词(可选,优先) / kind 类型筛选 / days 时间范围 / limit 条数 / dtOnly 仅数字孪生相关
 async function fetchTenderRadar({ parkId = '', keyword = '', kind = 'opportunity', days = 30, limit = 12, dtOnly = false } = {}) {
-  const kw = (keyword && String(keyword).trim()) || KEYWORD_MAP[parkId] || ALL_KEYWORD;
   const d = +days || 30;
   const timeType = d <= 7 ? '2' : (d <= 30 ? '3' : '4'); // 近1周/近1月/近3月
   const rangeLabel = d <= 7 ? '近一周' : (d <= 30 ? '近一月' : '近三月');
   const cap = Math.max(1, Math.min(30, +limit || 12));
 
-  const cacheKey = `${kw}|${timeType}`;
-  let items = getCache(cacheKey);
-  let cached = true;
-  if (!items) {
-    cached = false;
-    let html;
-    try {
-      html = await httpGet(buildUrl(kw, timeType));
-    } catch (e) {
-      return { ok: false, error: `实时招标数据获取失败：${e.message}`, keyword: kw, source: '中国政府采购网 (ccgp.gov.cn)' };
+  // 决定检索关键词集合：用户关键词 > 行业关键词 > 综合(信息化全量多词)
+  const userKw = keyword && String(keyword).trim();
+  let keywords, kwLabel, comprehensive = false;
+  if (userKw) {
+    keywords = [userKw];
+    kwLabel = userKw;
+  } else if (KEYWORD_MAP[parkId]) {
+    keywords = [KEYWORD_MAP[parkId]];
+    kwLabel = KEYWORD_MAP[parkId];
+  } else {
+    keywords = ALL_KEYWORDS;
+    kwLabel = '信息化（综合）';
+    comprehensive = true;
+  }
+
+  // 并行抓取所有关键词，合并去重（按公告链接）
+  const results = await Promise.all(keywords.map(kw => fetchKeywordItems(kw, timeType)));
+  const anySuccess = results.some(r => !r.error);
+  if (!anySuccess) {
+    const firstErr = (results.find(r => r.error) || {}).error || '未知错误';
+    return { ok: false, error: `实时招标数据获取失败：${firstErr}`, keyword: kwLabel, source: '中国政府采购网 (ccgp.gov.cn)' };
+  }
+  const cached = results.every(r => r.cached);
+
+  const seen = new Set();
+  const items = [];
+  for (const r of results) {
+    for (const it of r.items) {
+      const key = it.url || (it.title + it.date);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(it);
     }
-    items = parseTenders(html);
-    setCache(cacheKey, items);
+  }
+  // 综合模式下按日期倒序，保证最新在前
+  if (comprehensive) {
+    items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   }
 
   let filtered = items;
@@ -192,9 +231,15 @@ async function fetchTenderRadar({ parkId = '', keyword = '', kind = 'opportunity
     total: items.length
   };
 
+  const scopeText = comprehensive
+    ? `${rangeLabel}内，全网信息化项目（关键词：${keywords.join('、')}）`
+    : `${rangeLabel}内，「${kwLabel}」相关`;
+
   return {
     ok: true,
-    keyword: kw,
+    keyword: kwLabel,
+    keywords,
+    comprehensive,
     parkId,
     kind,
     dtOnly: !!dtOnly,
@@ -206,12 +251,12 @@ async function fetchTenderRadar({ parkId = '', keyword = '', kind = 'opportunity
     counts,
     shown: list.length,
     summary: list.length
-      ? `${rangeLabel}内，「${kw}」相关共抓取到 ${counts.total} 条公告（可投标 ${counts.opportunity} 条、中标 ${counts.result} 条、数字孪生相关 ${counts.dtRelated} 条）${dtOnly ? '，已筛选仅显示数字孪生相关项目' : ''}，数据来自中国政府采购网，实时更新。`
+      ? `${scopeText}共抓取到 ${counts.total} 条公告（可投标 ${counts.opportunity} 条、中标 ${counts.result} 条、数字孪生相关 ${counts.dtRelated} 条）${dtOnly ? '，已筛选仅显示数字孪生相关项目' : ''}，数据来自中国政府采购网，实时更新。`
       : (dtOnly
-          ? `${rangeLabel}内「${kw}」相关公告中暂无数字孪生相关项目，可关闭该筛选或更换关键词。`
-          : `${rangeLabel}内未检索到「${kw}」相关公告，可尝试更换关键词或放宽时间范围。`),
+          ? `${scopeText}公告中暂无数字孪生相关项目，可关闭该筛选或更换关键词。`
+          : `${scopeText}未检索到公告，可尝试更换关键词或放宽时间范围。`),
     tenders: list
   };
 }
 
-module.exports = { fetchTenderRadar, KEYWORD_MAP, ALL_KEYWORD };
+module.exports = { fetchTenderRadar, KEYWORD_MAP, ALL_KEYWORD, ALL_KEYWORDS };
