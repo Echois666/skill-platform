@@ -27,6 +27,7 @@
                     <button onclick="scrollToSection('parks')" class="hover:text-purple-400 transition">园区方案</button>
                     <button onclick="scrollToSection('timeline')" class="hover:text-purple-400 transition">交付物模板</button>
                     <button onclick="scrollToSection('generator')" class="hover:text-purple-400 transition">方案生成工具</button>
+                    <button onclick="scrollToSection('quote')" class="hover:text-purple-400 transition">报价生成器</button>
                 </div>
                 <a href="/journey.html" class="text-sm px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 transition font-semibold">🛰️ 全链路驾驶舱</a>
                 <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold">🛠️ 管理后台</a>
@@ -59,7 +60,7 @@
                 <div>
                   <div class="text-xs text-cyan-300 mb-1">🌉 AI赋能大湾区 · 一站式服务</div>
                   <h3 class="text-2xl md:text-3xl font-bold gradient-text mb-1">从挖掘客户 → 客户成功，全链路作战驾驶舱</h3>
-                  <p class="text-sm text-gray-300">以本平台的方案引擎为核心，向前延伸 AI客户雷达，向后延伸 客户成功，覆盖获客到复购的五段链路。</p>
+                  <p class="text-sm text-gray-300">以本平台的方案引擎为核心，向前延伸 实时招标雷达，向后延伸 客户成功，覆盖获客到复购的五段链路。</p>
                 </div>
                 <span class="whitespace-nowrap bg-gradient-to-r from-cyan-600 to-purple-600 px-6 py-3 rounded-lg font-bold group-hover:opacity-90 transition">🛰️ 进入驾驶舱 →</span>
               </div>
@@ -98,6 +99,31 @@
                 </div>
                 <button id="genBtn" onclick="generate()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-4 rounded-lg font-bold text-lg transition">✨ 一键生成并下载</button>
                 <div id="genResult" class="mt-6"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="quote" class="py-16 px-4">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-4xl font-bold mb-3 text-center gradient-text">产品报价生成器</h2>
+            <p class="text-center text-gray-400 mb-2">勾选产品板块与模块、填写数量 → 自动算价 → 一键导出同格式报价清单 Excel</p>
+            <p class="text-center text-xs text-purple-300/80 mb-10">💰 数据源：51WORLD 产品报价清单（含税点 6%）· 阶梯计价项按起步基准估列，以实际工程量结算</p>
+            <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
+                <div class="flex flex-wrap items-end gap-4 mb-6">
+                    <div class="flex-1 min-w-[180px]"><label class="block text-sm font-semibold mb-2">项目名称（选填）</label><input id="quoteProject" placeholder="如：某某产业园数字孪生项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+                    <div class="flex-1 min-w-[160px]"><label class="block text-sm font-semibold mb-2">客户主体（选填）</label><input id="quoteClient" placeholder="如：某某集团" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+                    <div class="min-w-[160px]"><label class="block text-sm font-semibold mb-2">按行业套餐预选</label>
+                        <select id="quotePreset" onchange="applyPreset()" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+                </div>
+                <div id="quoteSections" class="space-y-4"></div>
+                <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/60 border border-amber-500/30 rounded-xl p-5">
+                    <div class="text-sm text-gray-300">
+                        <div>已选 <span id="quoteCount" class="text-amber-300 font-bold">0</span> 项　·　税前合计 <span id="quoteSubtotal" class="text-amber-300 font-bold">¥0</span></div>
+                        <div class="text-lg mt-1">含税(6%)合计：<span id="quoteTaxed" class="text-2xl font-bold gradient-text">¥0</span></div>
+                    </div>
+                    <button id="quoteBtn" onclick="downloadQuote()" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-90 px-8 py-3 rounded-lg font-bold transition whitespace-nowrap">⬇️ 导出报价清单 Excel</button>
+                </div>
+                <div id="quoteResult" class="mt-4"></div>
             </div>
         </div>
     </section>
@@ -372,7 +398,105 @@
                 btn.disabled = false; btn.classList.remove('opacity-60');
             }
         }
-        renderParks(); renderDeliverables(); renderGenTypes(); renderIntegrations();
+        // ===== 报价生成器 =====
+        let PRICING = null;
+        const quoteQty = {};   // itemId -> qty
+        const fmtMoney = n => '¥' + (Number(n)||0).toLocaleString();
+        function escQ(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+        async function initQuote(){
+            const wrap = document.getElementById('quoteSections');
+            if(!wrap) return;
+            try {
+                const resp = await fetch('/api/pricing');
+                PRICING = await resp.json();
+            } catch(e){ wrap.innerHTML = '<div class="text-red-400 text-sm">报价数据加载失败：'+e.message+'</div>'; return; }
+            // 行业套餐下拉（复用 parks）
+            const presetSel = document.getElementById('quotePreset');
+            presetSel.innerHTML = '<option value="">— 不预选 —</option>' + parks.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
+            wrap.innerHTML = PRICING.sections.map(sec=>`
+                <details class="bg-slate-900/40 border border-slate-700 rounded-xl overflow-hidden" ${sec.optional?'':'open'}>
+                    <summary class="cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-slate-800/60">
+                        <span class="font-semibold text-amber-200">${sec.no}、${escQ(sec.name)} <span class="text-[11px] ${sec.optional?'text-gray-500':'text-pink-400'}">(${escQ(sec.note)})</span></span>
+                        <span class="text-[11px] text-gray-400">${sec.items.length}项</span>
+                    </summary>
+                    <div class="px-4 pb-4 space-y-1">${sec.items.map(it=>`
+                        <div class="flex items-center gap-3 py-1.5 border-b border-slate-800/60">
+                            <input type="checkbox" id="ck_${it.id}" ${it.required?'checked':''} onchange="toggleItem('${it.id}', this.checked)" class="accent-amber-500 w-4 h-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm text-gray-100 truncate">${escQ(it.category)} ${it.required?'<span class=\'text-[10px] text-pink-400\'>必选</span>':''}</div>
+                                <div class="text-[11px] text-gray-500 truncate">${escQ(it.content)} · ${it.type==='tiered'?'<span class=\'text-cyan-400\'>阶梯计价</span>':fmtMoney(it.price)+'/'+escQ(it.unit.replace('元/',''))}</div>
+                            </div>
+                            <input type="number" min="0" value="${it.required?1:0}" id="qty_${it.id}" oninput="setQty('${it.id}', this.value)" ${it.type==='tiered'?'disabled title=\'阶梯计价按方案估列\'':''} class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-center ${it.type==='tiered'?'opacity-40':''}">
+                        </div>`).join('')}</div>
+                </details>`).join('');
+            // 必选项默认计数
+            PRICING.sections.forEach(sec=>sec.items.forEach(it=>{ if(it.required) quoteQty[it.id]=1; }));
+            recomputeQuote();
+        }
+        function toggleItem(id, checked){
+            const qi = document.getElementById('qty_'+id);
+            const item = findPriceItem(id);
+            if(checked){ if(item && item.type==='tiered'){ quoteQty[id]=1; } else { const v=Math.max(1,+qi.value||1); qi.value=v; quoteQty[id]=v; } }
+            else { quoteQty[id]=0; if(qi && item.type!=='tiered') qi.value=0; }
+            recomputeQuote();
+        }
+        function setQty(id, val){
+            const v=Math.max(0,+val||0); quoteQty[id]=v;
+            const ck=document.getElementById('ck_'+id); if(ck) ck.checked = v>0;
+            recomputeQuote();
+        }
+        function findPriceItem(id){ for(const s of (PRICING?.sections||[])){ const it=s.items.find(x=>x.id===id); if(it) return it; } return null; }
+        function applyPreset(){
+            const pid = document.getElementById('quotePreset').value;
+            if(!PRICING) return;
+            // 简单映射：根据 parks id 选板块（与后端 industryPresets 对齐的常用集）
+            const map = { 'smart-park':['digital-twin','ioc','data-platform'],'chemical-park':['digital-twin','ioc','iot','data-platform'],'carbon-park':['digital-twin','carbon','ioc'],'smart-building':['digital-twin','ioc','iot'],'smart-hospital':['digital-twin','ioc','data-platform'],'smart-city':['digital-twin','ioc','data-platform','carbon'] };
+            const secIds = map[pid] || ['digital-twin','ioc'];
+            PRICING.sections.forEach(sec=>{
+                const on = secIds.includes(sec.id);
+                sec.items.forEach(it=>{
+                    const ck=document.getElementById('ck_'+it.id), qi=document.getElementById('qty_'+it.id);
+                    if(it.required || (on && it.type!=='tiered')){ if(ck)ck.checked=true; if(qi&&it.type!=='tiered')qi.value=1; quoteQty[it.id]=1; }
+                    else { if(ck)ck.checked=false; if(qi&&it.type!=='tiered')qi.value=0; quoteQty[it.id]=0; }
+                });
+            });
+            recomputeQuote();
+        }
+        let quoteTimer=null;
+        function recomputeQuote(){
+            clearTimeout(quoteTimer);
+            quoteTimer=setTimeout(async ()=>{
+                const selections = Object.keys(quoteQty).filter(id=>quoteQty[id]>0).map(id=>({id, qty:quoteQty[id]}));
+                try {
+                    const resp = await fetch('/api/quote/compute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selections})});
+                    const j = await resp.json();
+                    document.getElementById('quoteCount').textContent = j.count;
+                    document.getElementById('quoteSubtotal').textContent = fmtMoney(j.subtotal);
+                    document.getElementById('quoteTaxed').textContent = fmtMoney(j.taxed);
+                } catch(e){}
+            }, 250);
+        }
+        async function downloadQuote(){
+            const btn=document.getElementById('quoteBtn'), box=document.getElementById('quoteResult');
+            const selections = Object.keys(quoteQty).filter(id=>quoteQty[id]>0).map(id=>({id, qty:quoteQty[id]}));
+            if(selections.length===0){ box.innerHTML='<div class="text-amber-400 text-sm">请先勾选至少一个产品项。</div>'; return; }
+            const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ 生成中...';
+            try {
+                const resp = await fetch('/api/generate/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+                    selections, projectName:document.getElementById('quoteProject').value.trim(), client:document.getElementById('quoteClient').value.trim()
+                })});
+                if(!resp.ok){ const j=await resp.json().catch(()=>({})); throw new Error(j.error||('HTTP '+resp.status)); }
+                const blob = await resp.blob();
+                const pn = document.getElementById('quoteProject').value.trim();
+                const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(pn?pn+'-':'')+'51WORLD产品报价清单.xlsx';
+                document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+                box.innerHTML='<div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-300">✅ 报价清单已生成并开始下载（同格式 Excel，含小计与含税总计）。</div>';
+                btn.textContent='✅ 已导出'; setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1800);
+            } catch(e){ box.innerHTML='<div class="text-red-400 text-sm">❌ '+e.message+'</div>'; btn.textContent=old; btn.disabled=false; }
+        }
+
+        renderParks(); renderDeliverables(); renderGenTypes(); renderIntegrations(); initQuote();
     </script>
 </body>
 </html>

@@ -13,10 +13,14 @@ const { generateSolutionBuffer } = require('./docxGenerator');
 const { generatePptBuffer } = require('./pptGenerator');
 const { generatePlanBuffer } = require('./planGenerator');
 const { generateBrandBuffer } = require('./brandGenerator');
+const { generateOnePagerBuffer, buildOnePagerPreview } = require('./onePagerGenerator');
 const { generateTemplateBuffer } = require('./templateGenerator');
 const { listByStage } = require('../data/deliverableTemplates');
 const { parseRequirement } = require('./requirementParser');
 const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, buildBrandPreview } = require('./journeyEngine');
+const { fetchTenderRadar } = require('./tenderRadar');
+const { listSections, industryPresets, TAX_RATE } = require('../data/pricing');
+const { generateQuoteBuffer, computeQuote } = require('./quoteGenerator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +70,48 @@ app.get('/api/parks/:id', (req, res) => {
 
 app.get('/api/sales-phases', (req, res) => res.json(phases));
 
+// ---------- 报价生成器 API ----------
+// 返回产品报价清单结构（前端按板块渲染勾选项）
+app.get('/api/pricing', (req, res) => {
+  try {
+    res.json({
+      ok: true,
+      taxRate: TAX_RATE,
+      presets: industryPresets,
+      sections: listSections()
+    });
+  } catch (e) {
+    console.error('pricing失败:', e);
+    res.status(500).json({ ok: false, error: '获取报价数据失败', detail: e.message });
+  }
+});
+
+// 根据勾选项计算税前/含税报价预览
+app.post('/api/quote/compute', (req, res) => {
+  try {
+    res.json({ ok: true, ...computeQuote(req.body || {}) });
+  } catch (e) {
+    console.error('quote/compute失败:', e);
+    res.status(500).json({ ok: false, error: '报价计算失败', detail: e.message });
+  }
+});
+
+// 导出同格式 Excel 报价清单
+app.post('/api/generate/quote', async (req, res) => {
+  try {
+    const { projectName, client } = req.body || {};
+    const buffer = await generateQuoteBuffer(req.body || {});
+    const baseName = projectName || client || '51WORLD产品报价清单';
+    const fname = encodeURIComponent(`${safeName(baseName)}-产品报价清单.xlsx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('quote生成失败:', e);
+    res.status(500).json({ ok: false, error: '报价清单生成失败', detail: e.message });
+  }
+});
+
 // ---------- 交付物模板中心 API ----------
 // 列出按阶段分组的交付物模板（含写作指南）
 app.get('/api/deliverables', (req, res) => {
@@ -80,9 +126,14 @@ app.get('/api/deliverables', (req, res) => {
 // 下载某个交付物的 Word 模板（含写作指引与占位）
 app.post('/api/generate/template', async (req, res) => {
   try {
-    const { key } = req.body || {};
+    const { key, client, projectName, parkId } = req.body || {};
     if (!key) return res.status(400).json({ error: '缺少模板 key' });
-    const { buffer, name } = await generateTemplateBuffer(key);
+    const park = parkId ? getPark(parkId) : null;
+    const { buffer, name } = await generateTemplateBuffer(key, {
+      client,
+      projectName,
+      parkName: park ? park.name : ''
+    });
     const fname = encodeURIComponent(`${safeName(name)}-模板.docx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
@@ -153,27 +204,28 @@ app.get('/api/journey', (req, res) => {
   }
 });
 
-// 段1 · AI客户雷达：按行业+城市生成目标客户与触达话术
-app.post('/api/lead/radar', (req, res) => {
+// 段1 · 实时招标雷达：从中国政府采购网抓取全网各行业真实招标公告
+app.post('/api/lead/radar', async (req, res) => {
   try {
-    const result = buildLeadRadar(req.body || {});
-    if (!result.ok) return res.status(400).json(result);
+    const result = await fetchTenderRadar(req.body || {});
+    if (!result.ok) return res.status(502).json(result);
     res.json(result);
   } catch (e) {
-    console.error('lead/radar失败:', e);
-    res.status(500).json({ ok: false, error: '客户雷达生成失败', detail: e.message });
+    console.error('招标雷达失败:', e);
+    res.status(500).json({ ok: false, error: '实时招标数据获取失败', detail: e.message });
   }
 });
 
-// 段2 · 品牌升级一页纸内容预览（下载走 /api/generate/brand）
+// 段2 · 行业产品一页纸内容预览（下载走 /api/generate/onepager）
 app.post('/api/brand/preview', (req, res) => {
   try {
-    const result = buildBrandPreview(req.body || {});
-    if (!result.ok) return res.status(400).json(result);
+    const { park } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ ok: false, error: '请选择有效的行业类型' });
+    const result = buildOnePagerPreview(park);
     res.json(result);
   } catch (e) {
-    console.error('brand/preview失败:', e);
-    res.status(500).json({ ok: false, error: '品牌内容生成失败', detail: e.message });
+    console.error('onepager/preview失败:', e);
+    res.status(500).json({ ok: false, error: '行业产品一页纸内容生成失败', detail: e.message });
   }
 });
 
@@ -198,6 +250,66 @@ app.post('/api/customer-success/score', (req, res) => {
   } catch (e) {
     console.error('customer-success/score失败:', e);
     res.status(500).json({ ok: false, error: '客户成功评分失败', detail: e.message });
+  }
+});
+
+// 阶段五 · 报价平台联动：先输出可追溯测算与后续报价平台接口字段
+app.post('/api/quote/estimate', (req, res) => {
+  try {
+    const { parkId, edition = 'professional', modules = 8, complexity = 'normal' } = req.body || {};
+    const park = getPark(parkId);
+    if (!park) return res.status(404).json({ ok: false, error: '请选择有效行业' });
+
+    const editionMap = {
+      standard: { name: '标准版', base: 58, factor: 1 },
+      professional: { name: '专业版', base: 88, factor: 1.35 },
+      flagship: { name: '旗舰版', base: 138, factor: 1.85 }
+    };
+    const complexMap = {
+      light: { name: '轻量', factor: 0.85, days: 0.8 },
+      normal: { name: '标准', factor: 1, days: 1 },
+      complex: { name: '复杂', factor: 1.35, days: 1.45 }
+    };
+    const ed = editionMap[edition] || editionMap.professional;
+    const cx = complexMap[complexity] || complexMap.normal;
+    const moduleCount = Math.max(3, Math.min(12, Number(modules) || 8));
+
+    const software = Math.round(ed.base * ed.factor * cx.factor + moduleCount * 6);
+    const delivery = Math.round((28 + moduleCount * 5) * cx.factor);
+    const modelData = Math.round((18 + moduleCount * 4) * cx.factor);
+    const integration = Math.round((16 + moduleCount * 3) * cx.factor);
+    const total = software + delivery + modelData + integration;
+    const low = Math.round(total * 0.9);
+    const high = Math.round(total * 1.18);
+    const manDays = Math.round((45 + moduleCount * 8) * cx.days);
+
+    res.json({
+      ok: true,
+      industry: park.name,
+      edition: ed.name,
+      complexity: cx.name,
+      modules: moduleCount,
+      manDays,
+      priceRange: `${low}-${high}万`,
+      breakdown: [
+        { name: '软件平台授权/行业IOC能力', amount: `${software}万` },
+        { name: '实施交付与项目管理', amount: `${delivery}万` },
+        { name: '数据治理/三维模型/场景配置', amount: `${modelData}万` },
+        { name: '系统集成/接口联调/验收支持', amount: `${integration}万` }
+      ],
+      integrationFields: [
+        'customerId / customerName',
+        'industryId / industryName',
+        'edition / moduleCount / moduleList',
+        'deliveryComplexity / estimatedManDays',
+        'softwareAmount / deliveryAmount / integrationAmount',
+        'sourceRequirementId / solutionPackageId'
+      ],
+      note: '当前为售前快速测算口径，正式报价需对接报价平台价格表、折扣权限、软硬件清单和审批流。'
+    });
+  } catch (e) {
+    console.error('quote/estimate失败:', e);
+    res.status(500).json({ ok: false, error: '报价测算失败', detail: e.message });
   }
 });
 
@@ -291,14 +403,29 @@ app.post('/api/generate/plan', async (req, res) => {
   }
 });
 
-// 生成品牌一页纸 (.docx) —— 全链路第②段 品牌升级
+// 生成行业产品一页纸 (.pptx 单页) —— 全链路第②段
+app.post('/api/generate/onepager', async (req, res) => {
+  try {
+    const { park } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该行业，请选择行业或在需求中说明行业类型' });
+    const buffer = await generateOnePagerBuffer(park);
+    const fname = encodeURIComponent(`${safeName(park.name)}-产品一页纸.pptx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
+    res.send(buffer);
+  } catch (e) {
+    console.error('onepager生成失败:', e);
+    res.status(500).json({ error: '生成失败', detail: e.message });
+  }
+});
+// 兼容旧路径 /api/generate/brand → 行业产品一页纸
 app.post('/api/generate/brand', async (req, res) => {
   try {
-    const { park, brief } = resolveRequest(req.body);
-    if (!park) return res.status(404).json({ error: '未找到该园区，请选择园区或在需求中说明行业类型' });
-    const buffer = await generateBrandBuffer(park, brief);
-    const fname = encodeURIComponent(`${safeName(park.name)}-品牌一页纸.docx`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    const { park } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ error: '未找到该行业，请选择行业或在需求中说明行业类型' });
+    const buffer = await generateOnePagerBuffer(park);
+    const fname = encodeURIComponent(`${safeName(park.name)}-产品一页纸.pptx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fname}`);
     res.send(buffer);
   } catch (e) {
