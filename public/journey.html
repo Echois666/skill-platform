@@ -221,15 +221,6 @@
   </div>
 </section>
 
-<!-- 商业模式 -->
-<section class="home-only py-16 px-4">
-  <div class="max-w-5xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">业务闭环：从线索到报价</h2>
-    <p class="text-center text-gray-400 mb-12">真实商机 → 行业材料 → 方案转化 → 交付文档 → 报价联动</p>
-    <div id="bizGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-  </div>
-</section>
-
 <footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
   <p>🛰️ 园区Skill · 五阶段方案作战台 · 阶段一 → 阶段二 → 阶段三 → 阶段四 → 阶段五</p>
   <p class="text-xs mt-2">以园区Skill方案引擎为核心 · 数据由 51WORLD 行业知识库驱动</p>
@@ -280,7 +271,7 @@ async function init(){
   document.getElementById('statGrid').innerHTML = [
     ['5','作战阶段','cyan'],[s.cities,'大湾区城市','purple'],[s.parks,'行业方案','pink'],['18+','文档模板','green']
   ].map(([n,l,c])=>`<div class="bg-${c}-500/10 border border-${c}-500/20 rounded-lg p-5"><div class="text-3xl font-bold text-${c}-400">${n}</div><div class="text-gray-300 mt-1 text-sm">${l}</div></div>`).join('');
-  renderStages(); renderCities(); renderBiz(); renderDocCenter(); initQuoteCenter(); showStage(activeStage, true); runRadar();
+  renderStages(); renderCities(); renderDocCenter(); initQuoteCenter(); showStage(activeStage, true); runRadar();
 }
 
 function renderStages(){
@@ -312,19 +303,6 @@ function renderCities(){
     </div>`).join('');
 }
 function quickRadar(cityName){ document.getElementById('radarKw').value = cityName; document.getElementById('radarPark').value=''; showStage('radar'); runRadar(); }
-
-function renderBiz(){
-  const tierColor = {'入口':'cyan','转化':'purple','落地':'green'};
-  document.getElementById('bizGrid').innerHTML = JOURNEY.businessModel.map(b=>{
-    const c = tierColor[b.tier]||'purple';
-    return `<div class="bg-${c}-500/10 border border-${c}-500/30 rounded-xl p-6 flex flex-col">
-      <div class="flex items-center justify-between mb-3"><span class="text-xs px-2 py-1 rounded-full bg-${c}-600/40 text-${c}-200 font-bold">${b.tier}</span><span class="text-xs text-gray-400">${b.price}</span></div>
-      <h3 class="text-xl font-bold text-${c}-200 mb-2">${b.name}</h3>
-      <p class="text-sm text-gray-300 mb-3 flex-1">${esc(b.desc)}</p>
-      <div class="text-xs text-gray-400">🔗 ${b.stage}</div>
-    </div>`;
-  }).join('');
-}
 
 // ===== 阶段一 实时招标雷达 =====
 const KIND_BADGE = {
