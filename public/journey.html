@@ -3,168 +3,222 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI赋能大湾区 · 全链路作战驾驶舱</title>
+<title>园区Skill · 五阶段方案作战台</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  .gradient-text { background: linear-gradient(135deg,#22d3ee 0%,#a78bfa 50%,#f472b6 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif; }
+  :root{ --gold:#D6A84F; --gold2:#F5D78E; --ink:#0B0B0D; --panel:#14110E; --panel2:#1E1A15; --line:rgba(214,168,79,.24); --muted:#B8AA91; }
+  .gradient-text { background: linear-gradient(135deg,#FFF3C4 0%,#D6A84F 42%,#8A6729 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif; background:
+    radial-gradient(circle at 20% 0%,rgba(214,168,79,.16),transparent 28%),
+    radial-gradient(circle at 85% 15%,rgba(245,215,142,.08),transparent 30%),
+    linear-gradient(135deg,#080808 0%,#12100D 48%,#070707 100%); color:#F7F3EA; }
   .card-hover { transition:all .3s ease; }
-  .card-hover:hover { transform:translateY(-5px); box-shadow:0 18px 38px rgba(124,58,237,.25); }
+  .card-hover:hover { transform:translateY(-5px); box-shadow:0 18px 38px rgba(214,168,79,.18); }
   .stage-card { transition:all .3s ease; }
-  .stage-card:hover { transform:translateY(-4px); }
-  .spinner { display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite; }
+  .stage-card:hover { transform:translateY(-4px); border-color:rgba(214,168,79,.65)!important; box-shadow:0 18px 46px rgba(214,168,79,.12); }
+  .stage-card.active-card { border-color:rgba(245,215,142,.9)!important; box-shadow:0 0 0 1px rgba(245,215,142,.25),0 22px 48px rgba(214,168,79,.18); }
+  .spinner { display:inline-block;width:16px;height:16px;border:2px solid rgba(214,168,79,.25);border-top-color:#F5D78E;border-radius:50%;animation:spin .8s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
-  .flow-arrow::after { content:'→'; color:#7c3aed; font-size:1.5rem; }
-  input[type=range]{ accent-color:#a78bfa; }
+  .flow-arrow::after { content:'→'; color:var(--gold); font-size:1.5rem; }
+  input[type=range],input[type=checkbox]{ accent-color:var(--gold); }
+  nav { background:rgba(8,8,8,.82)!important; border-color:var(--line)!important; }
+  .gold-panel { background:linear-gradient(180deg,rgba(30,26,21,.9),rgba(14,13,12,.92)); border:1px solid var(--line); box-shadow:0 24px 80px rgba(0,0,0,.28); }
+  .gold-btn { background:linear-gradient(135deg,#D6A84F,#8A6729); color:#111; font-weight:800; box-shadow:0 12px 26px rgba(214,168,79,.18); }
+  .gold-btn:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+  .ghost-btn { border:1px solid rgba(214,168,79,.35); color:#F5D78E; background:rgba(214,168,79,.06); }
+  .ghost-btn:hover { background:rgba(214,168,79,.12); }
+  .stage-page{ display:none; opacity:0; transform:translateY(24px) scale(.985); filter:blur(3px); }
+  .stage-page.active{ display:block; animation:stageIn .46s cubic-bezier(.2,.85,.2,1) forwards; }
+  .home-only{ animation:stageIn .46s cubic-bezier(.2,.85,.2,1) forwards; }
+  .home-only.home-hidden{ display:none; }
+  @keyframes stageIn{ to{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+  .stage-tab{ position:relative; border:1px solid rgba(214,168,79,.22); background:rgba(20,17,14,.72); color:#CFC2AA; }
+  .stage-tab.active{ color:#111; background:linear-gradient(135deg,#F5D78E,#D6A84F); border-color:#F5D78E; box-shadow:0 12px 30px rgba(214,168,79,.20); }
+  .stage-tab.active::after{ content:''; position:absolute; left:18%; right:18%; bottom:-10px; height:2px; background:linear-gradient(90deg,transparent,#F5D78E,transparent); }
+  .tab-rail{ position:fixed; top:58px; left:0; right:0; z-index:45; border-bottom:1px solid var(--line); background:rgba(8,8,8,.74); backdrop-filter:blur(14px); }
+  .tab-rail-inner{ overflow-x:auto; scrollbar-width:none; }
+  .tab-rail-inner::-webkit-scrollbar{ display:none; }
+  select,input,textarea{ background:#0E0D0B!important; border-color:rgba(214,168,79,.28)!important; color:#F7F3EA!important; }
+  label{ color:#F5D78E; }
+  [class*="bg-slate-800"],[class*="bg-slate-900"]{ background-color:rgba(20,17,14,.76)!important; }
+  [class*="border-slate"],[class*="border-purple"],[class*="border-cyan"],[class*="border-pink"],[class*="border-green"]{ border-color:var(--line)!important; }
+  [class*="text-cyan"],[class*="text-purple"],[class*="text-pink"],[class*="text-green"],[class*="text-amber"]{ color:#F5D78E!important; }
 </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 min-h-screen">
+<body class="text-gray-100 min-h-screen">
 
 <nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
   <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-    <div class="flex items-center gap-3"><span class="text-3xl">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text">AI赋能大湾区 · 全链路驾驶舱</span></div>
+    <div class="flex items-center gap-3"><span class="text-3xl">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text">园区Skill · 五阶段方案作战台</span></div>
     <div class="flex items-center gap-2 md:gap-4">
-      <button onclick="scrollTo2('stages')" class="hidden md:block hover:text-purple-400 transition text-sm">五段链路</button>
-      <button onclick="scrollTo2('radar')" class="hidden md:block hover:text-purple-400 transition text-sm">客户雷达</button>
-      <button onclick="scrollTo2('brand')" class="hidden md:block hover:text-purple-400 transition text-sm">品牌升级</button>
-      <button onclick="scrollTo2('enable')" class="hidden md:block hover:text-purple-400 transition text-sm">作战手册</button>
-      <button onclick="scrollTo2('success')" class="hidden md:block hover:text-purple-400 transition text-sm">客户成功</button>
-      <a href="/" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold">⚙️ 方案生成</a>
+      <button onclick="showStage('home')" class="hidden md:block hover:text-yellow-200 transition text-sm">首页</button>
+      <button onclick="showStage('radar')" class="hidden md:block hover:text-yellow-200 transition text-sm">阶段一</button>
+      <button onclick="showStage('brand')" class="hidden md:block hover:text-yellow-200 transition text-sm">阶段二</button>
+      <button onclick="showStage('convert')" class="hidden md:block hover:text-yellow-200 transition text-sm">阶段三</button>
+      <button onclick="showStage('enable')" class="hidden md:block hover:text-yellow-200 transition text-sm">阶段四</button>
+      <button onclick="showStage('success')" class="hidden md:block hover:text-yellow-200 transition text-sm">阶段五</button>
+      <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg gold-btn transition font-semibold">🛠️ 管理后台</a>
     </div>
   </div>
 </nav>
+<div class="tab-rail">
+  <div class="tab-rail-inner max-w-7xl mx-auto px-4 py-3 flex gap-3" id="topStageTabs"></div>
+</div>
 
-<header class="pt-28 pb-10 px-4">
+<header class="home-only pt-36 pb-10 px-4">
   <div class="max-w-6xl mx-auto text-center">
-    <div class="inline-block px-4 py-1 mb-5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm">🌉 粤港澳大湾区 · AI 一站式服务</div>
-    <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text leading-tight">从挖掘客户 到 客户成功</h1>
-    <p class="text-lg md:text-xl text-gray-300 mb-3">AI 赋能大湾区企业，助力客户<strong class="text-pink-300">品牌升级</strong>与<strong class="text-amber-300">团队升级</strong>，打通获客到成功的全链路</p>
-    <p class="text-sm text-green-400 mb-8" id="heroSub">✨ 以园区Skill方案引擎为核心，向前延伸到客户挖掘、向后延伸到客户成功</p>
+    <div class="inline-block px-4 py-1 mb-5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-200 text-sm">BLACK GOLD THEME · 商机 · 一张图 · 方案 · 文档 · 报价</div>
+    <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text leading-tight">五阶段行业方案作战台</h1>
+    <p class="text-lg md:text-xl text-gray-300 mb-3">从最新招标信息开始，到行业方案一张图、正式方案包、客户手册、报价测算，形成售前到商务闭环。</p>
+    <p class="text-sm text-green-400 mb-8" id="heroSub">✨ 进入页面先看真实行业机会，再把机会转成可交付材料</p>
     <div class="flex flex-wrap gap-3 justify-center mb-10">
-      <button onclick="scrollTo2('radar')" class="bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 px-7 py-3 rounded-lg font-semibold transition">🛰️ 体验AI客户雷达</button>
-      <button onclick="scrollTo2('stages')" class="border border-purple-500 hover:bg-purple-500/10 px-7 py-3 rounded-lg font-semibold transition">查看全链路</button>
+      <button onclick="showStage('radar')" class="gold-btn px-7 py-3 rounded-lg font-semibold transition">🛰️ 实时招标雷达</button>
+      <button onclick="showStage('convert')" class="ghost-btn px-7 py-3 rounded-lg font-semibold transition">直接生成方案</button>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="statGrid"></div>
   </div>
 </header>
 
-<!-- 五段链路 -->
-<section id="stages" class="py-16 px-4">
+<!-- 五阶段链路 -->
+<section id="stages" class="home-only py-16 px-4">
   <div class="max-w-6xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">全链路五段作战地图</h2>
-    <p class="text-center text-gray-400 mb-12">挖掘客户 → 品牌升级 → 转化成交 → 团队升级 → 客户成功，每段都有可交付的AI能力</p>
+    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">阶段一到阶段五作战地图</h2>
+    <p class="text-center text-gray-400 mb-12">阶段一看真实商机，阶段二做行业一张图，阶段三生成方案包，阶段四沉淀文档手册，阶段五联动报价。</p>
     <div id="stageGrid" class="grid grid-cols-1 md:grid-cols-5 gap-4"></div>
   </div>
 </section>
 
-<!-- 大湾区城市带 -->
-<section class="py-12 px-4 bg-slate-800/40">
-  <div class="max-w-6xl mx-auto">
-    <h2 class="text-2xl md:text-3xl font-bold mb-3 text-center gradient-text">🌉 大湾区 11 城产业地图</h2>
-    <p class="text-center text-gray-400 mb-8">按城市主导产业精准匹配可切入的园区方案</p>
-    <div id="cityGrid" class="flex flex-wrap justify-center gap-3"></div>
-  </div>
-</section>
-
-<!-- 段1 客户雷达 -->
-<section id="radar" class="py-16 px-4">
-  <div class="max-w-5xl mx-auto">
+<!-- 阶段一 实时招标雷达 -->
+<section id="radar" class="stage-page py-36 px-4">
+  <div class="max-w-6xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
     <div class="text-center mb-8">
       <span class="text-4xl">🛰️</span>
-      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段一 · AI 客户雷达</h2>
-      <p class="text-gray-400">选择行业与大湾区城市，一键生成精准目标客户清单与个性化触达话术</p>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段一 · 实时招标雷达</h2>
+      <p class="text-gray-400">一进来先看真实市场机会：实时抓取「中国政府采购网」全网各行业最新招标公告，精准锁定可投标商机</p>
     </div>
-    <div class="bg-slate-800/60 border border-cyan-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
-        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="radarPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div><label class="block text-sm font-semibold mb-2">目标城市</label><select id="radarCity" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div><label class="block text-sm font-semibold mb-2">线索数量</label><select id="radarCount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option>4</option><option>6</option><option>8</option></select></div>
-        <div class="flex items-end"><button onclick="runRadar()" id="radarBtn" class="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">🛰️ 生成线索</button></div>
+    <h2 class="text-2xl md:text-3xl font-bold mb-3 text-center gradient-text">🌉 大湾区 11 城产业地图</h2>
+    <p class="text-center text-gray-400 mb-8">点击任一城市，实时检索该地最新招标公告</p>
+    <div id="cityGrid" class="flex flex-wrap justify-center gap-3"></div>
+    <div class="mt-8 bg-slate-800/60 border border-cyan-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+        <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="radarPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">关键词(可选)</label><input id="radarKw" placeholder="留空按行业搜索" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">公告类型</label><select id="radarKind" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="opportunity">可投标机会</option><option value="result">中标结果</option><option value="all">全部公告</option></select></div>
+        <div><label class="block text-sm font-semibold mb-2">时间范围</label><select id="radarDays" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="7">近一周</option><option value="30" selected>近一月</option><option value="90">近三月</option></select></div>
+        <div class="flex items-end"><button onclick="runRadar()" id="radarBtn" class="w-full gold-btn px-4 py-2.5 rounded-lg font-bold transition">🛰️ 实时检索</button></div>
+      </div>
+      <div class="mb-5">
+        <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" id="radarDtOnly" class="w-4 h-4 accent-cyan-500">
+          <span class="text-sm text-cyan-200">🔷 仅看数字孪生相关项目</span>
+          <span class="text-xs text-gray-500">（智慧/三维/可视化/IOC/仿真/BIM等）</span>
+        </label>
       </div>
       <div id="radarResult"></div>
     </div>
   </div>
 </section>
 
-<!-- 段2 品牌升级 -->
-<section id="brand" class="py-16 px-4 bg-slate-800/40">
-  <div class="max-w-5xl mx-auto">
+<!-- 阶段二 行业产品一页纸 -->
+<section id="brand" class="stage-page py-36 px-4">
+  <div class="max-w-5xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
     <div class="text-center mb-8">
-      <span class="text-4xl">✨</span>
-      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段二 · AI 品牌升级一页纸</h2>
-      <p class="text-gray-400">基于行业知识库，一键生成品牌价值主张 + 能力背书 + 标杆案例，并下载可对外的 Word 一页纸</p>
+      <span class="text-4xl">📄</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段二 · 行业方案一张图</h2>
+      <p class="text-gray-400">选择行业，一键生成对标「51WORLD 园区一页纸」版式的行业产品一页纸：产品定义 + 客户痛点 + 业务场景 + 客户案例 + 产品矩阵，可下载单页 PPT</p>
     </div>
     <div class="bg-slate-800/60 border border-pink-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="brandPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div><label class="block text-sm font-semibold mb-2">客户主体（选填）</label><input id="brandClient" placeholder="如：某某产业园" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
-        <div class="flex items-end"><button onclick="runBrand()" id="brandBtn" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">✨ 生成品牌一页纸</button></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="brandPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div class="flex items-end gap-3">
+          <button onclick="runBrand()" id="brandBtn" class="flex-1 gold-btn px-4 py-2.5 rounded-lg font-bold transition">📄 预览一页纸</button>
+          <button onclick="downloadOnePager()" id="brandDlBtn" class="flex-1 ghost-btn px-4 py-2.5 rounded-lg font-bold transition">⬇️ 下载 PPT</button>
+        </div>
       </div>
       <div id="brandResult"></div>
     </div>
   </div>
 </section>
 
-<!-- 段3 转化成交 直连 -->
-<section class="py-12 px-4">
-  <div class="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-2xl p-8">
-    <span class="text-4xl">🎯</span>
-    <h2 class="text-2xl md:text-3xl font-bold mt-2 mb-2 gradient-text">段三 · AI 方案生成（核心引擎）</h2>
-    <p class="text-gray-300 mb-2">自然语言描述需求 → 自动识别行业/客户/场景 → 一键生成真实 Word / PPT / Excel 完整方案包</p>
-    <p class="text-sm text-gray-400 mb-6">这是平台已上线的核心能力，全链路的"成交"环节直接复用它。</p>
-    <a href="/#generator" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 px-8 py-3 rounded-lg font-bold transition">前往方案生成器 →</a>
+<!-- 阶段三 方案生成 -->
+<section id="convert" class="stage-page py-36 px-4">
+  <div class="max-w-5xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
+    <div class="text-center mb-8">
+      <span class="text-4xl">🎯</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段三 · 方案/PPT/计划生成</h2>
+      <p class="text-gray-400">不再跳转到单独页面：在当前作战台内输入客户需求，生成解决方案、PPT、实施计划或完整方案包。</p>
+    </div>
+    <div class="bg-slate-800/60 border border-purple-500/20 rounded-2xl p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="genPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">客户名称</label><input id="genCustomer" value="某客户" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">输出类型</label><select id="genType" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="complete">完整方案包 ZIP</option><option value="solution">解决方案 Word</option><option value="ppt">汇报PPT</option><option value="plan">实施计划 Excel</option></select></div>
+      </div>
+      <label class="block text-sm font-semibold mb-2">客户需求/场景描述</label>
+      <textarea id="genRequirement" rows="5" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-3 mb-4" placeholder="例如：客户是一所高校，希望建设数字孪生校园IOC，实现安防、能耗、资产、空间、应急、访客、停车、AI问答等能力，要求能支撑领导驾驶舱和日常运维。"></textarea>
+      <button onclick="runStage3Generate()" id="genBtn" class="w-full gold-btn px-4 py-3 rounded-lg font-bold transition">🎯 生成阶段三材料</button>
+      <div id="genResult" class="mt-5"></div>
+    </div>
   </div>
 </section>
 
-<!-- 段4 作战手册 -->
-<section id="enable" class="py-16 px-4">
-  <div class="max-w-5xl mx-auto">
+<!-- 阶段四 文档手册 -->
+<section id="enable" class="stage-page py-36 px-4">
+  <div class="max-w-5xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
     <div class="text-center mb-8">
-      <span class="text-4xl">🎓</span>
-      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段四 · AI 团队作战手册</h2>
-      <p class="text-gray-400">把顶尖打法标准化：开场白、价值话术、异议应对、Demo脚本，一键复制给整个团队</p>
+      <span class="text-4xl">📚</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段四 · 全环节文档/客户手册中心</h2>
+      <p class="text-gray-400">按需求、设计、执行、验收、售后整理标准交付物；可按客户行业快速下载适配模板。</p>
     </div>
     <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="enablePark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div><label class="block text-sm font-semibold mb-2">受众团队</label><select id="enableAudience" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option>销售</option><option>售前</option><option>交付</option></select></div>
-        <div class="flex items-end"><button onclick="runEnable()" id="enableBtn" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-90 px-4 py-2.5 rounded-lg font-bold transition">🎓 生成作战手册</button></div>
+        <div><label class="block text-sm font-semibold mb-2">客户行业</label><select id="docPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div><label class="block text-sm font-semibold mb-2">客户名称</label><input id="docCustomer" value="某客户" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div class="flex items-end"><button onclick="renderDocCenter()" id="docBtn" class="w-full gold-btn px-4 py-2.5 rounded-lg font-bold transition">📚 刷新文档清单</button></div>
       </div>
-      <div id="enableResult"></div>
+      <div id="docCenter"></div>
     </div>
   </div>
 </section>
 
-<!-- 段5 客户成功 -->
-<section id="success" class="py-16 px-4 bg-slate-800/40">
-  <div class="max-w-5xl mx-auto">
+<!-- 阶段五 报价联动 -->
+<section id="success" class="stage-page py-36 px-4">
+  <div class="max-w-5xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
     <div class="text-center mb-8">
-      <span class="text-4xl">📈</span>
-      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">段五 · AI 客户成功驾驶舱</h2>
-      <p class="text-gray-400">量化健康度 + ROI 测算 + 智能增购建议，把一次性项目变成持续订阅</p>
+      <span class="text-4xl">💰</span>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段五 · V1.0 产品报价生成器</h2>
+      <p class="text-gray-400">直接使用 51WORLD V1.0 产品报价清单：勾选板块/模块、填写数量，实时计算含税报价并导出同格式 Excel。</p>
     </div>
     <div class="bg-slate-800/60 border border-green-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
-        <div><label class="block text-sm font-semibold mb-2">行业/园区类型</label><select id="csPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div id="csSliders" class="space-y-3"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div><label class="block text-sm font-semibold mb-2">项目名称（选填）</label><input id="quoteProject" placeholder="如：某某产业园数字孪生项目" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">客户主体（选填）</label><input id="quoteClient" placeholder="如：某某集团" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
+        <div><label class="block text-sm font-semibold mb-2">按行业套餐预选</label><select id="quotePreset" onchange="applyQuotePreset()" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
       </div>
-      <button onclick="runCS()" id="csBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 px-4 py-3 rounded-lg font-bold transition">📈 评估客户健康度</button>
-      <div id="csResult" class="mt-6"></div>
+      <div id="quoteSections" class="space-y-4"></div>
+      <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/60 border border-amber-500/30 rounded-xl p-5">
+        <div class="text-sm text-gray-300">
+          <div>已选 <span id="quoteCount" class="text-amber-300 font-bold">0</span> 项　·　税前合计 <span id="quoteSubtotal" class="text-amber-300 font-bold">¥0</span></div>
+          <div class="text-lg mt-1">含税(6%)合计：<span id="quoteTaxed" class="text-2xl font-bold gradient-text">¥0</span></div>
+        </div>
+        <button id="quoteExportBtn" onclick="downloadQuoteExcel()" class="gold-btn px-8 py-3 rounded-lg font-bold transition whitespace-nowrap">⬇️ 导出报价清单 Excel</button>
+      </div>
+      <div id="quoteResult" class="mt-4"></div>
     </div>
   </div>
 </section>
 
 <!-- 商业模式 -->
-<section class="py-16 px-4">
+<section class="home-only py-16 px-4">
   <div class="max-w-5xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">商业模式：从项目制走向订阅制</h2>
-    <p class="text-center text-gray-400 mb-12">引流 → 主营 → 复利，客户成功占比越高，公司越值钱</p>
+    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">业务闭环：从线索到报价</h2>
+    <p class="text-center text-gray-400 mb-12">真实商机 → 行业材料 → 方案转化 → 交付文档 → 报价联动</p>
     <div id="bizGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
   </div>
 </section>
 
 <footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
-  <p>🛰️ AI赋能大湾区 · 全链路作战驾驶舱 · 挖掘客户 → 品牌升级 → 转化成交 → 团队升级 → 客户成功</p>
+  <p>🛰️ 园区Skill · 五阶段方案作战台 · 阶段一 → 阶段二 → 阶段三 → 阶段四 → 阶段五</p>
   <p class="text-xs mt-2">以园区Skill方案引擎为核心 · 数据由 51WORLD 行业知识库驱动</p>
 </footer>
 
@@ -174,33 +228,57 @@ const colorMap = {
   purple:['purple-500/10','purple-500/30','purple-300'], amber:['amber-500/10','amber-500/30','amber-300'],
   green:['green-500/10','green-500/30','green-300']
 };
-let PARKS = [], JOURNEY = null;
+let PARKS = [], JOURNEY = null, DELIVERABLES = [], PRICING = null;
+let activeStage = 'home';
+const quoteQty = {};
 
 function scrollTo2(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function showStage(id, skipScroll=false){
+  activeStage = id;
+  const isHome = id === 'home';
+  document.querySelectorAll('.home-only').forEach(el=>{
+    el.classList.toggle('home-hidden', !isHome);
+  });
+  document.querySelectorAll('.stage-page').forEach(el=>{
+    el.classList.toggle('active', !isHome && el.id===id);
+  });
+  document.querySelectorAll('[data-stage-tab]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.stageTab===id);
+  });
+  document.querySelectorAll('[data-stage-card]').forEach(el=>{
+    el.classList.toggle('active-card', !isHome && el.dataset.stageCard===id);
+  });
+  if(!skipScroll) setTimeout(()=> isHome ? window.scrollTo({top:0,behavior:'smooth'}) : scrollTo2(id), 20);
+}
 
 async function init(){
-  const [pRes, jRes] = await Promise.all([fetch('/api/parks'), fetch('/api/journey')]);
+  const [pRes, jRes, dRes, qRes] = await Promise.all([fetch('/api/parks'), fetch('/api/journey'), fetch('/api/deliverables'), fetch('/api/pricing')]);
   PARKS = await pRes.json();
   JOURNEY = await jRes.json();
+  DELIVERABLES = await dRes.json();
+  PRICING = await qRes.json();
   // 下拉
   const opts = PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
-  ['radarPark','enablePark','csPark','brandPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
-  document.getElementById('radarCity').innerHTML = `<option value="">大湾区全域</option>` + JOURNEY.cities.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  ['brandPark','genPark','docPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
+  document.getElementById('radarPark').innerHTML = `<option value="">🌐 全部行业(综合)</option>` + opts;
   // 统计
   const s = JOURNEY.stats;
   document.getElementById('statGrid').innerHTML = [
-    ['5','全链路环节','cyan'],[s.cities,'大湾区城市','purple'],[s.parks,'行业方案','pink'],['1','站式服务','green']
+    ['5','作战阶段','cyan'],[s.cities,'大湾区城市','purple'],[s.parks,'行业方案','pink'],['18+','文档模板','green']
   ].map(([n,l,c])=>`<div class="bg-${c}-500/10 border border-${c}-500/20 rounded-lg p-5"><div class="text-3xl font-bold text-${c}-400">${n}</div><div class="text-gray-300 mt-1 text-sm">${l}</div></div>`).join('');
-  renderStages(); renderCities(); renderBiz(); renderSliders();
+  renderStages(); renderCities(); renderBiz(); renderDocCenter(); initQuoteCenter(); showStage(activeStage, true); runRadar();
 }
 
 function renderStages(){
+  const tabs = [{ tool:'home', name:'首页', subtitle:'总览' }, ...JOURNEY.stages];
+  document.getElementById('topStageTabs').innerHTML = tabs.map(st=>
+    `<button data-stage-tab="${st.tool}" onclick="showStage('${st.tool}')" class="stage-tab shrink-0 rounded-full px-5 py-2.5 text-sm font-bold transition">${st.name} · ${esc(st.subtitle)}</button>`
+  ).join('');
   document.getElementById('stageGrid').innerHTML = JOURNEY.stages.map((st,i)=>{
     const [bg,bd,tx] = colorMap[st.color] || colorMap.purple;
-    const link = st.tool==='convert' ? '/#generator' : '#'+st.tool;
-    return `<div class="stage-card bg-${bg} border border-${bd} rounded-xl p-5 flex flex-col cursor-pointer" onclick="goStage('${st.tool}')">
-      <div class="flex items-center justify-between mb-2"><span class="text-3xl">${st.icon}</span><span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-gray-300">第${st.step}段</span></div>
+    return `<div data-stage-card="${st.tool}" class="stage-card bg-${bg} border border-${bd} rounded-xl p-5 flex flex-col cursor-pointer" onclick="showStage('${st.tool}')">
+      <div class="flex items-center justify-between mb-2"><span class="text-3xl">${st.icon}</span><span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-gray-300">阶段${st.step}</span></div>
       <h3 class="text-lg font-bold text-${tx} mb-1">${st.name}</h3>
       <div class="text-xs text-gray-400 mb-3">${st.subtitle}</div>
       <p class="text-xs text-gray-300 mb-3 flex-1"><span class="text-red-300">痛点：</span>${esc(st.customerPain)}</p>
@@ -210,21 +288,20 @@ function renderStages(){
   }).join('');
 }
 function goStage(tool){
-  if(tool==='convert'){ location.href='/#generator'; return; }
-  scrollTo2(tool);
+  showStage(tool);
 }
 
 function renderCities(){
   document.getElementById('cityGrid').innerHTML = JOURNEY.cities.map(c=>
-    `<div class="card-hover bg-slate-800/70 border border-purple-500/20 rounded-xl px-4 py-3 text-center cursor-pointer" onclick="quickRadar('${c.id}')">
+    `<div class="card-hover bg-slate-800/70 border border-purple-500/20 rounded-xl px-4 py-3 text-center cursor-pointer" onclick="quickRadar('${c.name}')">
       <div class="font-bold text-purple-200">${c.name}</div>
       <div class="text-[10px] text-gray-400 mt-1 max-w-[140px]">${c.pillars.slice(0,3).join(' · ')}</div>
     </div>`).join('');
 }
-function quickRadar(cityId){ document.getElementById('radarCity').value = cityId; scrollTo2('radar'); runRadar(); }
+function quickRadar(cityName){ document.getElementById('radarKw').value = cityName; document.getElementById('radarPark').value=''; showStage('radar'); runRadar(); }
 
 function renderBiz(){
-  const tierColor = {'引流':'cyan','主营':'purple','复利':'green'};
+  const tierColor = {'入口':'cyan','转化':'purple','落地':'green'};
   document.getElementById('bizGrid').innerHTML = JOURNEY.businessModel.map(b=>{
     const c = tierColor[b.tier]||'purple';
     return `<div class="bg-${c}-500/10 border border-${c}-500/30 rounded-xl p-6 flex flex-col">
@@ -236,172 +313,308 @@ function renderBiz(){
   }).join('');
 }
 
-// 段5 滑块
-const SLIDERS = [
-  ['modulesLive','上线模块数',1,8,3],['activeRate','活跃使用率(%)',0,100,60],
-  ['satisfaction','客户满意度(1-5)',1,5,4],['sponsor','高层支持(1-5)',1,5,3],['dataIntegration','数据接入完整度(%)',0,100,60]
-];
-function renderSliders(){
-  document.getElementById('csSliders').innerHTML = SLIDERS.map(([id,label,min,max,def])=>
-    `<div><div class="flex justify-between text-xs mb-1"><span>${label}</span><span id="${id}Val" class="text-green-300 font-bold">${def}</span></div>
-     <input id="${id}" type="range" min="${min}" max="${max}" value="${def}" step="${id==='satisfaction'||id==='sponsor'?1:(id==='modulesLive'?1:5)}" class="w-full" oninput="document.getElementById('${id}Val').textContent=this.value"></div>`).join('');
-}
-
-// ===== 段1 客户雷达 =====
+// ===== 阶段一 实时招标雷达 =====
+const KIND_BADGE = {
+  opportunity: ['可投标','emerald'], result: ['已中标','sky'], update: ['更正','amber'], void: ['废标','slate']
+};
 async function runRadar(){
   const btn=document.getElementById('radarBtn'), box=document.getElementById('radarResult');
-  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 雷达扫描中...</div>';
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在抓取中国政府采购网实时数据...</div>';
   try{
     const r = await fetch('/api/lead/radar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      parkId:document.getElementById('radarPark').value, city:document.getElementById('radarCity').value, count:+document.getElementById('radarCount').value
+      parkId:document.getElementById('radarPark').value,
+      keyword:document.getElementById('radarKw').value.trim(),
+      kind:document.getElementById('radarKind').value,
+      days:+document.getElementById('radarDays').value,
+      dtOnly:document.getElementById('radarDtOnly').checked,
+      limit:12
     })});
     const j = await r.json();
-    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
-    const pri = {'高':'red','中':'amber','观察':'slate'};
-    box.innerHTML = `<div class="mb-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-sm text-cyan-100">${j.icon} <b>${esc(j.parkName)} · ${esc(j.city)}</b>　${esc(j.summary)}<div class="text-xs text-gray-400 mt-1">📍 ${esc(j.cityNote)}</div></div>
-    <div class="space-y-3">${j.leads.map(l=>{const c=pri[l.priority]||'slate';return `
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="flex items-start justify-between gap-2 mb-2">
-          <div><div class="font-bold text-cyan-200">${esc(l.name)}</div><div class="text-xs text-gray-400">🎯 决策人：${esc(l.decisionMaker)} · 📍 ${esc(l.region)}</div></div>
-          <span class="text-[11px] px-2 py-0.5 rounded-full bg-${c}-500/20 text-${c}-300 whitespace-nowrap">${l.priority}优先</span>
-        </div>
-        <div class="text-xs text-gray-300 mb-2"><span class="text-purple-300">契合点：</span>${esc(l.fitReason)}</div>
-        <div class="text-xs mb-2"><span class="text-red-300">痛点钩子：</span>${esc(l.painHook)}　<span class="text-green-300">→ 价值：</span>${esc(l.valueHook)}</div>
-        <div class="text-xs bg-slate-800/80 border border-slate-700 rounded-lg p-3 text-gray-200"><span class="text-cyan-300 font-semibold">💬 触达话术：</span>${esc(l.outreach)}
-          <button onclick="copyTxt(this)" data-txt="${esc(l.outreach)}" class="ml-2 text-[10px] px-2 py-0.5 rounded bg-cyan-600/60 hover:bg-cyan-500">复制</button></div>
-      </div>`;}).join('')}</div>
-    <div class="mt-4 text-sm text-center"><a href="${j.nextStep.link}" class="text-purple-300 hover:underline">下一步：${esc(j.nextStep.action)} →</a></div>`;
+    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">⚠️ ${esc(j.error||'数据获取失败')}</div>`; return; }
+    if(!j.tenders.length){ box.innerHTML=`<div class="mb-2 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-sm text-cyan-100">${esc(j.summary)}</div>`; return; }
+    box.innerHTML = `
+      <div class="mb-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-sm text-cyan-100">
+        🔎 关键词「<b>${esc(j.keyword)}</b>」· ${esc(j.rangeLabel)}　${esc(j.summary)}
+        <div class="text-xs text-gray-400 mt-1">📡 数据来源：${esc(j.source)} · 更新于 ${new Date(j.fetchedAt).toLocaleString('zh-CN')}${j.cached?'（缓存）':'（实时）'}</div>
+      </div>
+      <div class="space-y-3">${j.tenders.map(t=>{
+        const [badge,color]=KIND_BADGE[t.kind]||['公告','slate'];
+        return `
+        <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4 hover:border-cyan-500/40 transition">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <a href="${esc(t.url)}" target="_blank" rel="noopener" class="font-bold text-cyan-200 hover:text-cyan-100 hover:underline leading-snug">${esc(t.title)}</a>
+            <div class="flex items-center gap-1 whitespace-nowrap">
+              ${t.dtRelated?`<span class="text-[11px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300" title="${(t.dtTags||[]).join('、')}">🔷 数字孪生</span>`:''}
+              <span class="text-[11px] px-2 py-0.5 rounded-full bg-${color}-500/20 text-${color}-300">${badge}</span>
+            </div>
+          </div>
+          ${t.summary?`<div class="text-xs text-gray-400 mb-2 line-clamp-2">${esc(t.summary)}</div>`:''}
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-300">
+            ${t.date?`<span>🗓️ ${esc(t.date)}</span>`:''}
+            ${t.province?`<span>📍 ${esc(t.province)}</span>`:''}
+            ${t.type?`<span class="text-purple-300">📋 ${esc(t.type)}</span>`:''}
+            ${t.category?`<span class="text-gray-400">🏷️ ${esc(t.category)}</span>`:''}
+          </div>
+          <div class="mt-2 text-xs text-gray-400 border-t border-slate-700/60 pt-2 flex flex-wrap gap-x-4 gap-y-1">
+            ${t.buyer?`<span>🏛️ 采购人：<span class="text-gray-200">${esc(t.buyer)}</span></span>`:''}
+            ${t.agent?`<span>🤝 代理：${esc(t.agent)}</span>`:''}
+            <a href="${esc(t.url)}" target="_blank" rel="noopener" class="ml-auto text-cyan-300 hover:underline">查看公告原文 →</a>
+          </div>
+        </div>`;}).join('')}</div>
+      <div class="mt-4 text-sm text-center"><button onclick="showStage('convert')" class="text-yellow-200 hover:underline">锁定商机后：一键生成对应行业方案与PPT →</button></div>`;
   }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
   finally{ btn.disabled=false; }
 }
 function copyTxt(el){ navigator.clipboard.writeText(el.dataset.txt); el.textContent='已复制'; setTimeout(()=>el.textContent='复制',1500); }
 
-// ===== 段2 品牌升级 =====
+// ===== 阶段二 行业产品一页纸 =====
 async function runBrand(){
   const btn=document.getElementById('brandBtn'), box=document.getElementById('brandResult');
-  const parkId=document.getElementById('brandPark').value, client=document.getElementById('brandClient').value.trim();
-  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 生成品牌内容...</div>';
+  const parkId=document.getElementById('brandPark').value;
+  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 生成一页纸内容...</div>';
   try{
-    const r = await fetch('/api/brand/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client})});
+    const r = await fetch('/api/brand/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId})});
     const j = await r.json();
     if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
     box.innerHTML = `
-    <div class="mb-3 p-4 rounded-xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 text-center">
-      <div class="text-xs text-pink-300 mb-1">${esc(j.company)} · ${esc(j.positioning)}</div>
-      <div class="text-xl font-bold text-pink-100 mb-1">${j.icon} ${esc(j.parkName)} · 品牌一页纸</div>
-      <div class="text-sm text-gray-300">${esc(j.tagline)}</div>
-    </div>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-pink-300 font-semibold text-sm mb-2">🎯 一句话价值主张</div>
-        <p class="text-sm text-gray-100 font-semibold mb-4">${esc(j.valueProp)}</p>
-        <div class="text-pink-300 font-semibold text-sm mb-2">💡 我们为客户解决</div>
-        <ul class="text-xs text-gray-300 space-y-1">${j.solves.map(s=>`<li>▸ ${esc(s)}</li>`).join('')}</ul>
+    <div class="mb-4 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-stone-900 border border-yellow-500/20">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <div class="text-xl font-bold text-pink-100">${j.icon} ${esc(j.parkName)} <span class="text-cyan-300">IOC</span></div>
+          <div class="text-xs text-cyan-300 italic">${esc(j.en)}</div>
+        </div>
+        <div class="text-[11px] text-gray-400">${esc(j.company)} · 产品一页纸版式</div>
       </div>
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-pink-300 font-semibold text-sm mb-2">🏆 能力背书</div>
-        <p class="text-[11px] text-gray-400 mb-2">${esc(j.proof.scale).slice(0,90)}…</p>
-        <ul class="text-xs text-gray-300 space-y-1 mb-3">${j.proof.advantages.map(a=>`<li>▸ ${esc(a)}</li>`).join('')}</ul>
-        <div class="text-pink-300 font-semibold text-sm mb-2">🌟 标杆案例</div>
-        ${(j.cases.length?j.cases:[{name:'多个标杆项目',value:'可按需提供详细案例',metrics:[]}]).map(c=>`<div class="text-xs text-gray-300 mb-1"><b class="text-purple-300">${esc(c.name)}</b>${c.metrics&&c.metrics.length?` <span class="text-rose-300">${esc(c.metrics.join('；')).slice(0,40)}</span>`:''}</div>`).join('')}
+      <p class="text-xs text-gray-300 mt-2 leading-relaxed">${esc(j.intro)}</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-slate-900/60 border border-rose-500/20 rounded-xl p-4">
+        <div class="text-rose-300 font-semibold text-sm mb-2">⚠️ 客户痛点</div>
+        <ul class="space-y-2">${j.pains.map(p=>`<li class="text-xs"><b class="text-rose-200">▸ ${esc(p.title)}</b><div class="text-gray-400 mt-0.5">${esc(p.desc).slice(0,46)}</div></li>`).join('')}</ul>
+      </div>
+      <div class="bg-slate-900/60 border border-blue-500/20 rounded-xl p-4">
+        <div class="text-blue-300 font-semibold text-sm mb-2">🧩 业务场景</div>
+        <div class="space-y-2">${j.scenarios.map(s=>`<div><div class="text-xs font-bold text-blue-200 mb-1">${esc(s.name)}</div><div class="flex flex-wrap gap-1">${s.features.slice(0,6).map(f=>`<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-200 border border-blue-500/20">${esc(f)}</span>`).join('')}</div></div>`).join('')}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-amber-500/20 rounded-xl p-4">
+        <div class="text-amber-300 font-semibold text-sm mb-2">🏆 创新价值·产品矩阵</div>
+        <ul class="space-y-1.5 mb-3">${j.matrix.map(m=>`<li class="text-xs"><b class="text-amber-200">${esc(m.tag)}</b> <span class="text-gray-300">${esc(m.name)}</span></li>`).join('')}</ul>
+        <div class="text-emerald-300 font-semibold text-sm mb-1">★ 客户案例</div>
+        ${(j.cases.length?j.cases:[{name:'多个标杆项目',value:'可按需提供详细案例'}]).map(c=>`<div class="text-xs text-gray-300 mb-1"><b class="text-emerald-200">${esc(c.name)}</b><div class="text-gray-400 text-[11px]">${esc(c.value).slice(0,40)}</div></div>`).join('')}
       </div>
     </div>
-    ${j.valueMetrics&&j.valueMetrics.length?`<div class="mt-3 flex flex-wrap gap-2 justify-center">${j.valueMetrics.map(m=>`<span class="text-[11px] px-2 py-1 rounded bg-pink-500/10 border border-pink-500/20 text-pink-200">${esc(m.label)} ${esc(m.value)}</span>`).join('')}</div>`:''}
-    <div class="mt-4 p-3 rounded-lg bg-pink-500/10 border border-pink-500/20 text-xs text-pink-100 text-center">📞 ${esc(j.cta)}</div>
-    <button onclick="downloadBrand('${parkId}','${esc(client)}')" id="brandDlBtn" class="mt-4 w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 px-4 py-3 rounded-lg font-bold transition">⬇️ 下载品牌一页纸 (.docx)</button>`;
+    <div class="mt-4 text-center"><button onclick="downloadOnePager()" class="gold-btn px-6 py-2.5 rounded-lg font-bold transition">⬇️ 下载完整产品一页纸 (.pptx)</button></div>`;
   }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
   finally{ btn.disabled=false; }
 }
-async function downloadBrand(parkId, client){
+async function downloadOnePager(){
+  const parkId=document.getElementById('brandPark').value;
   const dl=document.getElementById('brandDlBtn'); const old=dl.textContent;
   dl.disabled=true; dl.textContent='⏳ 生成中...';
   try{
-    const r = await fetch('/api/generate/brand',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client, requirement: client?`为${client}做品牌升级`:''})});
+    const r = await fetch('/api/generate/onepager',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId})});
     if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.error||('HTTP '+r.status)); }
     const blob = await r.blob();
-    const name = (PARKS.find(p=>p.id===parkId)||{}).name || '品牌';
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name+'-品牌一页纸.docx';
+    const name = (PARKS.find(p=>p.id===parkId)||{}).name || '产品';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name+'-产品一页纸.pptx';
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
     dl.textContent='✅ 已下载'; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},1800);
   }catch(e){ dl.textContent='❌ '+e.message; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},2500); }
 }
 
-// ===== 段4 作战手册 =====
-async function runEnable(){
-  const btn=document.getElementById('enableBtn'), box=document.getElementById('enableResult');
-  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 生成作战手册...</div>';
+// ===== 阶段三 方案/PPT/计划生成 =====
+const GEN_API = {
+  complete: ['/api/generate/complete-package', '完整方案包.zip'],
+  solution: ['/api/generate/solution', '解决方案.docx'],
+  ppt: ['/api/generate/ppt', '汇报PPT.pptx'],
+  plan: ['/api/generate/plan', '实施计划.xlsx']
+};
+async function runStage3Generate(){
+  const btn=document.getElementById('genBtn'), box=document.getElementById('genResult');
+  const type=document.getElementById('genType').value;
+  const parkId=document.getElementById('genPark').value;
+  const park=(PARKS.find(p=>p.id===parkId)||{}).name||'行业';
+  const customer=document.getElementById('genCustomer').value.trim()||'某客户';
+  const requirement=document.getElementById('genRequirement').value.trim() || `${customer}需要建设${park}数字孪生IOC平台，覆盖安全、运营、资产、能耗、应急和领导驾驶舱。`;
+  const [url,label]=GEN_API[type]||GEN_API.complete;
+  btn.disabled=true; btn.textContent='⏳ 正在生成材料...';
+  box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在调用方案引擎，请稍候...</div>';
   try{
-    const r = await fetch('/api/enablement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      parkId:document.getElementById('enablePark').value, audience:document.getElementById('enableAudience').value
-    })});
-    const j = await r.json();
-    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
-    box.innerHTML = `
-    <div class="mb-3 text-lg font-bold text-amber-200">${j.icon} ${esc(j.title)}</div>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-amber-300 font-semibold text-sm mb-2">🎤 开场白</div><p class="text-xs text-gray-200">${esc(j.opening)}</p>
-        <div class="text-amber-300 font-semibold text-sm mt-4 mb-2">💡 价值话术</div>
-        <div class="space-y-2">${j.valueTalk.map(v=>`<div class="text-xs text-gray-300"><span class="text-red-300">痛：</span>${esc(v.pain)}<br><span class="text-green-300">攻：</span>${esc(v.pitch)}</div>`).join('')}</div>
-      </div>
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-amber-300 font-semibold text-sm mb-2">🛡️ 异议应对库</div>
-        <div class="space-y-2">${j.objections.map(o=>`<details class="text-xs"><summary class="cursor-pointer text-gray-200 hover:text-amber-200">Q：${esc(o.q)}</summary><div class="text-gray-400 mt-1 pl-3">A：${esc(o.a)}</div></details>`).join('')}</div>
-      </div>
-    </div>
-    <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4 mt-4">
-      <div class="text-amber-300 font-semibold text-sm mb-2">🎬 演示Demo脚本</div>
-      <div class="grid md:grid-cols-2 gap-2">${j.demoScript.map(d=>`<div class="text-xs text-gray-300"><span class="text-amber-200 font-semibold">${d.step}. ${esc(d.scene)}</span> — ${esc(d.say)}<div class="text-[11px] text-cyan-300 mt-0.5">★ ${esc(d.highlight)}</div></div>`).join('')}</div>
-    </div>
-    <div class="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-100">🏁 ${esc(j.closing)}<div class="text-gray-400 mt-1">${esc(j.deliverableNote)}</div></div>`;
-  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
-  finally{ btn.disabled=false; }
+    const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client:customer, projectName:`${customer}${park}数字孪生建设项目`, requirement, version:'专业版'})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${customer}-${park}-${label}`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    box.innerHTML = `<div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-100">
+      ✅ 已生成并下载 <b>${esc(label)}</b>。<div class="text-xs text-gray-400 mt-1">输入需求已带入行业、客户名称、项目名称，用于提升方案贴合度。</div>
+    </div>`;
+  }catch(e){
+    box.innerHTML=`<div class="text-red-400 text-sm p-3 rounded-lg bg-red-500/10 border border-red-500/20">生成失败：${esc(e.message)}</div>`;
+  }finally{
+    btn.disabled=false; btn.textContent='🎯 生成阶段三材料';
+  }
 }
 
-// ===== 段5 客户成功 =====
-async function runCS(){
-  const btn=document.getElementById('csBtn'), box=document.getElementById('csResult');
-  btn.disabled=true; box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 评估中...</div>';
+// ===== 阶段四 文档/客户手册中心 =====
+function renderDocCenter(){
+  const box=document.getElementById('docCenter');
+  if(!Array.isArray(DELIVERABLES) || !DELIVERABLES.length){
+    box.innerHTML='<div class="text-sm text-amber-300">交付物模板库暂未加载，请刷新页面。</div>'; return;
+  }
+  const customer=esc(document.getElementById('docCustomer').value.trim()||'某客户');
+  const park=(PARKS.find(p=>p.id===document.getElementById('docPark').value)||{}).name||'行业';
+  box.innerHTML = `
+    <div class="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-100">
+      已按 <b>${customer}</b> · <b>${esc(park)}</b> 整理全环节交付文档。下载时会生成可填写 Word 模板，覆盖用途、读者、写作要点、目录大纲和占位内容。
+    </div>
+    <div class="space-y-4">${DELIVERABLES.map(stage=>`
+      <details class="bg-slate-900/60 border border-slate-700 rounded-xl overflow-hidden" open>
+        <summary class="cursor-pointer px-4 py-3 flex items-center justify-between gap-3">
+          <span class="font-bold text-amber-200">${stage.icon||'📁'} ${esc(stage.stage)}</span>
+          <span class="text-xs text-gray-400">${esc(stage.desc||'')} · ${stage.items.length}份</span>
+        </summary>
+        <div class="grid md:grid-cols-2 gap-3 p-4 pt-0">
+          ${stage.items.map(item=>`
+            <div class="bg-slate-800/70 border border-slate-700 rounded-lg p-3">
+              <div class="flex items-start justify-between gap-2 mb-1">
+                <div class="font-semibold text-sm text-gray-100">${item.icon||'📄'} ${esc(item.name)}</div>
+                <button onclick="downloadTemplate('${esc(item.key)}')" class="text-xs px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white whitespace-nowrap">下载</button>
+              </div>
+              <div class="text-[11px] text-amber-300 mb-1">${esc(item.phase)} · ${esc(item.audience)}</div>
+              <div class="text-xs text-gray-400 leading-relaxed">${esc(item.purpose)}</div>
+            </div>`).join('')}
+        </div>
+      </details>`).join('')}</div>`;
+}
+async function downloadTemplate(key){
+  const customer=document.getElementById('docCustomer').value.trim()||'某客户';
+  const parkId=document.getElementById('docPark').value;
   try{
-    const payload = { parkId:document.getElementById('csPark').value };
-    SLIDERS.forEach(([id])=> payload[id] = +document.getElementById(id).value);
-    const r = await fetch('/api/customer-success/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const j = await r.json();
-    if(!j.ok){ box.innerHTML=`<div class="text-amber-400 text-sm">${esc(j.error)}</div>`; return; }
-    const lc = {green:'green',amber:'amber',red:'red'}[j.levelColor]||'green';
-    box.innerHTML = `
-    <div class="grid md:grid-cols-3 gap-4 mb-4">
-      <div class="bg-${lc}-500/10 border border-${lc}-500/30 rounded-xl p-5 text-center flex flex-col justify-center">
-        <div class="text-5xl font-bold text-${lc}-300">${j.health}</div>
-        <div class="text-sm text-${lc}-200 mt-1">健康度 · <b>${esc(j.level)}</b></div>
-      </div>
-      <div class="md:col-span-2 bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-sm font-semibold text-gray-200 mb-2">评分构成</div>
-        ${j.breakdown.map(b=>`<div class="mb-1"><div class="flex justify-between text-[11px] text-gray-400"><span>${esc(b.label)} <span class="text-gray-500">(${b.weight})</span></span><span>${b.score}</span></div><div class="h-1.5 bg-slate-700 rounded"><div class="h-1.5 rounded bg-${lc}-400" style="width:${b.score}%"></div></div></div>`).join('')}
-      </div>
-    </div>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-sm font-semibold text-red-300 mb-2">⚠️ 风险信号 · <span class="text-${lc}-300">${esc(j.renewal.signal)}</span></div>
-        <ul class="text-xs text-gray-300 list-disc pl-4 space-y-1">${j.risks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-        <div class="text-xs text-gray-400 mt-2">👉 ${esc(j.advice)}</div>
-      </div>
-      <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-        <div class="text-sm font-semibold text-green-300 mb-2">📈 ROI 价值</div>
-        <p class="text-xs text-gray-300 mb-2">${esc(j.roi.statement)}</p>
-        <div class="flex flex-wrap gap-2 mb-2">${j.roi.metrics.map(m=>`<span class="text-[11px] px-2 py-1 rounded bg-green-500/10 border border-green-500/20 text-green-200">${esc(m.label)} ${esc(m.value)}</span>`).join('')}</div>
-        <div class="text-xs text-gray-400">${esc(j.roi.estimate)}</div>
-      </div>
-    </div>
-    <div class="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 mt-4">
-      <div class="text-sm font-semibold text-purple-300 mb-2">🚀 智能增购建议</div>
-      <div class="grid md:grid-cols-2 gap-3 text-xs">
-        <div><div class="text-gray-400 mb-1">待上线模块：</div>${(j.upsell.modules.length?j.upsell.modules:[{name:'已全部上线',why:''}]).map(m=>`<div class="text-gray-200">▸ ${esc(m.name)} <span class="text-gray-500">${esc(m.why)}</span></div>`).join('')}</div>
-        <div><div class="text-gray-400 mb-1">可扩展场景：</div>${j.upsell.scenarios.map(s=>`<div class="text-gray-200">▸ ${esc(s.name)} <span class="text-gray-500">${esc(s.why).slice(0,28)}…</span></div>`).join('')}</div>
-      </div>
-    </div>`;
-  }catch(e){ box.innerHTML=`<div class="text-red-400 text-sm">请求失败：${esc(e.message)}</div>`; }
-  finally{ btn.disabled=false; }
+    const r=await fetch('/api/generate/template',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key, client:customer, parkId})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
+    const blob=await r.blob();
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${customer}-${key}-文档模板.docx`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  }catch(e){ alert('下载失败：'+e.message); }
+}
+
+// ===== 阶段五 V1.0 报价生成器 =====
+const fmtMoney = n => '¥' + (Number(n) || 0).toLocaleString();
+function findQuoteItem(id){
+  for(const s of (PRICING && PRICING.sections ? PRICING.sections : [])){
+    const it = s.items.find(x => x.id === id);
+    if(it) return it;
+  }
+  return null;
+}
+function initQuoteCenter(){
+  const wrap = document.getElementById('quoteSections');
+  const preset = document.getElementById('quotePreset');
+  if(!wrap || !preset) return;
+  if(!PRICING || !PRICING.ok){
+    wrap.innerHTML = '<div class="text-red-400 text-sm">报价数据加载失败，请刷新页面重试。</div>';
+    return;
+  }
+  preset.innerHTML = '<option value="">— 不预选 —</option>' + PARKS.map(p=>`<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
+  wrap.innerHTML = PRICING.sections.map(sec=>`
+    <details class="bg-slate-900/40 border border-slate-700 rounded-xl overflow-hidden" ${sec.optional?'':'open'}>
+      <summary class="cursor-pointer px-4 py-3 flex items-center justify-between hover:bg-slate-800/60">
+        <span class="font-semibold text-amber-200">${sec.no}、${esc(sec.name)} <span class="text-[11px] ${sec.optional?'text-gray-500':'text-pink-400'}">(${esc(sec.note)})</span></span>
+        <span class="text-[11px] text-gray-400">${sec.items.length}项</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-1">${sec.items.map(it=>`
+        <div class="flex items-center gap-3 py-1.5 border-b border-slate-800/60">
+          <input type="checkbox" id="qck_${it.id}" ${it.required?'checked':''} onchange="toggleQuoteItem('${it.id}', this.checked)" class="accent-amber-500 w-4 h-4">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-gray-100 truncate">${esc(it.category)} ${it.required?'<span class="text-[10px] text-pink-400">必选</span>':''}</div>
+            <div class="text-[11px] text-gray-500 truncate">${esc(it.content)} · ${it.type==='tiered'?'<span class="text-cyan-400">阶梯计价</span>':fmtMoney(it.price)+'/'+esc(it.unit.replace('元/',''))}</div>
+          </div>
+          <input type="number" min="0" value="${it.required?1:0}" id="qqty_${it.id}" oninput="setQuoteQty('${it.id}', this.value)" ${it.type==='tiered'?'disabled title="阶梯计价按方案估列"':''} class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-center ${it.type==='tiered'?'opacity-40':''}">
+        </div>`).join('')}</div>
+    </details>`).join('');
+  Object.keys(quoteQty).forEach(k=>delete quoteQty[k]);
+  PRICING.sections.forEach(sec=>sec.items.forEach(it=>{ if(it.required) quoteQty[it.id]=1; }));
+  recomputeQuote();
+}
+function toggleQuoteItem(id, checked){
+  const qi = document.getElementById('qqty_'+id);
+  const item = findQuoteItem(id);
+  if(checked){
+    if(item && item.type === 'tiered') quoteQty[id]=1;
+    else { const v=Math.max(1, +(qi && qi.value) || 1); if(qi) qi.value=v; quoteQty[id]=v; }
+  } else {
+    quoteQty[id]=0;
+    if(qi && (!item || item.type !== 'tiered')) qi.value=0;
+  }
+  recomputeQuote();
+}
+function setQuoteQty(id, val){
+  const v=Math.max(0,+val||0);
+  quoteQty[id]=v;
+  const ck=document.getElementById('qck_'+id);
+  if(ck) ck.checked = v>0;
+  recomputeQuote();
+}
+function applyQuotePreset(){
+  const pid = document.getElementById('quotePreset').value;
+  const secIds = (PRICING && PRICING.presets && (PRICING.presets[pid] || PRICING.presets.default)) || ['digital-twin','ioc'];
+  PRICING.sections.forEach(sec=>{
+    const on = secIds.includes(sec.id);
+    sec.items.forEach(it=>{
+      const ck=document.getElementById('qck_'+it.id), qi=document.getElementById('qqty_'+it.id);
+      if(it.required || (on && it.type !== 'tiered')){
+        if(ck) ck.checked=true;
+        if(qi && it.type !== 'tiered') qi.value=1;
+        quoteQty[it.id]=1;
+      } else {
+        if(ck) ck.checked=false;
+        if(qi && it.type !== 'tiered') qi.value=0;
+        quoteQty[it.id]=0;
+      }
+    });
+  });
+  recomputeQuote();
+}
+let quoteTimer=null;
+function recomputeQuote(){
+  clearTimeout(quoteTimer);
+  quoteTimer=setTimeout(async ()=>{
+    const selections = Object.keys(quoteQty).filter(id=>quoteQty[id]>0).map(id=>({id, qty:quoteQty[id]}));
+    try{
+      const r = await fetch('/api/quote/compute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selections})});
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || '报价计算失败');
+      document.getElementById('quoteCount').textContent = j.count;
+      document.getElementById('quoteSubtotal').textContent = fmtMoney(j.subtotal);
+      document.getElementById('quoteTaxed').textContent = fmtMoney(j.taxed);
+    }catch(e){
+      document.getElementById('quoteResult').innerHTML = `<div class="text-red-400 text-sm">报价计算失败：${esc(e.message)}</div>`;
+    }
+  }, 200);
+}
+async function downloadQuoteExcel(){
+  const btn=document.getElementById('quoteExportBtn'), box=document.getElementById('quoteResult');
+  const selections = Object.keys(quoteQty).filter(id=>quoteQty[id]>0).map(id=>({id, qty:quoteQty[id]}));
+  if(!selections.length){ box.innerHTML='<div class="text-amber-400 text-sm">请先勾选至少一个产品项。</div>'; return; }
+  const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ 生成中...';
+  try{
+    const projectName=document.getElementById('quoteProject').value.trim();
+    const client=document.getElementById('quoteClient').value.trim();
+    const r=await fetch('/api/generate/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selections, projectName, client})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.error||('HTTP '+r.status)); }
+    const blob=await r.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(projectName?projectName+'-':'')+'51WORLD产品报价清单.xlsx';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    box.innerHTML='<div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm text-green-300">✅ 报价清单已生成并开始下载（V1.0同格式 Excel，含小计与含税总计）。</div>';
+    btn.textContent='✅ 已导出'; setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1800);
+  }catch(e){
+    box.innerHTML=`<div class="text-red-400 text-sm">导出失败：${esc(e.message)}</div>`;
+    btn.textContent=old; btn.disabled=false;
+  }
 }
 
 init();
