@@ -1,4 +1,4 @@
-// 全链路旅程数据层 —— 把"园区方案生成"升级为"挖掘客户→客户成功"一站式作战蓝图
+// 五阶段方案作战台数据层 —— 商机雷达→行业一张图→方案生成→文档手册→报价联动
 // 复用 content.js(parks/phases) 与 knowledgeBase.js(verticals/company) 的既有知识，不重复造数据。
 
 // ============ 一、大湾区 11 城产业画像 ============
@@ -105,52 +105,52 @@ const clientArchetypes = {
 // 每段：客户旅程定位 + 客户痛点 + AI能力 + 交付物 + 量化KPI + 关联现有平台能力
 const journeyStages = [
   {
-    id: 'discover', step: 1, icon: '🛰️', name: '挖掘客户',
-    subtitle: 'AI客户雷达', color: 'cyan',
-    customerPain: '不知道大湾区哪些客户值得打、找不到对的人、第一句话不知道怎么说。',
-    aiCapability: '按行业+城市生成精准目标客户画像、决策人角色与个性化触达话术，把"扫街式获客"变成"精准狙击"。',
-    deliverables: ['目标客户清单', '决策链画像', '个性化触达话术', '行业切入钩子'],
-    kpis: [{ label: '线索精准度', value: '↑3倍' }, { label: '触达成本', value: '↓60%' }],
+    id: 'discover', step: 1, icon: '🛰️', name: '阶段一',
+    subtitle: '实时招标雷达', color: 'cyan',
+    customerPain: '不知道全网哪里有项目机会、招标信息分散难追踪、错过投标窗口期。',
+    aiCapability: '实时抓取中国政府采购网全网各行业最新招标公告，按行业关键词精准锁定可投标商机，第一时间发现项目机会。',
+    deliverables: ['实时招标清单', '采购人/代理机构', '公告类型与时间', '一键直达原文'],
+    kpis: [{ label: '数据实时性', value: '当日更新' }, { label: '覆盖行业', value: '全网' }],
     linkedFeature: '/journey.html#radar',
     tool: 'radar'
   },
   {
-    id: 'brand', step: 2, icon: '✨', name: '品牌升级',
-    subtitle: 'AI内容工厂', color: 'pink',
-    customerPain: '没有统一的对外品牌话术，案例零散、一页纸缺失，客户记不住你是谁。',
-    aiCapability: '基于行业知识库一键产出品牌一页纸、价值主张与标杆案例卡，让客户在第一面就建立专业信任。',
-    deliverables: ['品牌一页纸', '价值主张', '标杆案例卡', '行业洞察简报'],
-    kpis: [{ label: '物料产出', value: '分钟级' }, { label: '专业信任', value: '↑显著' }],
+    id: 'brand', step: 2, icon: '📄', name: '阶段二',
+    subtitle: '行业产品一页纸', color: 'pink',
+    customerPain: '没有标准化的行业产品介绍材料，案例零散、一页纸缺失，客户记不住产品价值。',
+    aiCapability: '基于行业知识库一键产出对标51WORLD园区一页纸版式的产品一页纸：产品定义+客户痛点+业务场景+客户案例+产品矩阵，第一面建立专业信任。',
+    deliverables: ['行业产品一页纸(.pptx)', '客户痛点梳理', '业务场景矩阵', '标杆案例卡'],
+    kpis: [{ label: '物料产出', value: '分钟级' }, { label: '覆盖行业', value: '15+' }],
     linkedFeature: '/journey.html#brand',
     tool: 'brand'
   },
   {
-    id: 'convert', step: 3, icon: '🎯', name: '转化成交',
-    subtitle: 'AI方案生成（核心引擎）', color: 'purple',
+    id: 'convert', step: 3, icon: '🎯', name: '阶段三',
+    subtitle: '方案/PPT/计划生成', color: 'purple',
     customerPain: '方案准备周期长、个性化难、Word/PPT/报价要反复返工。',
-    aiCapability: '自然语言描述需求→自动识别行业/客户/场景→一键生成真实 Word/PPT/Excel 完整方案包，把售前准备从数天压到分钟。',
+    aiCapability: '把方案生成嵌入当前作战驾驶舱，按客户需求一键输出解决方案、PPT、实施计划与完整方案包。',
     deliverables: ['解决方案(.docx)', '演示文稿(.pptx)', '实施计划(.xlsx)', '完整方案包(.zip)'],
     kpis: [{ label: '方案效率', value: '↑70%' }, { label: '准备周期', value: '数天→分钟' }],
-    linkedFeature: '/#generator',
+    linkedFeature: '/journey.html#convert',
     tool: 'convert'
   },
   {
-    id: 'enable', step: 4, icon: '🎓', name: '团队升级',
-    subtitle: 'AI能力赋能', color: 'amber',
-    customerPain: '销售/售前团队水平参差，新人上手慢，行业话术与异议应对没沉淀。',
-    aiCapability: '一键生成行业作战手册：开场白、价值话术、异议应对、演示脚本，把顶尖打法标准化、可复制给整个团队。',
-    deliverables: ['行业作战手册', '客户开场白', '异议应对库', '演示Demo脚本'],
-    kpis: [{ label: '新人上手', value: '↓50%周期' }, { label: '打法复制', value: '标准化' }],
+    id: 'enable', step: 4, icon: '📚', name: '阶段四',
+    subtitle: '全环节文档手册', color: 'amber',
+    customerPain: '售前、设计、实施、验收、运维各环节文档散落，新人不知道该写什么、客户也拿不到适配材料。',
+    aiCapability: '按阶段整理需求调研、SRS、概设、详设、实施计划、操作手册、测试、验收、运维等标准文档，并可快速下载客户适配模板。',
+    deliverables: ['调研报告', '概设/详设', '产品说明/操作手册', '验收/运维文档'],
+    kpis: [{ label: '模板覆盖', value: '18份+' }, { label: '交付规范', value: '标准化' }],
     linkedFeature: '/journey.html#enable',
     tool: 'enable'
   },
   {
-    id: 'success', step: 5, icon: '📈', name: '客户成功',
-    subtitle: 'AI客户成功驾驶舱', color: 'green',
-    customerPain: '交付即结束，缺乏ROI证明，续约靠关系、增购没抓手。',
-    aiCapability: '量化健康度评分+ROI测算+智能增购建议，用数据证明价值，把一次性项目变成持续订阅与口碑裂变。',
-    deliverables: ['客户健康度评分', 'ROI价值报告', '续约风险预警', '增购场景建议'],
-    kpis: [{ label: '续约率', value: '↑' }, { label: '客户终身价值', value: '↑3倍' }],
+    id: 'success', step: 5, icon: '💰', name: '阶段五',
+    subtitle: '报价平台联动', color: 'green',
+    customerPain: '报价与方案脱节，模块、工期、人天、软硬件、交付物无法快速形成统一口径。',
+    aiCapability: '先提供可配置报价测算入口，后续对接正式报价平台，把行业、版本、模块、交付范围转成报价清单。',
+    deliverables: ['报价测算', '模块清单', '人天估算', '报价平台接口'],
+    kpis: [{ label: '报价效率', value: '分钟级' }, { label: '口径一致', value: '可追溯' }],
     linkedFeature: '/journey.html#success',
     tool: 'success'
   }
@@ -158,9 +158,9 @@ const journeyStages = [
 
 // 商业模式：从项目制走向订阅制（用于驾驶舱展示）
 const businessModel = [
-  { tier: '引流', name: 'AI获客诊断', price: '低价/免费', desc: '客户雷达+行业洞察，快速建立信任与线索', stage: '挖掘客户' },
-  { tier: '主营', name: '全案数字化交付', price: '项目制', desc: '品牌+方案+交付一体化，单项目高价值', stage: '品牌→转化→交付' },
-  { tier: '复利', name: '客户成功陪跑', price: '月度订阅', desc: '持续优化+增购+口碑裂变，构筑长期壁垒', stage: '客户成功' }
+  { tier: '入口', name: '阶段一·商机雷达', price: '线索入口', desc: '实时招标雷达+数字孪生相关性筛选，先找到真实项目机会', stage: '阶段一' },
+  { tier: '转化', name: '阶段二三·物料与方案', price: '项目制', desc: '产品一页纸+解决方案+PPT+计划，快速完成客户沟通与成交材料', stage: '阶段二→阶段三' },
+  { tier: '落地', name: '阶段四五·交付与报价', price: '平台化', desc: '交付物模板+报价测算/报价平台接口，形成从售前到商务的闭环', stage: '阶段四→阶段五' }
 ];
 
 module.exports = { bayAreaCities, clientArchetypes, journeyStages, businessModel };

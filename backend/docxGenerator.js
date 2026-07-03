@@ -20,6 +20,16 @@ function bullet(text, opts = {}) {
   });
 }
 
+function featureLine(feature) {
+  if (typeof feature === 'string') return feature;
+  if (!feature || typeof feature !== 'object') return String(feature || '');
+  const parts = [];
+  if (feature.name) parts.push(feature.name);
+  if (feature.detail) parts.push(feature.detail);
+  if (feature.value && !String(feature.detail || '').includes(feature.value)) parts.push(`价值：${feature.value}`);
+  return parts.join('：');
+}
+
 function buildSolutionDoc(park, version, brief) {
   const kb = KB.getKB(park.id) || {};
   const projectName = (brief && brief.projectName) || `${park.name}数字化解决方案`;
@@ -68,12 +78,19 @@ function buildSolutionDoc(park, version, brief) {
 
   // ===== 二、需求理解与痛点分析 =====
   children.push(h('二、需求理解与痛点分析', HeadingLevel.HEADING_1));
-  children.push(p('2.1  园区/行业共性痛点', { bold: true, size: 24 }));
+  if (kb.objectives && kb.objectives.length) {
+    children.push(p('2.1  建设目标', { bold: true, size: 24 }));
+    kb.objectives.forEach(x => children.push(bullet(x)));
+  }
+  children.push(p('2.2  园区/行业共性痛点', { bold: true, size: 24 }));
   KB.commonPains.forEach(x => children.push(bullet(`${x.title}：${x.desc}`)));
-  children.push(p('2.2  本行业重点痛点', { bold: true, size: 24 }));
-  (park.pains || []).forEach(x => children.push(bullet(x)));
+  children.push(p('2.3  本行业重点痛点与数字孪生应对', { bold: true, size: 24 }));
+  (kb.pains || []).forEach(x => {
+    if (typeof x === 'string') { children.push(bullet(x)); return; }
+    children.push(bullet(`${x.title}：${x.desc}　【数字孪生应对】${x.fix}`));
+  });
   if (brief && brief.emphases && brief.emphases.length) {
-    children.push(p('2.3  客户核心诉求', { bold: true, size: 24 }));
+    children.push(p('2.4  客户核心诉求', { bold: true, size: 24 }));
     children.push(p('结合客户需求，本方案重点强化以下能力：' + brief.emphases.join('、') + '。', { color: '7C3AED' }));
   }
 
@@ -95,6 +112,8 @@ function buildSolutionDoc(park, version, brief) {
   children.push(p('3.4  标准建设', { bold: true, size: 24 }));
   children.push(p(KB.standards.summary, { color: '334155' }));
   KB.standards.highlights.forEach(x => children.push(bullet(x, { size: 20 })));
+  children.push(p('3.5  建设方法论', { bold: true, size: 24 }));
+  KB.methodology.forEach(m => children.push(bullet(`${m.step}：${m.desc}`, { size: 20 })));
 
   // ===== 四、解决方案与应用场景 =====
   children.push(h('四、解决方案与应用场景', HeadingLevel.HEADING_1));
@@ -104,13 +123,20 @@ function buildSolutionDoc(park, version, brief) {
     const isFocus = focus.includes(sc.name);
     children.push(h(`4.${i + 1}  ${sc.name}${isFocus ? '（客户重点）' : ''}`, HeadingLevel.HEADING_2));
     children.push(p(sc.desc, { color: isFocus ? '7C3AED' : undefined }));
-    (sc.features || []).forEach(f => children.push(bullet(f)));
+    if (sc.value) children.push(p('场景价值：' + sc.value, { color: 'BE123C', size: 21 }));
+    if (sc.features && sc.features.length) {
+      children.push(p('核心功能：', { bold: true, size: 22, after: 50 }));
+      sc.features.forEach(f => children.push(bullet(featureLine(f))));
+    }
   });
 
   // ===== 五、IOC 标准应用 =====
   children.push(h('五、IOC 标准应用', HeadingLevel.HEADING_1));
   children.push(p('通过智慧 IOC 驾驶舱建设实现对外服务形象提升、对内运营降本增效，建设新一代科技、高效、安全、绿色、健康的智慧' + park.name + '。园区 IOC 八大标准应用：'));
   KB.iocApps.forEach(a => children.push(bullet(`${a.name}：${a.desc}`)));
+  if (park.modules && park.modules.length) {
+    children.push(p('推荐纳入本项目范围的模块清单：' + park.modules.join('、') + '。', { color: '334155' }));
+  }
 
   // ===== 六、落地案例 =====
   children.push(h('六、落地案例', HeadingLevel.HEADING_1));
@@ -147,6 +173,12 @@ function buildSolutionDoc(park, version, brief) {
   }
   children.push(p('综合价值：', { bold: true }));
   (park.value || []).forEach(x => children.push(bullet(x)));
+  children.push(p('阶段性价值落地路径：', { bold: true }));
+  [
+    '近期价值：优先完成数据底座、IOC驾驶舱与高频刚需场景上线，快速形成可展示、可汇报、可验收成果。',
+    '中期价值：接入更多业务系统与物联设备，形成跨部门联动、事件闭环、运营分析和精细化管理能力。',
+    '长期价值：沉淀数字资产和行业模型，接入AI助手、仿真推演与报价/运维平台，形成持续运营和复用能力。'
+  ].forEach(x => children.push(bullet(x)));
 
   // ===== 九、服务保障 =====
   children.push(h('九、服务保障', HeadingLevel.HEADING_1));

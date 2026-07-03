@@ -16,21 +16,29 @@
         .modal.active { display:flex; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation: spin .8s linear infinite; }
+        html,body{ max-width:100%; overflow-x:hidden; }
+        *{ overflow-wrap:break-word; }
+        @media (max-width:640px){
+            header h1{ font-size:2rem!important; line-height:1.2; }
+            nav .text-xl{ font-size:1.02rem; }
+            nav a[href]{ white-space:nowrap; font-size:.72rem; padding-left:.5rem; padding-right:.5rem; }
+            section h2{ font-size:1.7rem!important; line-height:1.25; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 min-h-screen">
     <nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3"><span class="text-3xl">🎯</span><span class="text-xl font-bold gradient-text">园区Skill平台</span></div>
-            <div class="flex items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-2">
+            <div class="flex items-center gap-3 min-w-0"><span class="text-3xl shrink-0">🎯</span><span class="text-xl font-bold gradient-text truncate">园区Skill平台</span></div>
+            <div class="flex items-center gap-2 md:gap-4 shrink-0">
                 <div class="hidden md:flex gap-6">
                     <button onclick="scrollToSection('parks')" class="hover:text-purple-400 transition">园区方案</button>
                     <button onclick="scrollToSection('timeline')" class="hover:text-purple-400 transition">交付物模板</button>
                     <button onclick="scrollToSection('generator')" class="hover:text-purple-400 transition">方案生成工具</button>
                     <button onclick="scrollToSection('quote')" class="hover:text-purple-400 transition">报价生成器</button>
                 </div>
-                <a href="/journey.html" class="text-sm px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 transition font-semibold">🛰️ 全链路驾驶舱</a>
-                <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold">🛠️ 管理后台</a>
+                <a href="/journey.html" class="text-sm px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 transition font-semibold whitespace-nowrap">🛰️ 全链路驾驶舱</a>
+                <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition font-semibold whitespace-nowrap">🛠️ 管理后台</a>
             </div>
         </div>
     </nav>

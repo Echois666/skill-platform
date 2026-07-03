@@ -77,6 +77,12 @@ function detectEmphases(text) {
   return hits;
 }
 
+function featureText(feature) {
+  if (typeof feature === 'string') return feature;
+  if (!feature || typeof feature !== 'object') return '';
+  return [feature.name, feature.detail, feature.value].filter(Boolean).join(' ');
+}
+
 // 根据诉求高亮匹配行业内的相关场景
 function matchScenarios(park, emphases, text) {
   const kb = verticals[park.id];
@@ -84,11 +90,11 @@ function matchScenarios(park, emphases, text) {
   const scored = kb.scenarios.map(sc => {
     let score = 0;
     if (text.includes(sc.name)) score += 5;
-    (sc.features || []).forEach(f => { if (text.includes(f)) score += 2; });
+    (sc.features || []).forEach(f => { if (featureText(f) && text.includes(featureText(f))) score += 2; });
     // 诉求标签与场景名/特性的弱关联
     emphases.forEach(tag => {
       const t = tag.replace(/[^\u4e00-\u9fa5]/g, '');
-      if (sc.name.includes(t.slice(0, 2)) || (sc.features || []).some(f => f.includes(t.slice(0, 2)))) score += 1;
+      if (sc.name.includes(t.slice(0, 2)) || (sc.features || []).some(f => featureText(f).includes(t.slice(0, 2)))) score += 1;
     });
     return { name: sc.name, desc: sc.desc, score };
   });
@@ -106,12 +112,27 @@ function parseRequirement(text) {
   const confident = best.score >= 3;
   const park = best.park;
   const emphases = detectEmphases(raw);
-  const client = detectClient(raw);
+  const rawClient = detectClient(raw);
   const scenarioRank = matchScenarios(park, emphases, raw);
   const focusScenarios = scenarioRank.filter(s => s.score > 0).map(s => s.name);
 
   // 置信度（0-100）
   const confidence = Math.min(100, Math.round((best.score / 12) * 100));
+
+  // 区分「真实客户主体」与「园区类型本身」——避免把"化工园区"这类行业词误当客户
+  const parkTail = park.name.replace(/^智慧|^智能|^数字/, '');
+  const nameCore = park.name.replace(/智慧|智能|数字|方案/g, '');
+  const isGenericClient = !rawClient || rawClient === parkTail || rawClient === park.name ||
+    rawClient === nameCore || rawClient.includes(park.name) || (nameCore && rawClient === nameCore);
+  const client = isGenericClient ? '' : rawClient;
+
+  // 项目名称：有真实客户时拼接「客户+园区类型」，否则用园区类型本身；并去重
+  let projectName;
+  if (client) {
+    projectName = client.includes(parkTail) ? `${client}数字化解决方案` : `${client}${parkTail}数字化解决方案`;
+  } else {
+    projectName = `${park.name}数字化解决方案`;
+  }
 
   // 生成对需求的理解说明
   const understanding =
@@ -128,7 +149,7 @@ function parseRequirement(text) {
     confident,
     confidence,
     client,
-    projectName: client ? `${client}${park.name.replace(/^智慧|^智能|^数字/, '')}数字化解决方案` : `${park.name}数字化解决方案`,
+    projectName,
     emphases,
     focusScenarios,
     understanding,

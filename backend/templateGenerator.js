@@ -33,16 +33,19 @@ function placeholder() {
   });
 }
 
-function buildTemplateDoc(tpl) {
+function buildTemplateDoc(tpl, context = {}) {
   const children = [];
+  const projectName = context.projectName || `${context.client || ''}${context.parkName || ''}数字孪生建设项目` || '________________________';
+  const clientName = context.client || '________________________';
+  const industryName = context.parkName || '________________________';
 
   // ===== 封面 =====
   children.push(new Paragraph({ text: '', spacing: { before: 1200 } }));
   children.push(p(KB.company.shortName + ' · 标准交付文档模板', { size: 22, color: '7C3AED', align: AlignmentType.CENTER, after: 80 }));
   children.push(p(`${tpl.icon}  ${tpl.name}`, { bold: true, size: 52, align: AlignmentType.CENTER, after: 200 }));
   children.push(p(`（${tpl.stage} · ${tpl.phase}）`, { size: 24, color: '475569', align: AlignmentType.CENTER, after: 600 }));
-  children.push(p('项目名称：________________________', { size: 22, align: AlignmentType.CENTER, after: 120 }));
-  children.push(p('编制单位：________________________', { size: 22, align: AlignmentType.CENTER, after: 120 }));
+  children.push(p(`项目名称：${projectName}`, { size: 22, align: AlignmentType.CENTER, after: 120 }));
+  children.push(p(`客户/行业：${clientName} / ${industryName}`, { size: 22, align: AlignmentType.CENTER, after: 120 }));
   children.push(p('编制人/日期：____________________', { size: 22, align: AlignmentType.CENTER, after: 400 }));
   children.push(p('本模板对齐 CMMI DEV V2.0 L3 标准化交付流程，灰紫色【写作指引】为填写说明，定稿前请删除。', { size: 18, color: '94A3B8', align: AlignmentType.CENTER }));
   children.push(new Paragraph({ text: '', pageBreakBefore: true }));
@@ -51,6 +54,8 @@ function buildTemplateDoc(tpl) {
   children.push(new Paragraph({ text: '文档说明', heading: HeadingLevel.HEADING_1, spacing: { after: 120 } }));
   children.push(p('文档用途：', { bold: true, after: 40 }));
   children.push(p(tpl.purpose, { color: '334155' }));
+  children.push(p('适配对象：', { bold: true, after: 40 }));
+  children.push(p(`${clientName} · ${industryName} 场景，可结合项目实际替换组织、系统、数据、接口、验收指标等内容。`, { color: '334155' }));
   children.push(p('适用读者：', { bold: true, after: 40 }));
   children.push(p(tpl.audience, { color: '334155' }));
   if (tpl.source) {
@@ -94,10 +99,10 @@ function buildTemplateDoc(tpl) {
   });
 }
 
-async function generateTemplateBuffer(key) {
+async function generateTemplateBuffer(key, context = {}) {
   const tpl = getTemplate(key);
   if (!tpl) throw new Error('未找到该交付物模板');
-  const doc = buildTemplateDoc(tpl);
+  const doc = buildTemplateDoc(tpl, context);
   return { buffer: await Packer.toBuffer(doc), name: tpl.name };
 }
 

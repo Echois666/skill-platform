@@ -3,7 +3,17 @@
 
 // ---------- 任务台账（待办 / 进行中 / 已完成）----------
 const tasks = [
-  // 已完成
+  // 本轮新增（v2.3.0）
+  { id: 'single-entry', title: '统一生成入口（移除对外/对内双版本）',     status: 'done',        phase: '深化',   date: '2026-06-05', desc: '前端只保留一个「一键生成并下载」按钮，后端版本中性化' },
+  { id: 'industry-pains', title: '15行业专属痛点+数字孪生解法',           status: 'done',        phase: '深化',   date: '2026-06-05', desc: '从2026脱敏方案提取，驱动PPT痛点页与Word需求章，各行业不再雷同' },
+  { id: 'img-fallback', title: 'PPT配图回退机制 + 色值修复',              status: 'done',        phase: '深化',   date: '2026-06-05', desc: '无图行业复用相近行业图库达8-10图；修复8处非法RGBA消除黑边' },
+  { id: 'admin-sync',   title: '前台后台互通 + 台账实时同步',             status: 'done',        phase: '深化',   date: '2026-06-05', desc: '前台加管理后台入口，adminData同步最新进展' },
+  { id: 'phases-viz',   title: '三阶段各环节交付物可视化',               status: 'in_progress', phase: '前端',   date: '2026-06-05', desc: '前端对接content.js完整三阶段数据，展示活动+交付物清单' },
+  { id: 'park-materials', title: '方案库板块资料浏览与下载',             status: 'pending',     phase: '深化',   date: '', desc: '上传各行业脱敏素材，弹窗内预览/下载真实方案PDF' },
+  { id: 'ppt-enrich',   title: 'PPT逐行业内容加厚',                       status: 'pending',     phase: '深化',   date: '', desc: '场景功能点配真实说明、案例不截断，提升每页信息密度' },
+  { id: 'ext-integrations', title: '对接报价/UI设计/原型设计平台',       status: 'pending',     phase: '规划',   date: '', desc: '预留外部平台对接入口，待目标平台信息后实装' },
+
+  // 已完成（历史）
   { id: 'analyze',     title: '分析园区资料并构建结构化数据模型', status: 'done',        phase: '规划',   date: '2026-06-04', desc: '梳理15个园区类型 + 售前/售中/交付三阶段环节与交付物' },
   { id: 'frontend',    title: '搭建可视化前端平台',               status: 'done',        phase: '前端',   date: '2026-06-04', desc: '园区方案库、三阶段流程、生成工具的可视化页面' },
   { id: 'docx-gen',    title: '实现真实 Word 方案文档生成',       status: 'done',        phase: '后端',   date: '2026-06-04', desc: '基于 docx 库，含封面/概述/痛点/价值/模块/架构/实施计划' },
@@ -26,7 +36,11 @@ const tasks = [
 
 // ---------- 代码版本 / 功能变更台账 ----------
 const versions = [
-  { version: 'v2.2.0', date: '2026-06-04', branch: 'main', stage: '进行中',
+  { version: 'v2.3.0', date: '2026-06-05', branch: 'main', stage: '已发布',
+    title: '生成质量跃升 · 行业深化 · 后台同步',
+    features: ['移除对外/对内双版本，统一为单一「一键生成并下载」入口', '15个行业各注入专属痛点+数字孪生解法（取自2026脱敏方案），痛点页/Word需求章不再雷同', '配图回退机制：6个无图行业复用语义相近行业图库，PPT达8-10张配图', '修复8处非法RGBA色值，消除PPT黑边/黑块', '前台新增「管理后台」入口；后台台账实时同步'],
+    commit: '(本轮)' },
+  { version: 'v2.2.0', date: '2026-06-04', branch: 'main', stage: '已发布',
     title: '管理后台 · HTTPS · 功能深化',
     features: ['新增管理后台（任务看板 + 版本台账 + 服务状态）', '服务器安装 certbot 2.9.0，启用自签名 HTTPS(443)', '新增 enable-domain.sh：域名解析+备案后一键签发正式证书', '规划：方案定制、报价单生成、园区搜索'],
     commit: '(开发中)' },

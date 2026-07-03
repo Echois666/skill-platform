@@ -43,15 +43,40 @@
   [class*="bg-slate-800"],[class*="bg-slate-900"]{ background-color:rgba(20,17,14,.76)!important; }
   [class*="border-slate"],[class*="border-purple"],[class*="border-cyan"],[class*="border-pink"],[class*="border-green"]{ border-color:var(--line)!important; }
   [class*="text-cyan"],[class*="text-purple"],[class*="text-pink"],[class*="text-green"],[class*="text-amber"]{ color:#F5D78E!important; }
+  html,body{ max-width:100%; overflow-x:hidden; }
+  *{ overflow-wrap:break-word; word-break:break-word; }
+  /* ===== 移动端适配 ===== */
+  @media (max-width:767px){
+    nav .max-w-7xl{ padding-top:.55rem; padding-bottom:.55rem; }
+    nav .text-3xl{ font-size:1.5rem; }
+    nav a.gold-btn{ padding-left:.65rem; padding-right:.65rem; padding-top:.4rem; padding-bottom:.4rem; font-size:.78rem; }
+    .tab-rail{ top:50px; }
+    .tab-rail-inner{ padding-top:.5rem!important; padding-bottom:.5rem!important; gap:.5rem!important; }
+    .stage-tab{ padding:.4rem .85rem!important; font-size:.78rem!important; }
+    header.home-only{ padding-top:6.5rem!important; padding-bottom:.5rem!important; }
+    .stage-page{ padding-top:6.75rem!important; padding-bottom:2rem!important; }
+    #stages.home-only{ padding-top:.5rem!important; padding-bottom:2.5rem!important; }
+    .stage-page > div{ padding:1.05rem!important; border-radius:1.1rem!important; }
+    .stage-page .bg-slate-800\/60,[class*="bg-slate-800"]{ padding:1rem!important; }
+    h1{ font-size:1.85rem!important; line-height:1.22; }
+    h2{ font-size:1.5rem!important; line-height:1.28; }
+    header.home-only p, #stages p{ font-size:.95rem!important; }
+    .max-w-6xl,.max-w-5xl,.max-w-4xl{ padding-left:0; padding-right:0; }
+  }
+  @media (max-width:400px){
+    nav .text-lg{ font-size:1rem; }
+    h1{ font-size:1.6rem!important; }
+    .stage-tab{ font-size:.74rem!important; padding:.38rem .7rem!important; }
+  }
 </style>
 </head>
 <body class="text-gray-100 min-h-screen">
 
 <nav class="fixed top-0 w-full z-50 backdrop-blur-md bg-slate-900/80 border-b border-purple-500/20">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-    <div class="flex items-center gap-3"><span class="text-3xl">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text">云TB百科全书</span></div>
-    <div class="flex items-center gap-2 md:gap-4">
-      <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg gold-btn transition font-semibold">🛠️ 管理后台</a>
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-2">
+    <div class="flex items-center gap-3 min-w-0"><span class="text-3xl shrink-0">🛰️</span><span class="text-lg md:text-xl font-bold gradient-text truncate">云TB百科全书</span></div>
+    <div class="flex items-center gap-2 md:gap-4 shrink-0">
+      <a href="/admin.html" class="text-sm px-3 py-2 rounded-lg gold-btn transition font-semibold whitespace-nowrap">🛠️ 管理后台</a>
     </div>
   </div>
 </nav>
@@ -72,7 +97,7 @@
   <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl md:text-4xl font-bold mb-3 text-center gradient-text">阶段一到阶段五作战地图</h2>
     <p class="text-center text-gray-400 mb-12">阶段一看真实商机，阶段二做行业一张图，阶段三生成方案包，阶段四沉淀文档手册，阶段五联动报价。</p>
-    <div id="stageGrid" class="grid grid-cols-1 md:grid-cols-5 gap-4"></div>
+    <div id="stageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
   </div>
 </section>
 
@@ -88,7 +113,7 @@
     <p class="text-center text-gray-400 mb-8">点击任一城市，实时检索该地最新招标公告</p>
     <div id="cityGrid" class="flex flex-wrap justify-center gap-3"></div>
     <div class="mt-8 bg-slate-800/60 border border-cyan-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
         <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="radarPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
         <div><label class="block text-sm font-semibold mb-2">关键词(可选)</label><input id="radarKw" placeholder="留空按行业搜索" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
         <div><label class="block text-sm font-semibold mb-2">公告类型</label><select id="radarKind" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="opportunity">可投标机会</option><option value="result">中标结果</option><option value="all">全部公告</option></select></div>
@@ -374,7 +399,7 @@ async function runBrand(){
       </div>
       <p class="text-xs text-gray-300 mt-2 leading-relaxed">${esc(j.intro)}</p>
     </div>
-    <div class="grid md:grid-cols-3 gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div class="bg-slate-900/60 border border-rose-500/20 rounded-xl p-4">
         <div class="text-rose-300 font-semibold text-sm mb-2">⚠️ 客户痛点</div>
         <ul class="space-y-2">${j.pains.map(p=>`<li class="text-xs"><b class="text-rose-200">▸ ${esc(p.title)}</b><div class="text-gray-400 mt-0.5">${esc(p.desc).slice(0,46)}</div></li>`).join('')}</ul>
