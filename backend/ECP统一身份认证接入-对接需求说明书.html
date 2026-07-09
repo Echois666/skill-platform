@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECP 统一身份认证（CAS）接入 · 对接需求说明书</title>
+<style>
+  :root{
+    --brand:#1e4d8c; --brand2:#2f6fb5; --ink:#1a2333; --muted:#5b6577;
+    --line:#e2e8f2; --bg:#f4f6fb; --card:#ffffff; --ok:#1a7a4c; --warn:#b6791f;
+    --code-bg:#0f1b2d; --code-ink:#d7e3f4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.7;font-size:15px}
+  .toolbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);
+    padding:10px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 8px rgba(20,40,80,.05)}
+  .toolbar b{color:var(--brand)}
+  .btn{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:14px;
+    cursor:pointer;font-weight:600}
+  .btn:hover{background:var(--brand2)}
+  .wrap{max-width:900px;margin:24px auto;padding:0 20px 60px}
+  .doc{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:44px 52px;box-shadow:0 8px 30px rgba(20,40,80,.06)}
+  .cover{border-left:5px solid var(--brand);padding:6px 0 6px 20px;margin-bottom:8px}
+  h1{font-size:26px;margin:0 0 6px;color:var(--brand);letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:14px}
+  h2{font-size:19px;margin:34px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line);color:var(--ink)}
+  h2 .n{display:inline-block;background:var(--brand);color:#fff;border-radius:6px;
+    width:26px;height:26px;line-height:26px;text-align:center;font-size:14px;margin-right:10px}
+  h3{font-size:16px;margin:20px 0 8px}
+  p{margin:8px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#eef3fb;color:var(--brand);font-weight:600;white-space:nowrap}
+  td code,p code,li code{background:#eef2f8;color:#12325c;padding:2px 6px;border-radius:5px;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px}
+  pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;
+    overflow:auto;font-size:13px;line-height:1.55;font-family:Consolas,monospace}
+  .flow{background:#0f1b2d;color:#cfe0f5;font-size:12.5px;line-height:1.5}
+  .tag{display:inline-block;font-size:12px;font-weight:700;border-radius:20px;padding:2px 12px;margin-right:6px;color:#fff}
+  .must{background:var(--ok)} .opt{background:var(--warn)}
+  .fill{background:#fff7e6;border:1px dashed #e0b055;border-radius:4px;padding:1px 8px;color:#8a5a12;font-weight:600}
+  .callout{background:#eef6ff;border-left:4px solid var(--brand2);border-radius:0 8px 8px 0;
+    padding:12px 16px;margin:14px 0;color:#274a72;font-size:14px}
+  .callout.warn{background:#fff8ec;border-color:#e0b055;color:#7a5312}
+  .lead{background:linear-gradient(135deg,#1e4d8c,#2f6fb5);color:#fff;border-radius:12px;
+    padding:20px 24px;margin:18px 0;font-size:15px;line-height:1.75}
+  .lead b{color:#ffe9b0}
+  ul{margin:8px 0 8px 4px;padding-left:22px}
+  li{margin:5px 0}
+  .foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .kv td:first-child{width:34%;color:var(--muted);white-space:nowrap}
+  @media print{
+    .toolbar{display:none} body{background:#fff}
+    .wrap{margin:0;max-width:none;padding:0}
+    .doc{border:0;box-shadow:none;border-radius:0;padding:0 8mm}
+    h2{page-break-after:avoid} table,pre,.lead,.callout{page-break-inside:avoid}
+    a{color:var(--ink);text-decoration:none}
+  }
+  @media(max-width:640px){ .doc{padding:26px 20px} th,td{font-size:13px} }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div><b>ECP 统一身份认证（CAS）接入</b> · 对接需求说明书</div>
+  <button class="btn" onclick="window.print()">🖨 打印 / 导出 PDF</button>
+</div>
+
+<div class="wrap">
+<div class="doc">
+
+  <div class="cover">
+    <h1>园区解决方案平台 接入 ECP 统一身份认证（CAS）<br>对接需求说明书</h1>
+    <div class="sub">文档版本 v1.0 ｜ 日期 2026-07-09 ｜ 供 ECP / CAS 系统管理员</div>
+  </div>
+
+  <table class="kv">
+    <tr><td>我方系统</td><td>云TB百科全书 · 五阶段行业方案作战台（Node.js / Express）</td></tr>
+    <tr><td>贵方系统</td><td><code>https://cas.51aes.com</code>（CAS 协议，身份源：企业微信扫码）</td></tr>
+    <tr><td>接入方式</td><td>我方作为<b>标准 CAS 客户端（service）</b>接入，<b>无需贵方开发</b>，仅需配置</td></tr>
+    <tr><td>我方对接人</td><td><span class="fill">姓名 / 电话 / 邮箱（请填写）</span></td></tr>
+  </table>
+
+  <div class="lead">
+    <b>一句话说明：</b>我方一个内部 Web 平台，希望员工用<b>公司统一账号（企业微信扫码）</b>登录。
+    我方已按 CAS 标准协议开发完客户端，<b>贵方无需写任何代码</b>，只需 3 项配置即可打通：
+    ① 把我方地址加进 CAS 白名单　② 确认放行几个用户信息字段　③（如有网络限制）放行我方服务器 IP。
+  </div>
+
+  <h2><span class="n">1</span>接入原理（30 秒了解）</h2>
+  <p>我方是"CAS 客户端"，登录动作全部由贵方 CAS + 企业微信完成，我方只在最后一步用票据换取用户身份：</p>
+  <pre class="flow">员工浏览器            我方平台                     贵方 cas.51aes.com        企业微信
+   │─ 访问受保护页 ─▶│ 检测未登录                     │                        │
+   │◀──── 302 跳转到 CAS /login?service=我方回调地址 ───▶│ 展示扫码页             │
+   │────────────────── 员工用企业微信扫码 ──────────────┼──────────────────────▶│
+   │                                                    │◀ 认证通过，发放票据 ST  │
+   │◀── 302 回到 我方回调地址?ticket=ST-xxxx ───────────│                        │
+   │─ 我方后端拿 ticket 调 /p3/serviceValidate 验票 ───▶│                        │
+   │                                                    │◀ 返回 工号/姓名/部门     │
+   │◀── 建立本地会话，进入平台 ──│                       │                        │</pre>
+  <div class="callout warn"><b>关键前提：</b>只有登记在 CAS 服务注册表中的 service 才能发起登录，否则一律被挡回登录页。因此下面的<b>事项 1 是打通的前提</b>。</div>
+
+  <h2><span class="n">2</span>需要贵方配合的事项（核心）</h2>
+
+  <h3><span class="tag must">必做</span>事项 1 · 把我方平台登记进 CAS 服务注册表</h3>
+  <p>把下列回调地址加入允许的 service 白名单，并允许释放用户属性：</p>
+  <table>
+    <tr><th>用途</th><th>地址</th></tr>
+    <tr><td>生产回调（正式）</td><td><code>https://www.echoswiki.com/auth/cas/callback</code></td></tr>
+    <tr><td>联调回调（临时，见事项 5）</td><td><code>http://49.233.170.127/auth/cas/callback</code></td></tr>
+    <tr><td>登出后回跳</td><td><code>https://www.echoswiki.com/</code></td></tr>
+  </table>
+  <p>若贵方使用 <b>Apereo CAS</b>，可参考以下服务注册示例（字段名以贵方目录实际为准）：</p>
+  <pre>{
+  "@class": "org.apereo.cas.services.RegexRegisteredService",
+  "serviceId": "^https?://(www\\.echoswiki\\.com|49\\.233\\.170\\.127)/auth/cas/callback.*",
+  "name": "YuanquSolutionPlatform",
+  "id": 100xx,
+  "description": "园区解决方案平台（五阶段方案作战台）",
+  "evaluationOrder": 100,
+  "attributeReleasePolicy": {
+    "@class": "org.apereo.cas.services.ReturnAllowedAttributeReleasePolicy",
+    "allowedAttributes": [ "java.util.ArrayList",
+      [ "employeeNumber", "cn", "deptName", "mail" ]
+    ]
+  }
+}</pre>
+  <div class="callout"><code>serviceId</code> 用正则同时覆盖生产域名与联调 IP；<code>allowedAttributes</code> 内的字段名请替换为贵方目录里的真实属性名（见事项 3）。</div>
+
+  <h3><span class="tag must">必做</span>事项 2 · 确认带属性的验票端点已开放</h3>
+  <p>我方需要在验票时拿到用户的工号、姓名、部门等信息，因此需要 <b>CAS 3.0 验票端点</b>：</p>
+  <ul>
+    <li>首选：<code>/p3/serviceValidate</code>（CAS 3.0，<b>返回属性</b>）</li>
+    <li>请确认该端点已开放；若贵方仅开放 <code>/serviceValidate</code>（CAS 2.0，<b>不返回属性</b>），请告知，我方将改用 <code>/samlValidate</code> 或请贵方开启 p3。</li>
+  </ul>
+
+  <h3><span class="tag must">必做</span>事项 3 · 告知释放的属性字段名</h3>
+  <p>验票成功后 CAS 以 <code>&lt;cas:attributes&gt;</code> 返回字段。请告知<b>我方所需信息对应的字段名</b>（填写右列）：</p>
+  <table>
+    <tr><th>我方需要的信息</th><th>贵方 CAS 返回的属性名（请填写）</th><th>说明</th></tr>
+    <tr><td>员工唯一标识 / 工号</td><td><span class="fill"><code>&lt;cas:user&gt;</code> 是否即工号？或：______</span></td><td>平台内用户唯一 ID</td></tr>
+    <tr><td>姓名</td><td><span class="fill">______</span></td><td>显示用</td></tr>
+    <tr><td>部门</td><td><span class="fill">______</span></td><td>显示 / 数据归属</td></tr>
+    <tr><td>邮箱</td><td><span class="fill">______</span></td><td>可选，通知用</td></tr>
+    <tr><td>岗位 / 角色（如有）</td><td><span class="fill">______</span></td><td>可选，区分管理员</td></tr>
+  </table>
+  <div class="callout">我方默认会尝试识别常见字段名（name/cn/displayName、department/deptName、mail/email）。若字段名特殊，按贵方提供的为准，我方一行配置即可适配。</div>
+
+  <h3><span class="tag opt">按需</span>事项 4 · 网络放行</h3>
+  <p>我方后端需从公网访问贵方 CAS 验票接口。若贵方有 IP 白名单 / 服务网格（Istio）访问控制，请放行：</p>
+  <table>
+    <tr><th>项</th><th>值</th></tr>
+    <tr><td>我方服务器出口 IP</td><td><code>49.233.170.127</code>（腾讯云）</td></tr>
+    <tr><td>需访问的目标</td><td><code>https://cas.51aes.com</code>（443：<code>/login</code>、<code>/p3/serviceValidate</code>、<code>/logout</code>）</td></tr>
+  </table>
+  <div class="callout">标准 CAS 验票<b>不需要额外 client 密钥</b>，仅凭 <code>ticket + service</code> 校验。若贵方另有要求（client 凭据、mTLS 等），请一并告知。</div>
+
+  <h3><span class="tag opt">按需</span>事项 5 · HTTPS 与联调临时地址</h3>
+  <p>我方正式域名 <code>www.echoswiki.com</code> 正在 <b>ICP 备案审核中</b>，HTTPS 暂未生效。为不耽误联调，恳请贵方<b>临时</b>在事项 1 中一并登记联调地址 <code>http://49.233.170.127/auth/cas/callback</code>；备案通过、HTTPS 就绪后我方即切回正式域名，请届时删除该临时项。</p>
+
+  <h3><span class="tag opt">可选</span>事项 6 · 辅助材料（若有）</h3>
+  <ul>
+    <li>贵方 CAS 的内部接入文档 / 沙箱（测试）环境地址</li>
+    <li>一个<b>测试工号</b>（用于联调，无需真实业务权限）</li>
+    <li>CAS 版本号（如 Apereo CAS x.x），及是否同时支持 OIDC / SAML（若支持，我方也可择优对接）</li>
+  </ul>
+
+  <h2><span class="n">3</span>我方信息登记表（供贵方登记 service）</h2>
+  <table class="kv">
+    <tr><td>应用名称</td><td>云TB百科全书 · 五阶段方案作战台</td></tr>
+    <tr><td>应用类型</td><td>Web 应用（服务端会话，标准 CAS 客户端）</td></tr>
+    <tr><td>应用负责人</td><td><span class="fill">姓名 / 部门 / 联系方式（请填写）</span></td></tr>
+    <tr><td>生产回调地址</td><td><code>https://www.echoswiki.com/auth/cas/callback</code></td></tr>
+    <tr><td>联调回调地址（临时）</td><td><code>http://49.233.170.127/auth/cas/callback</code></td></tr>
+    <tr><td>登出回跳地址</td><td><code>https://www.echoswiki.com/</code></td></tr>
+    <tr><td>服务器出口 IP</td><td><code>49.233.170.127</code></td></tr>
+    <tr><td>需要的属性</td><td>工号、姓名、部门、邮箱（其余不需要）</td></tr>
+    <tr><td>使用范围</td><td>公司内部员工（方案 / PPT 生成、行业资料查询）</td></tr>
+  </table>
+
+  <h2><span class="n">4</span>联调与验收流程</h2>
+  <p>拿到配置后，我方半天内可完成联调：</p>
+  <table>
+    <tr><th>步骤</th><th>动作</th><th>预期现象 / 验收标准</th></tr>
+    <tr><td>1</td><td>贵方完成事项 1~3（+按需 4/5），回传属性字段名</td><td>我方收到字段清单</td></tr>
+    <tr><td>2</td><td>我方开启 SSO，用测试工号访问平台</td><td>自动跳转到贵方 <code>/loginPage</code> 扫码</td></tr>
+    <tr><td>3</td><td>企业微信扫码通过</td><td>自动回跳平台并显示"已登录：姓名 / 部门"</td></tr>
+    <tr><td>4</td><td>调用 <code>/api/me</code> 校验</td><td>返回正确的工号 / 姓名 / 部门 / 邮箱</td></tr>
+    <tr><td>5</td><td>点击"退出"</td><td>触发 CAS 单点登出并回到首页</td></tr>
+  </table>
+  <div class="callout warn">
+    · 步骤 2 未跳转扫码、而是被打回登录页 → 多为 <b>service 未登记（事项 1）</b> 或回调地址与登记的不完全一致。<br>
+    · 步骤 3 回跳后拿不到姓名 / 部门 → 多为 <b>未开 p3 端点（事项 2）</b> 或 <b>属性未释放（事项 3）</b>。
+  </div>
+
+  <h2><span class="n">5</span>安全与合规说明（供贵方评估）</h2>
+  <ul>
+    <li>我方<b>不接触员工密码</b>，全程由贵方 CAS + 企业微信完成认证，我方仅凭一次性票据换取身份信息。</li>
+    <li>我方仅接收<b>工号、姓名、部门、邮箱</b>等基本信息用于展示与归属，<b>不留存任何凭据 / 密码</b>。</li>
+    <li>会话使用 <b>HttpOnly + 签名 Cookie</b>（防篡改），生产启用 <b>Secure（HTTPS）</b>，并支持 <b>CAS 单点登出</b>。</li>
+    <li>接入采用<b>功能开关</b>，可由贵方一声令下随时停用；停用后平台回到无 SSO 状态，不影响贵方系统。</li>
+    <li>回调地址做了<b>站内跳转校验</b>，杜绝开放重定向风险。</li>
+  </ul>
+
+  <h2><span class="n">6</span>常见问题（FAQ）</h2>
+  <p><b>Q1 · 需要贵方开发或改代码吗？</b><br>不需要。贵方只做 CAS 侧配置（登记 service + 释放属性 + 按需放行网络）。</p>
+  <p><b>Q2 · 会影响其它已接入 CAS 的系统吗？</b><br>不会。新增一个 service 条目相互独立，不改动既有配置。</p>
+  <p><b>Q3 · 为什么要用 IP 地址联调？</b><br>我方域名正在备案审核，HTTPS 未生效；备案通过后立即切回域名并请贵方删除临时 IP 项。</p>
+  <p><b>Q4 · 拿到的用户信息怎么用、存哪里？</b><br>仅用于平台内显示"当前登录人 / 部门"与内容归属，存于我方服务器会话，不外传、不落库敏感字段。</p>
+  <p><b>Q5 · 想先小范围试点？</b><br>可在企业微信里把应用可见范围限定到试点人员；我方侧也可仅对部分工号开放。</p>
+
+  <div class="lead">
+    <b>综上，只要贵方完成第 2 部分的事项 1~3（必做），我方即可开启联调。</b><br>
+    我方客户端已开发部署到位（当前为关闭态，拿到配置即开启）。恳请协助，谢谢！
+  </div>
+
+  <div class="foot">
+    如需我方补充任何材料（架构说明、安全问卷、等保 / 合规材料等），请随时联系我方对接人。<br>
+    我方对接人：<span class="fill">姓名 / 电话 / 邮箱（请填写）</span>
+  </div>
+
+</div>
+</div>
+</body>
+</html>
