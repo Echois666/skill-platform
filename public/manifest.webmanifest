@@ -1,0 +1,65 @@
+{
+  "name": "云TB百科全书 · 五阶段行业方案作战台",
+  "short_name": "云TB百科",
+  "description": "售前·售中·交付全链路知识库与方案/PPT/报价一键生成平台。手机端可安装到主屏，随时查资料、生成材料。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/journey.html?source=pwa",
+  "scope": "/",
+  "id": "/journey.html",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#0B0B0D",
+  "theme_color": "#0B0B0D",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "五阶段作战台",
+      "short_name": "作战台",
+      "description": "打开五阶段行业方案全链路作战台",
+      "url": "/journey.html?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "方案生成平台",
+      "short_name": "生成平台",
+      "description": "浏览园区方案并一键生成 Word/PPT/Excel",
+      "url": "/index.html?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "管理后台",
+      "short_name": "后台",
+      "description": "查看平台数据台账与版本信息",
+      "url": "/admin.html?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

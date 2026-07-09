@@ -2,8 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>园区Skill智能方案生成平台</title>
+    <meta name="theme-color" content="#0B0B0D">
+    <meta name="description" content="售前·售中·交付全链路知识库与方案/PPT/报价一键生成平台">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="云TB百科">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+    <link rel="icon" href="/icons/favicon.ico" sizes="any">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .gradient-text { background: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -606,5 +616,6 @@
 
         renderParks(); renderDeliverables(); renderGenTypes(); renderIntegrations(); initQuote();
     </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

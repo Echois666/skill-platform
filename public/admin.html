@@ -2,8 +2,17 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>管理后台 · 云TB百科全书</title>
+<meta name="theme-color" content="#0B0B0D">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="云TB后台">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" href="/icons/favicon.ico" sizes="any">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body{background:#0f172a;}
@@ -173,5 +182,6 @@ document.getElementById('refreshBtn').addEventListener('click', load);
 load();
 setInterval(load, 30000);
 </script>
+<script src="/pwa.js" defer></script>
 </body>
 </html>
