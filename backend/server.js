@@ -29,6 +29,39 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// ── ECP 单点登录（CAS）—— 功能开关，默认关闭 ────────────────────────────────
+// 现状：CAS_ENABLED!=1 时完全不加载，对现有开放平台零影响。
+// 开启（对方登记好 service + HTTPS 就绪后）：设置以下环境变量并重启即可，无需 npm install。
+//   CAS_ENABLED=1
+//   CAS_SERVICE_URL=https://www.echoswiki.com/auth/cas/callback   （必须与登记到CAS的一致）
+//   CAS_SESSION_SECRET=<一段随机长字符串>                          （会话签名密钥，务必设置）
+//   CAS_ADMIN_IDS=工号1,工号2                                     （可选：进后台的管理员工号）
+//   CAS_BASE_URL=https://cas.51aes.com                            （可选，默认已是它）
+//   CAS_VALIDATE_PATH=/p3/serviceValidate                         （可选，若对方只开 2.0 改 /serviceValidate）
+if (process.env.CAS_ENABLED === '1') {
+  const { createCasAuth } = require('./casAuth');
+  const cas = createCasAuth({
+    casBaseUrl: process.env.CAS_BASE_URL || 'https://cas.51aes.com',
+    serviceUrl: process.env.CAS_SERVICE_URL || 'https://www.echoswiki.com/auth/cas/callback',
+    validatePath: process.env.CAS_VALIDATE_PATH || '/p3/serviceValidate',
+    sessionSecret: process.env.CAS_SESSION_SECRET,
+    adminIds: (process.env.CAS_ADMIN_IDS || '').split(',').map((s) => s.trim()).filter(Boolean),
+  });
+  // 认证端点
+  app.get('/auth/cas/login', cas.loginRedirect);
+  app.get('/auth/cas/callback', cas.handleCallback);
+  app.get('/auth/cas/logout', cas.logout);
+  app.get('/api/me', cas.me);
+  // 保护：后台页面 + 后台接口需管理员；方案/PPT 生成需登录（公开只读内容不拦）
+  app.use('/admin.html', cas.requireAdmin);
+  app.use('/api/admin', cas.requireAdmin);
+  app.use('/api/generate', cas.requireAuth);
+  console.log('[CAS] SSO 已启用 · service=' + (process.env.CAS_SERVICE_URL || 'default'));
+} else {
+  console.log('[CAS] SSO 未启用（设置 CAS_ENABLED=1 开启，其余功能照常公开访问）');
+}
+
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('sw.js')) {
