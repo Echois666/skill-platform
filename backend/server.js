@@ -21,7 +21,7 @@ const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, build
 const { fetchTenderRadar } = require('./tenderRadar');
 const { listSections, industryPresets, TAX_RATE } = require('../data/pricing');
 const { generateQuoteBuffer, computeQuote, recommendQuoteSelections } = require('./quoteGenerator');
-const { listByStage: listChangpingByStage } = require('../data/changpingTemplates');
+const { listByStage: listChangpingByStage, getDoc: getChangpingDoc, getContent: getChangpingContent } = require('../data/changpingTemplates');
 const { generateChangpingTemplateBuffer, generateChangpingReferenceBuffer } = require('./changpingTemplateGenerator');
 
 const app = express();
@@ -171,18 +171,53 @@ app.post('/api/generate/quote', async (req, res) => {
   }
 });
 
-// ---------- 昌平标准交付模板库 API（真实版式空白模板）----------
-// 列出按 9 阶段分组的昌平标准模板
+// ---------- 标准交付模板库 API（真实版式空白模板）----------
+// 列出按 9 阶段分组的标准模板
 app.get('/api/changping/templates', (req, res) => {
   try {
     res.json({ ok: true, stages: listChangpingByStage() });
   } catch (e) {
-    console.error('changping/templates失败:', e);
-    res.status(500).json({ ok: false, error: '获取昌平模板失败', detail: e.message });
+    console.error('templates失败:', e);
+    res.status(500).json({ ok: false, error: '获取模板清单失败', detail: e.message });
   }
 });
 
-// 下载昌平标准格式空白模板（封面+文档修改记录+目录+章节，复刻训练素材版式）
+// 在线查看单个文档正文（脱敏参考正文；无正文时返回章节目录树 outline）
+app.get('/api/changping/content/:key', (req, res) => {
+  try {
+    const key = req.params.key;
+    const doc = getChangpingDoc(key);
+    if (!doc) return res.status(404).json({ ok: false, error: '未找到该文档' });
+    const content = getChangpingContent(key);
+    if (content && content.items && content.items.length) {
+      return res.json({
+        ok: true, key, docName: doc.docName, stageNo: doc.stageNo,
+        stage: doc.stage, mode: 'content', items: content.items
+      });
+    }
+    // 无正文：用章节目录树合成 outline
+    const outline = [];
+    if (doc.tableDoc) {
+      outline.push({ type: 'p', level: 1, text: '文档结构（表格型）' });
+      outline.push({ type: 'table', rows: [doc.tableDoc.cols] });
+    } else {
+      (doc.sections || []).forEach((s, i) => {
+        if (typeof s === 'string') {
+          outline.push({ type: 'p', level: 2, text: `${i + 1}、${s}` });
+        } else {
+          outline.push({ type: 'p', level: 1, text: `${i + 1}、${s.t}` });
+          (s.sub || []).forEach((sub, j) => outline.push({ type: 'p', level: 3, text: `${i + 1}.${j + 1} ${sub}` }));
+        }
+      });
+    }
+    res.json({ ok: true, key, docName: doc.docName, stageNo: doc.stageNo, stage: doc.stage, mode: 'outline', items: outline });
+  } catch (e) {
+    console.error('changping/content失败:', e);
+    res.status(500).json({ ok: false, error: '获取文档内容失败', detail: e.message });
+  }
+});
+
+// 下载标准格式空白模板（封面+文档修改记录+目录+章节，复刻训练素材版式）
 app.post('/api/generate/changping-template', async (req, res) => {
   try {
     const { key, topName, projName, dateName } = req.body || {};
@@ -198,7 +233,7 @@ app.post('/api/generate/changping-template', async (req, res) => {
   }
 });
 
-// 下载昌平脱敏参考版（真实交付正文脱敏后，套用同版式）
+// 下载脱敏参考版（真实交付正文脱敏后，套用同版式）
 app.post('/api/generate/changping-reference', async (req, res) => {
   try {
     const { key, topName, projName, dateName } = req.body || {};
