@@ -78,6 +78,20 @@
     h1{ font-size:1.6rem!important; }
     .stage-tab{ font-size:.74rem!important; padding:.38rem .7rem!important; }
   }
+  /* ===== 真实方案幻灯片查看器 ===== */
+  .rv{ display:none; position:fixed; inset:0; z-index:120; background:rgba(6,6,10,.96); flex-direction:column; }
+  .rv.active{ display:flex; }
+  .rv-bar{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.6rem 1rem; border-bottom:1px solid rgba(148,163,184,.2); background:#0b0b0d; }
+  .rv-btn{ font-size:.72rem; padding:.35rem .7rem; border-radius:.5rem; background:#1e293b; color:#e2e8f0; transition:.2s; white-space:nowrap; }
+  .rv-btn:hover{ background:#334155; }
+  .rv-close{ background:#b45309; } .rv-close:hover{ background:#d97706; }
+  .rv-stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:1rem; min-height:0; }
+  .rv-img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:.5rem; box-shadow:0 20px 60px rgba(0,0,0,.6); background:#000; }
+  .rv-thumbs{ display:flex; gap:.4rem; overflow-x:auto; padding:.5rem 1rem; border-top:1px solid rgba(148,163,184,.15); background:#0b0b0d; }
+  .rv-thumbs img{ height:52px; width:auto; border-radius:.25rem; cursor:pointer; opacity:.5; border:2px solid transparent; transition:.15s; flex-shrink:0; }
+  .rv-thumbs img.active{ opacity:1; border-color:#f59e0b; }
+  .rv-thumbs img:hover{ opacity:.85; }
+  @media (max-width:640px){ .rv-thumbs{ display:none; } .rv-btn{ font-size:.68rem; padding:.3rem .5rem; } }
   /* ===== 汇报PPT 网页幻灯片（16:9 还原真实版式）===== */
   .ppt-deck{ display:flex; flex-direction:column; gap:18px; container-type:inline-size; }
   .ppt-slide{ position:relative; width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden;
@@ -319,19 +333,15 @@
   <div class="max-w-5xl mx-auto gold-panel rounded-3xl p-6 md:p-8">
     <div class="text-center mb-8">
       <span class="text-4xl">🎯</span>
-      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段三 · 方案/PPT/计划生成</h2>
-      <p class="text-gray-400">不再跳转到单独页面：在当前作战台内输入客户需求，一键在网页上在线查看解决方案、汇报PPT、实施计划，无需下载大文件。</p>
+      <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段三 · 行业真实方案在线查看</h2>
+      <p class="text-gray-400">选择行业领域，下方列出该行业<b class="text-amber-200">真实脱敏方案</b>（解决方案 / 案例卡 / 产品介绍等），点击任意方案在网页上逐页查看真实幻灯片内容，无需下载大文件。</p>
     </div>
     <div class="bg-slate-800/60 border border-purple-500/20 rounded-2xl p-6 md:p-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="genPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
-        <div><label class="block text-sm font-semibold mb-2">客户名称</label><input id="genCustomer" value="某客户" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
-        <div><label class="block text-sm font-semibold mb-2">查看类型</label><select id="genType" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="solution">解决方案</option><option value="ppt">汇报PPT</option><option value="plan">实施计划</option></select></div>
+      <div class="flex flex-col md:flex-row md:items-end gap-4 mb-5">
+        <div class="w-full md:w-72"><label class="block text-sm font-semibold mb-2">选择行业领域</label><select id="genPark" onchange="loadStage3Solutions(this.value)" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
+        <div class="text-xs text-gray-500 md:pb-3">🔒 涉密版一律不上线；此处仅展示可对外的脱敏方案。</div>
       </div>
-      <label class="block text-sm font-semibold mb-2">客户需求/场景描述</label>
-      <textarea id="genRequirement" rows="5" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-3 mb-4" placeholder="例如：客户是一所高校，希望建设数字孪生校园IOC，实现安防、能耗、资产、空间、应急、访客、停车、AI问答等能力，要求能支撑领导驾驶舱和日常运维。"></textarea>
-      <button onclick="runStage3Generate()" id="genBtn" class="w-full gold-btn px-4 py-3 rounded-lg font-bold transition">🎯 在线查看方案</button>
-      <div id="genResult" class="mt-5"></div>
+      <div id="genResult"><div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在加载方案...</div></div>
     </div>
   </div>
 </section>
@@ -454,6 +464,7 @@ async function init(){
   ['brandPark','genPark','docPark'].forEach(id=>{ document.getElementById(id).innerHTML = opts; });
   document.getElementById('radarPark').innerHTML = `<option value="">🌐 全部行业(综合)</option>` + opts;
   renderStages(); renderCities(); renderDocCenter(); renderChangpingTemplates(); initQuoteCenter(); showStage(activeStage, true); runRadar();
+  if(document.getElementById('genPark')) loadStage3Solutions(document.getElementById('genPark').value);
 }
 
 function renderStages(){
@@ -595,38 +606,91 @@ async function downloadOnePager(){
   }catch(e){ dl.textContent='❌ '+e.message; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},2500); }
 }
 
-// ===== 阶段三 方案/PPT/计划 —— 在线查看（不下载大文件）=====
-const PREVIEW_API = { solution:'/api/preview/solution', ppt:'/api/preview/ppt', plan:'/api/preview/plan' };
-async function runStage3Generate(){
-  const btn=document.getElementById('genBtn'), box=document.getElementById('genResult');
-  let type=document.getElementById('genType').value;
-  if(type!=='ppt' && type!=='plan') type='solution';
-  const parkId=document.getElementById('genPark').value;
+// ===== 阶段三 行业真实方案 —— 在线查看真实幻灯片（不下载大文件）=====
+const S3_KINDICON = { '解决方案':'📊', '案例卡':'🗂️', '功能介绍':'🧩', '产品介绍':'🧩', '建设方案':'🏗️', '一页纸':'📄', '资料':'📎' };
+async function loadStage3Solutions(parkId){
+  const box=document.getElementById('genResult');
+  parkId = parkId || document.getElementById('genPark').value;
   const park=(PARKS.find(p=>p.id===parkId)||{}).name||'行业';
-  const customer=document.getElementById('genCustomer').value.trim()||'某客户';
-  const requirement=document.getElementById('genRequirement').value.trim() || `${customer}需要建设${park}数字孪生IOC平台，覆盖安全、运营、资产、能耗、应急和领导驾驶舱。`;
-  const payload=JSON.stringify({parkId, client:customer, projectName:`${customer}${park}数字孪生建设项目`, requirement, version:'专业版'});
-  btn.disabled=true; btn.textContent='⏳ 正在生成...';
-  box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在调用方案引擎，请稍候...</div>';
+  box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在加载方案...</div>';
   try{
-    const r = await fetch(PREVIEW_API[type],{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+    const r = await fetch(`/api/solutions/${parkId}`);
     const j = await r.json();
-    if(!j.ok){ throw new Error(j.error||('HTTP '+r.status)); }
-    let html;
-    if(type==='plan') html=renderPlanView(j);
-    else if(type==='ppt') html=renderPptView(j);
-    else html=renderSolutionView(j);
-    const label = type==='plan'?'实施计划':(type==='ppt'?'汇报PPT':'解决方案');
-    openDocViewer(`${customer}·${park} ${label}`, html, type==='ppt');
-    box.innerHTML = `<div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-100">
-      ✅ 已生成 <b>${esc(label)}</b> 并在弹窗中打开在线查看。<div class="text-xs text-gray-400 mt-1">内容按行业、客户名称、需求实时生成，可直接在网页阅读，无需下载大文件。</div>
-    </div>`;
+    if(!j.solutions || j.solutions.length===0){
+      box.innerHTML=`<div class="text-sm text-gray-400 p-4 rounded-xl bg-slate-900/60 border border-slate-700">「${esc(park)}」暂无可在线查看的脱敏方案（涉密资料仅限内部线下获取）。</div>`;
+      return;
+    }
+    box.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${j.solutions.map(s=>`
+      <button type="button" onclick='openRealSlides(${JSON.stringify(s.title)}, ${s.pages}, ${JSON.stringify(s.base)})'
+        class="group text-left bg-slate-900 border border-slate-700 hover:border-amber-500/60 rounded-xl overflow-hidden transition">
+        <div class="relative aspect-[16/9] bg-slate-950 overflow-hidden">
+          <img src="${s.cover}" loading="lazy" alt="${esc(s.title)}" class="w-full h-full object-cover group-hover:scale-[1.03] transition"/>
+          <span class="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-amber-200">${S3_KINDICON[s.kind]||'📎'} ${esc(s.kind)}</span>
+          <span class="absolute bottom-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-gray-200">${s.pages} 页</span>
+          <span class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/30 text-white text-sm font-semibold">▶ 在线查看</span>
+        </div>
+        <div class="px-3 py-2">
+          <div class="text-xs text-gray-100 font-medium truncate" title="${esc(s.title)}">${esc(s.title)}</div>
+          <div class="text-[11px] text-gray-500 mt-0.5">真实网页幻灯片 · 无需下载</div>
+        </div>
+      </button>`).join('')}</div>`;
   }catch(e){
-    box.innerHTML=`<div class="text-red-400 text-sm p-3 rounded-lg bg-red-500/10 border border-red-500/20">生成失败：${esc(e.message)}</div>`;
-  }finally{
-    btn.disabled=false; btn.textContent='🎯 在线查看方案';
+    box.innerHTML=`<div class="text-red-400 text-sm p-3 rounded-lg bg-red-500/10 border border-red-500/20">方案加载失败：${esc(e.message)}</div>`;
   }
 }
+
+// —— 真实方案幻灯片查看器（逐页 WebP 图片，懒加载，键盘导航，绝不下载）——
+let RSV = { base:'', pages:0, idx:1 };
+function ensureRealViewer(){
+  let m=document.getElementById('realViewer');
+  if(m) return m;
+  m=document.createElement('div');
+  m.id='realViewer';
+  m.className='rv';
+  m.innerHTML=`
+    <div class="rv-bar">
+      <div class="min-w-0"><div id="rvTitle" class="text-sm font-semibold text-white truncate"></div><div id="rvMeta" class="text-[11px] text-gray-400"></div></div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="rvPrev()" class="rv-btn">‹ 上一页</button>
+        <span id="rvPage" class="text-xs text-gray-300 w-16 text-center"></span>
+        <button onclick="rvNext()" class="rv-btn">下一页 ›</button>
+        <button onclick="rvClose()" class="rv-btn rv-close">✕ 关闭</button>
+      </div>
+    </div>
+    <div class="rv-stage" id="rvStage" onclick="if(event.target===this)rvClose()"><img id="rvImg" class="rv-img" alt=""/></div>
+    <div class="rv-thumbs" id="rvThumbs"></div>`;
+  document.body.appendChild(m);
+  return m;
+}
+function openRealSlides(title, pages, base){
+  ensureRealViewer();
+  RSV={ base, pages, idx:1 };
+  document.getElementById('rvTitle').textContent=title;
+  document.getElementById('rvMeta').textContent=`共 ${pages} 页 · 真实网页幻灯片`;
+  let th='';
+  for(let i=1;i<=pages;i++){ th+=`<img data-i="${i}" loading="lazy" src="${base}/p${String(i).padStart(3,'0')}.webp" onclick="rvGoto(${i})"/>`; }
+  document.getElementById('rvThumbs').innerHTML=th;
+  document.getElementById('realViewer').classList.add('active');
+  document.body.style.overflow='hidden';
+  rvGoto(1);
+}
+function rvGoto(i){
+  if(i<1)i=1; if(i>RSV.pages)i=RSV.pages; RSV.idx=i;
+  document.getElementById('rvImg').src=`${RSV.base}/p${String(i).padStart(3,'0')}.webp`;
+  document.getElementById('rvPage').textContent=`${i} / ${RSV.pages}`;
+  [i+1,i+2].forEach(n=>{ if(n<=RSV.pages){ const im=new Image(); im.src=`${RSV.base}/p${String(n).padStart(3,'0')}.webp`; } });
+  document.querySelectorAll('#rvThumbs img').forEach(t=>{ const on=(+t.dataset.i===i); t.classList.toggle('active',on); if(on) t.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}); });
+}
+function rvPrev(){ rvGoto(RSV.idx-1); }
+function rvNext(){ rvGoto(RSV.idx+1); }
+function rvClose(){ const m=document.getElementById('realViewer'); if(m) m.classList.remove('active'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e=>{
+  const m=document.getElementById('realViewer');
+  if(!m || !m.classList.contains('active')) return;
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){ e.preventDefault(); rvPrev(); }
+  else if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); rvNext(); }
+  else if(e.key==='Escape'){ rvClose(); }
+});
 
 // —— 通用在线查看弹层 ——
 function openDocViewer(title, bodyHtml, wide){
