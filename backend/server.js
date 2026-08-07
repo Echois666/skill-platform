@@ -313,6 +313,28 @@ app.get('/api/materials/:parkId', (req, res) => {
   }
 });
 
+// 列出某行业的真实方案（已渲染为网页幻灯片图片），供在线逐页查看，不提供大文件下载
+app.get('/api/solutions/:parkId', (req, res) => {
+  try {
+    const parkId = String(req.params.parkId).replace(/[^\w\-]/g, '');
+    const sj = path.join(__dirname, '..', 'public', 'materials', parkId, 'solutions.json');
+    if (!fs.existsSync(sj)) return res.json({ parkId, solutions: [] });
+    const data = JSON.parse(fs.readFileSync(sj, 'utf8'));
+    const solutions = (data.solutions || []).map(s => ({
+      slug: s.slug,
+      title: s.title,
+      kind: s.kind,
+      pages: s.pages,
+      cover: `/materials/${parkId}/${s.slug}/${s.cover || 'p001.webp'}`,
+      base: `/materials/${parkId}/${s.slug}`
+    }));
+    res.json({ parkId, count: solutions.length, solutions });
+  } catch (e) {
+    console.error('读取方案失败:', e);
+    res.status(500).json({ error: '读取方案失败', detail: e.message });
+  }
+});
+
 // 解析自然语言需求 → 识别行业/客户/诉求/场景
 app.post('/api/parse-requirement', (req, res) => {
   try {

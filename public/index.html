@@ -34,6 +34,20 @@
             nav a[href]{ white-space:nowrap; font-size:.72rem; padding-left:.5rem; padding-right:.5rem; }
             section h2{ font-size:1.7rem!important; line-height:1.25; }
         }
+        /* 网页幻灯片查看器 */
+        .viewer{ display:none; position:fixed; inset:0; z-index:200; background:rgba(6,6,10,.96); flex-direction:column; }
+        .viewer.active{ display:flex; }
+        .viewer-bar{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.6rem 1rem; border-bottom:1px solid rgba(148,163,184,.2); background:#0b0b0d; }
+        .viewer-btn{ font-size:.72rem; padding:.35rem .7rem; border-radius:.5rem; background:#1e293b; color:#e2e8f0; transition:.2s; white-space:nowrap; }
+        .viewer-btn:hover{ background:#334155; }
+        .viewer-close{ background:#7c3aed; } .viewer-close:hover{ background:#8b5cf6; }
+        .viewer-stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:1rem; min-height:0; }
+        .viewer-img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:.5rem; box-shadow:0 20px 60px rgba(0,0,0,.6); background:#000; }
+        .viewer-thumbs{ display:flex; gap:.4rem; overflow-x:auto; padding:.5rem 1rem; border-top:1px solid rgba(148,163,184,.15); background:#0b0b0d; }
+        .viewer-thumbs img{ height:52px; width:auto; border-radius:.25rem; cursor:pointer; opacity:.5; border:2px solid transparent; transition:.15s; flex-shrink:0; }
+        .viewer-thumbs img.active{ opacity:1; border-color:#a78bfa; }
+        .viewer-thumbs img:hover{ opacity:.85; }
+        @media (max-width:640px){ .viewer-thumbs{ display:none; } .viewer-btn{ font-size:.68rem; padding:.3rem .5rem; } }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 min-h-screen">
@@ -171,6 +185,25 @@
             <div id="modalContent"></div>
             <button onclick="document.getElementById('parkModal').classList.remove('active')" class="mt-6 w-full bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition">关闭</button>
         </div>
+    </div>
+
+    <div id="viewerModal" class="viewer">
+        <div class="viewer-bar">
+            <div class="min-w-0">
+                <div id="viewerTitle" class="text-sm font-semibold text-white truncate"></div>
+                <div id="viewerMeta" class="text-[11px] text-gray-400"></div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="viewerPrev()" class="viewer-btn">‹ 上一页</button>
+                <span id="viewerPage" class="text-xs text-gray-300 w-16 text-center"></span>
+                <button onclick="viewerNext()" class="viewer-btn">下一页 ›</button>
+                <button onclick="closeViewer()" class="viewer-btn viewer-close">✕ 关闭</button>
+            </div>
+        </div>
+        <div class="viewer-stage" id="viewerStage" onclick="if(event.target===this)closeViewer()">
+            <img id="viewerImg" class="viewer-img" alt=""/>
+        </div>
+        <div class="viewer-thumbs" id="viewerThumbs"></div>
     </div>
 
     <footer class="py-10 px-4 border-t border-slate-700 text-center text-gray-500">
@@ -347,36 +380,76 @@
                 <div class="grid grid-cols-2 gap-3 mb-4 text-sm"><div class="bg-slate-900 rounded-lg p-3 text-center">📁 ${p.res} 个资源</div><div class="bg-slate-900 rounded-lg p-3 text-center">✅ ${p.tag}</div></div>
                 <div class="text-sm font-semibold mb-2">核心功能模块:</div>
                 <div class="flex flex-wrap gap-2 mb-6">${p.modules.map(m=>`<span class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs">${m}</span>`).join('')}</div>
-                <div class="text-sm font-semibold mb-2 flex items-center gap-2">📂 板块资料 <span class="text-xs text-gray-500">(可在线预览/下载)</span></div>
-                <div id="materialList" class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在加载资料...</div>`;
+                <div class="text-sm font-semibold mb-2 flex items-center gap-2">📂 该行业真实方案 <span class="text-xs text-gray-500">(点击方案在线逐页查看)</span></div>
+                <div id="materialList" class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在加载方案...</div>`;
             document.getElementById('parkModal').classList.add('active');
             loadMaterials(id);
         }
-        const kindIcon = { '解决方案':'📊', '案例卡':'🗂️', '功能介绍':'🧩', '一页纸':'📄', '资料':'📎' };
+        const kindIcon = { '解决方案':'📊', '案例卡':'🗂️', '功能介绍':'🧩', '产品介绍':'🧩', '建设方案':'🏗️', '一页纸':'📄', '资料':'📎' };
         async function loadMaterials(id){
             const box = document.getElementById('materialList');
             try {
-                const resp = await fetch(`/api/materials/${id}`);
+                const resp = await fetch(`/api/solutions/${id}`);
                 const j = await resp.json();
-                if(!j.files || j.files.length===0){
-                    box.innerHTML = '<div class="text-xs text-gray-500">该板块暂未上传可分享资料（涉密资料仅限内部线下获取）。</div>';
+                if(!j.solutions || j.solutions.length===0){
+                    box.innerHTML = '<div class="text-xs text-gray-500">该行业暂无可在线查看的方案（涉密资料仅限内部线下获取）。</div>';
                     return;
                 }
-                box.innerHTML = `<div class="space-y-2">${j.files.map(f=>`
-                    <div class="flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2">
-                        <div class="min-w-0">
-                            <div class="text-xs text-gray-200 truncate" title="${f.name}">${kindIcon[f.kind]||'📎'} ${f.name}</div>
-                            <div class="text-[11px] text-gray-500">${f.kind} · ${f.ext.toUpperCase()} · ${f.sizeMB}MB</div>
+                box.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${j.solutions.map(s=>`
+                    <button type="button" onclick='openSolutionViewer(${JSON.stringify(id)}, ${JSON.stringify(s.slug)}, ${JSON.stringify(s.title)}, ${s.pages}, ${JSON.stringify(s.base)})'
+                        class="group text-left bg-slate-900 border border-slate-700 hover:border-purple-500/60 rounded-xl overflow-hidden transition">
+                        <div class="relative aspect-[16/9] bg-slate-950 overflow-hidden">
+                            <img src="${s.cover}" loading="lazy" alt="${s.title}" class="w-full h-full object-cover group-hover:scale-[1.03] transition"/>
+                            <span class="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-purple-200">${kindIcon[s.kind]||'📎'} ${s.kind}</span>
+                            <span class="absolute bottom-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-gray-200">${s.pages} 页</span>
+                            <span class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/30 text-white text-sm font-semibold">▶ 在线查看</span>
                         </div>
-                        <div class="flex gap-2 shrink-0">
-                            ${f.ext==='pdf'?`<a href="${f.url}" target="_blank" class="text-[11px] px-2 py-1 rounded bg-blue-600/80 hover:bg-blue-500 transition">预览</a>`:''}
-                            <a href="${f.url}" download class="text-[11px] px-2 py-1 rounded bg-purple-600/80 hover:bg-purple-500 transition">下载</a>
+                        <div class="px-3 py-2">
+                            <div class="text-xs text-gray-100 font-medium truncate" title="${s.title}">${s.title}</div>
+                            <div class="text-[11px] text-gray-500 mt-0.5">网页幻灯片 · 无需下载</div>
                         </div>
-                    </div>`).join('')}</div>`;
+                    </button>`).join('')}</div>`;
             } catch(err){
-                box.innerHTML = `<div class="text-xs text-red-400">资料加载失败：${err.message}</div>`;
+                box.innerHTML = `<div class="text-xs text-red-400">方案加载失败：${err.message}</div>`;
             }
         }
+
+        // ===== 网页幻灯片查看器（图片逐页，懒加载，不下载）=====
+        let VW = { base:'', pages:0, idx:1, title:'' };
+        function openSolutionViewer(parkId, slug, title, pages, base){
+            VW = { base, pages, idx:1, title };
+            document.getElementById('viewerTitle').textContent = title;
+            document.getElementById('viewerMeta').textContent = `共 ${pages} 页 · 网页幻灯片`;
+            const thumbs = document.getElementById('viewerThumbs');
+            let th = '';
+            for(let i=1;i<=pages;i++){
+                th += `<img data-i="${i}" loading="lazy" src="${base}/p${String(i).padStart(3,'0')}.webp" onclick="viewerGoto(${i})"/>`;
+            }
+            thumbs.innerHTML = th;
+            document.getElementById('viewerModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            viewerGoto(1);
+        }
+        function viewerGoto(i){
+            if(i<1) i=1; if(i>VW.pages) i=VW.pages;
+            VW.idx = i;
+            const src = `${VW.base}/p${String(i).padStart(3,'0')}.webp`;
+            document.getElementById('viewerImg').src = src;
+            document.getElementById('viewerPage').textContent = `${i} / ${VW.pages}`;
+            // 预取相邻页
+            [i+1,i+2].forEach(n=>{ if(n<=VW.pages){ const im=new Image(); im.src=`${VW.base}/p${String(n).padStart(3,'0')}.webp`; } });
+            const thumbs = document.querySelectorAll('#viewerThumbs img');
+            thumbs.forEach(t=>{ const on = (+t.dataset.i===i); t.classList.toggle('active', on); if(on) t.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'}); });
+        }
+        function viewerPrev(){ viewerGoto(VW.idx-1); }
+        function viewerNext(){ viewerGoto(VW.idx+1); }
+        function closeViewer(){ document.getElementById('viewerModal').classList.remove('active'); document.body.style.overflow = ''; }
+        document.addEventListener('keydown', e=>{
+            if(!document.getElementById('viewerModal').classList.contains('active')) return;
+            if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){ e.preventDefault(); viewerPrev(); }
+            else if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); viewerNext(); }
+            else if(e.key==='Escape'){ closeViewer(); }
+        });
 
         async function generate(){
             const parkId = document.getElementById('genPark').value;
