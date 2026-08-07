@@ -752,4 +752,223 @@ async function generatePptBuffer(park, version, brief) {
   return await pres.write({ outputType: 'nodebuffer' });
 }
 
-module.exports = { generatePptBuffer };
+// ════════════════════════════════════════════════════════════════════════
+// 幻灯片内容模型（网页在线查看用）—— 与 generatePptBuffer 同源数据，逐页对应
+// 每个 slide：{ kind, ... }，前端按 kind 渲染成 16:9 幻灯片版式
+// ════════════════════════════════════════════════════════════════════════
+function buildPptModel(park, version, brief) {
+  const kb = KB.getKB(park.id) || {};
+  const projectName = (brief && brief.projectName) || `${park.name}数字化解决方案`;
+  const focus = (brief && brief.focusScenarios) || [];
+  const slides = [];
+
+  // 1. 封面
+  slides.push({
+    kind: 'cover', badge: 'AI', company: KB.company.name || '北京五一视界数字孪生科技股份有限公司',
+    companySub: '51WORLD · 克隆地球5.1亿平方公里',
+    title: '赋能' + park.name, subtitle: '综合解决方案',
+    project: projectName, meta: version + '  ·  ' + new Date().toLocaleDateString('zh-CN')
+  });
+
+  // 2. 目录
+  const tocItems = [
+    { no: '01', title: '行业态势与政策背景', en: 'Industry Trends' },
+    { no: '02', title: '行业现状与痛点分析', en: 'Current Status & Pain Points' },
+    { no: '03', title: '核心产品能力', en: 'Core Capabilities' },
+    { no: '04', title: 'ALL-IN-ONE 解决方案', en: 'All-in-One Solution' },
+    { no: '05', title: '落地案例与建设价值', en: 'Use Cases & Value' },
+  ];
+  slides.push({ kind: 'toc', title: '目录', en: 'CATALOG', items: tocItems });
+
+  // Section 1
+  slides.push({ kind: 'divider', no: '01', title: '行业态势与政策背景', en: 'Industry Trends & Policy',
+    lead: '从国家政策与市场机遇切入，回答"为什么现在要建" —— 政策强力驱动叠加数字孪生技术成熟，' + park.name + '正进入高标准、高质量发展的新周期。' });
+
+  // 3. 政策驱动
+  const policies = (kb.policies && kb.policies.length) ? kb.policies : KB.industryTrends.policies;
+  slides.push({
+    kind: 'policy', theme: 'steel',
+    title: '政策强力驱动，数字孪生引领' + park.name + '进入高标准发展新周期',
+    background: kb.background || KB.industryTrends.intro,
+    policies: policies.slice(0, 5).map(p => {
+      const m = p.match(/\d{4}/);
+      return { year: m ? m[0] : '', text: p.replace(/（\d{4}.*?）/g, '').substring(0, 80) };
+    })
+  });
+
+  // 4. 市场机遇
+  slides.push({
+    kind: 'market', title: '市场机遇 —— 高速增长的数字孪生园区市场', tag: 'Market Opportunity',
+    bigNum: '2000+', bigLabel: '累计落地项目数', bigSub: '覆盖19个国家和地区',
+    metrics: [{ v: '650+', l: '化工园区市场' }, { v: '628', l: '国家级经开区' }, { v: '3012', l: '高校校园' }],
+    marketData: kb.marketData || '',
+    chart: { title: '数字孪生园区市场规模(亿元)', labels: ['2022', '2023', '2024', '2025E', '2026E', '2027E'], values: [280, 420, 580, 780, 1050, 1380] }
+  });
+
+  // Section 2
+  slides.push({ kind: 'divider', no: '02', title: '行业现状与痛点分析', en: 'Current Status & Pain Points',
+    lead: '直面行业当前的核心挑战 —— 系统分散、数据孤岛、被动管理、安全压力，逐条剖析痛点根因，并给出 51WORLD 以品牌力、实战力、产品力支撑的破局思路。' });
+
+  // 5. 行业痛点
+  const vPains = (kb.pains && kb.pains.length) ? kb.pains : KB.commonPains;
+  const painIcons = ['🧩', '📊', '👷', '📉', '🛡️', '⚙️'];
+  const painFix = ['统一三维底座融合', '数据汇聚智能分析', 'AI 自动巡检预警', '精细化智能运营', '安全双控数字管控', '设备联防联动'];
+  slides.push({
+    kind: 'pains', title: '建设需求增长，行业面临多重挑战', tag: 'Industry Challenges',
+    cards: vPains.slice(0, 6).map((x, i) => ({
+      no: '0' + (i + 1), icon: painIcons[i] || '•', title: x.title,
+      desc: x.desc || '依赖人力管理，缺乏数字化手段，效率低且难以实现精细化运营管控。',
+      fix: x.fix || painFix[i] || '数字化智能管控'
+    })),
+    emphases: (brief && brief.emphases) || []
+  });
+
+  // 6. 51WORLD 的解答
+  slides.push({
+    kind: 'advantages', title: '51WORLD 的解答 —— 品牌力 · 实战力 · 产品力', tag: '51WORLD Response',
+    intro: KB.company.intro,
+    cards: (KB.company.advantages || []).slice(0, 3).map((adv, i) => ({
+      title: ['引领品牌力', '标杆实战力', '卓越产品力'][i] || '核心优势', body: adv
+    }))
+  });
+
+  // Section 3
+  slides.push({ kind: 'divider', no: '03', title: '核心产品能力', en: 'Core Product Capabilities',
+    lead: '回答"用什么建" —— 以 AES6.0 数字底座、WDP 平台、ISE 仿真引擎、51Daas 数字资产、Clonova 空间孪生智能五大核心产品，构筑统一、开放、可成长的数字孪生技术底盘。' });
+
+  // 7. 五大能力独立页
+  KB.capabilities.forEach((cap, ci) => {
+    slides.push({ kind: 'capability', idx: ci + 1, total: KB.capabilities.length,
+      name: cap.name, en: cap.en, desc: cap.desc, points: cap.points || [] });
+  });
+
+  // 8. 标准建设
+  slides.push({
+    kind: 'standards', title: '标准建设 —— 引领行业发展，参与顶层标准制定', tag: 'Standards & Track Record',
+    scale: KB.company.scale,
+    stats: [['10+', '国家标准'], ['2', '行业标准'], ['20+', '团体标准'], ['20+', '白皮书']],
+    highlights: KB.standards.highlights || []
+  });
+
+  // Section 4
+  slides.push({ kind: 'divider', no: '04', title: 'ALL-IN-ONE 解决方案', en: 'All-in-One Solution',
+    lead: '回答"怎么建" —— 从一体化技术架构到 IOC 智慧驾驶舱，再到围绕' + park.name + '核心业务的全场景智能应用，形成"一个底座 + N 项应用"的一张图整体方案。' });
+
+  // 9. 技术架构
+  slides.push({
+    kind: 'architecture', title: '方案架构 —— AI + WDP + Clonova 一体化数字孪生平台', tag: 'Solution Architecture',
+    layers: KB.architecture.map(l => ({ layer: l.layer, desc: l.desc }))
+  });
+
+  // 10. IOC 八大应用
+  const iocIcons = ['📊', '🛡️', '🚦', '📦', '🔔', '⚡', '🔧', '🏢'];
+  slides.push({
+    kind: 'ioc', title: '园区 IOC 智慧驾驶舱 —— 八大标准应用', tag: 'IOC Standard Applications',
+    intro: '通过智慧园区建设实现对外服务的形象提升、对内运营的降本增效，实现员工以人为本、管理效益优先。',
+    banner: 'IOC 智慧驾驶舱 · 一屏掌控园区运行态势',
+    apps: KB.iocApps.slice(0, 8).map((a, i) => ({ icon: iocIcons[i] || '◆', name: a.name, desc: a.desc }))
+  });
+
+  // 11. 方案价值
+  slides.push({
+    kind: 'value', title: '方案价值 —— 数字孪生赋能园区四大核心价值', tag: 'Solution Value',
+    cards: [
+      { icon: '👁', title: '全域可视', desc: '园区所有子系统数据融合汇聚，一张图实时呈现运行状态，无死角全掌控。' },
+      { icon: '🔮', title: '智慧管控', desc: 'AI 算法融合多源数据进行智能预警、异常分析和自动处置，从被动响应到主动预防。' },
+      { icon: '🔄', title: '降本增效', desc: '流程自动化与智能调度减少人力依赖，能耗精细化管理显著降低运营成本。' },
+      { icon: '🌱', title: '绿色安全', desc: '碳排放实时核算、能耗双控合规监管、应急一键指挥，助力安全绿色可持续运营。' },
+    ]
+  });
+
+  // 11.5 解决方案逻辑
+  slides.push({
+    kind: 'flow', title: '解决方案逻辑 —— 从痛点到价值的闭环', tag: 'Solution Logic',
+    intro: '一条主线贯穿全案：直面行业痛点 → 夯实数字孪生底座 → 落地 ALL-IN-ONE 全场景 → 兑现可量化价值。',
+    steps: [
+      { icon: '⚠️', t: '行业痛点', d: '系统分散、数据孤岛、被动管理、安全与双碳压力持续加大' },
+      { icon: '🧊', t: '数字孪生底座', d: 'AES6.0 + WDP + ISE 构建统一、开放、可成长的三维底座' },
+      { icon: '🗺️', t: 'ALL-IN-ONE 全场景', d: '"一张图"融合 N 项智能应用，业务全要素可视可管可控' },
+      { icon: '📈', t: '可量化价值', d: '降本增效、主动预防、绿色安全，价值看得见可衡量' },
+    ],
+    footer: '51WORLD 以「统一底座 + 全场景应用 + 持续运营」方法论，助力' + park.name + '实现从"被动响应"到"主动预防"的范式升级。'
+  });
+
+  // 12. 应用场景概览
+  const scenarios = kb.scenarios || (park.modules || []).map(m => ({ name: m, desc: m, features: [] }));
+  slides.push({
+    kind: 'scenarioOverview', title: park.name + ' —— 应用场景全景', tag: 'Application Scenarios',
+    intro: '基于数字孪生底座，围绕' + park.name + '核心业务场景，构建"一张图"全场景智能化应用体系。',
+    cards: scenarios.slice(0, 6).map(sc => ({
+      name: sc.name, desc: sc.desc, focus: focus.includes(sc.name),
+      features: (sc.features || []).slice(0, 4).map(f => (typeof f === 'string') ? f : (f.name || ''))
+    }))
+  });
+
+  // 13. 每个场景详情页
+  scenarios.slice(0, 6).forEach((sc, si) => {
+    slides.push({
+      kind: 'scenarioDetail', idx: si + 1, total: Math.min(scenarios.length, 6),
+      name: sc.name, desc: sc.desc,
+      value: sc.value || ('依托数字孪生底座，实现「' + sc.name + '」业务全要素可视、智能预警与协同处置，显著提升运营效率与本质安全水平。'),
+      features: (sc.features || []).slice(0, 6).map(f => (typeof f === 'string') ? { name: f, detail: '' } : { name: f.name || '', detail: f.detail || '' })
+    });
+  });
+
+  // Section 5
+  slides.push({ kind: 'divider', no: '05', title: '落地案例与建设价值', en: 'Use Cases & Value',
+    lead: '回答"建成什么样" —— 以五步实施方法论、全球标杆案例与可量化的建设成效，印证方案的可落地性与价值回报，并给出清晰的分阶段实施路径。' });
+
+  // 14. 实施方法论
+  slides.push({
+    kind: 'methodology', title: '实施方法论 —— 五步建设，快速见效', tag: 'Implementation Methodology',
+    steps: KB.methodology.map(s => ({ step: s.step, desc: s.desc }))
+  });
+
+  // 15. 案例总览
+  const cases = kb.cases || [];
+  if (cases.length) {
+    slides.push({
+      kind: 'casesOverview', title: '全球标杆案例 —— 已累计落地近 2000 个项目', tag: 'Reference Cases',
+      banner: '51Aes 累计落地 10 多个国家和地区、近 2000 个项目，已为全球 19 个国家的数千家企业提供数字孪生产品和服务',
+      cards: cases.slice(0, 4).map(c => ({ name: c.name, desc: c.value || c.bg || '', metric: (c.metrics && c.metrics[0]) || '' }))
+    });
+    // 16. 案例详情页
+    cases.slice(0, 4).forEach((c, ci) => {
+      slides.push({
+        kind: 'caseDetail', idx: ci + 1, name: c.name, bg: c.bg || '', value: c.value || '',
+        funcs: c.funcs ? c.funcs.split(/[、，,]/).map(f => f.trim()).filter(Boolean).slice(0, 6) : [],
+        metrics: (c.metrics || []).slice(0, 3)
+      });
+    });
+  }
+
+  // 17. 建设价值与成效
+  const valueMetrics = kb.valueMetrics || [];
+  if (valueMetrics.length) {
+    slides.push({
+      kind: 'valueMetrics', title: '建设价值与成效 —— 可量化的数字孪生价值', tag: 'Quantified Value',
+      summary: (park.value || []).join('   ·   ') || '一图感知、智能决策、降本增效、绿色安全',
+      metrics: valueMetrics.slice(0, 3).map(m => ({ value: m.value, label: m.label, desc: m.desc })),
+      funcList: scenarios.slice(0, 8).map(sc => sc.name)
+    });
+  }
+
+  // 18. 实施计划三阶段
+  ['presales', 'midsales', 'delivery'].forEach((key, ki) => {
+    const ph = phases[key];
+    slides.push({
+      kind: 'plan', idx: ki + 1, stageLabel: `第${['一', '二', '三'][ki]}阶段`, stage: ph.name, desc: ph.desc,
+      items: ph.items.map(it => ({ name: it.name, duration: it.duration, deliverables: it.deliverables.join('　·　') }))
+    });
+  });
+
+  // 19. 结尾
+  slides.push({
+    kind: 'closing', title: '谢谢观看', subtitle: '感谢您关注 51WORLD 数字孪生解决方案',
+    company: KB.company.name, slogan: (KB.company.slogan || '') + '  ·  ' + (KB.company.site || '')
+  });
+
+  return { title: projectName, version, slides };
+}
+
+module.exports = { generatePptBuffer, buildPptModel };

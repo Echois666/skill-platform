@@ -78,6 +78,157 @@
     h1{ font-size:1.6rem!important; }
     .stage-tab{ font-size:.74rem!important; padding:.38rem .7rem!important; }
   }
+  /* ===== 汇报PPT 网页幻灯片（16:9 还原真实版式）===== */
+  .ppt-deck{ display:flex; flex-direction:column; gap:18px; container-type:inline-size; }
+  .ppt-slide{ position:relative; width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden;
+    box-shadow:0 6px 22px rgba(0,0,0,.35); color:#1e293b; font-size:1.18cqw; }
+  @media (max-width:900px){ .ppt-slide{ font-size:1.9cqw; } }
+  .ppt-pageno{ position:absolute; right:10px; bottom:7px; font-size:11px; color:#94a3b8; z-index:5; }
+  .ppt-hd{ background:#5B3AED; height:12%; display:flex; align-items:center; justify-content:space-between; padding:0 3%; }
+  .ppt-hd-t{ color:#fff; font-weight:800; font-size:1.6em; line-height:1.1; }
+  .ppt-hd-tag{ color:#ddd6fe; font-size:1em; white-space:nowrap; margin-left:8px; }
+  .ppt-sub{ font-weight:700; color:#5B3AED; font-size:1.25em; margin:1.5% 0 1%; }
+  .ppt-intro{ color:#64748b; font-size:1.05em; padding:1.5% 3% 0; }
+  /* 封面 */
+  .ppt-cover{ height:100%; padding:6% 7%; display:flex; flex-direction:column; justify-content:center; background:radial-gradient(circle at 80% 15%,rgba(91,58,237,.5),transparent 55%),#0D0F1A; }
+  .ppt-cover-badge{ width:2.6em; height:2.6em; border-radius:50%; background:linear-gradient(135deg,#5B3AED,#EC4899); color:#fff; font-weight:900; font-size:1.4em; display:flex; align-items:center; justify-content:center; margin-bottom:5%; }
+  .ppt-cover-company{ color:#94a3b8; font-size:1.05em; margin-bottom:3%; }
+  .ppt-cover-title{ color:#fff; font-weight:900; font-size:3.4em; line-height:1.1; }
+  .ppt-cover-sub{ color:#a5b4fc; font-weight:800; font-size:2.4em; margin-bottom:5%; }
+  .ppt-cover-proj{ color:#fff; font-size:1.4em; font-weight:600; }
+  .ppt-cover-meta{ color:#64748b; font-size:1em; margin-top:2%; }
+  /* 目录 */
+  .ppt-toc{ padding:2% 5%; display:flex; flex-direction:column; gap:2.2%; }
+  .ppt-toc-item{ display:flex; align-items:center; gap:3%; }
+  .ppt-toc-no{ color:#5B3AED; font-weight:900; font-size:2.2em; min-width:1.8em; }
+  .ppt-toc-tt{ display:flex; flex-direction:column; }
+  .ppt-toc-tt b{ font-size:1.4em; color:#1e293b; }
+  .ppt-toc-tt em{ font-style:normal; color:#94a3b8; font-size:.95em; }
+  /* 分隔页 */
+  .ppt-div{ display:flex; height:100%; }
+  .ppt-div-left{ width:30%; background:#5B3AED; display:flex; align-items:center; justify-content:center; }
+  .ppt-div-left span{ color:rgba(255,255,255,.35); font-weight:900; font-size:7em; }
+  .ppt-div-right{ flex:1; padding:6% 5%; display:flex; flex-direction:column; justify-content:center; }
+  .ppt-div-t{ color:#fff; font-weight:900; font-size:2.8em; }
+  .ppt-div-en{ color:#94a3b8; font-size:1.2em; letter-spacing:1px; margin-top:1.5%; }
+  .ppt-div-line{ width:45%; height:3px; background:#EC4899; margin:3% 0; }
+  .ppt-div-lead-h{ color:#a5b4fc; font-weight:700; font-size:1.05em; margin-bottom:1%; }
+  .ppt-div-lead{ color:#cbd5e1; font-size:1.05em; line-height:1.55; }
+  /* 两栏布局（政策/能力/场景/案例详情）*/
+  .ppt-cols{ display:flex; gap:2%; padding:2% 2.5%; height:88%; }
+  .ppt-col-l,.ppt-col-r{ flex:1; }
+  .ppt-col-l p{ color:#64748b; font-size:1.02em; line-height:1.5; }
+  .ppt-pol{ display:flex; gap:2%; margin-bottom:2%; align-items:flex-start; }
+  .ppt-pol-y{ background:#1E3A5F; color:#fff; font-weight:700; padding:.2em .5em; border-radius:4px; font-size:.95em; white-space:nowrap; }
+  .ppt-pol span:last-child{ color:#334155; font-size:.98em; line-height:1.4; }
+  /* 市场 */
+  .ppt-market{ display:flex; gap:3%; padding:2.5% 3% 1%; align-items:center; }
+  .ppt-big{ background:#0D0F1A; border-radius:8px; padding:2.5% 3%; text-align:center; min-width:30%; }
+  .ppt-big-n{ color:#34d399; font-weight:900; font-size:3em; }
+  .ppt-big-l{ color:#fff; font-size:1.1em; margin-top:2%; }
+  .ppt-big-s{ color:#94a3b8; font-size:.9em; }
+  .ppt-metrics{ display:flex; gap:2%; flex:1; }
+  .ppt-metric{ flex:1; background:#ede9fe; border-radius:8px; padding:2% 1.5%; text-align:center; }
+  .ppt-metric-v{ color:#5B3AED; font-weight:900; font-size:2em; }
+  .ppt-metric-l{ color:#64748b; font-size:.95em; }
+  .ppt-chart{ padding:1% 3% 2%; }
+  .ppt-chart-t{ color:#64748b; font-size:1em; margin-bottom:1%; }
+  .ppt-bars{ display:flex; align-items:flex-end; gap:2%; height:20cqw; max-height:190px; }
+  .ppt-bar-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .ppt-bar-v{ font-size:.85em; color:#5B3AED; font-weight:700; }
+  .ppt-bar{ width:60%; background:linear-gradient(180deg,#5B3AED,#EC4899); border-radius:4px 4px 0 0; min-height:4px; }
+  .ppt-bar-l{ font-size:.85em; color:#94a3b8; margin-top:4%; }
+  /* 网格 */
+  .ppt-grid2,.ppt-grid3,.ppt-grid4{ display:grid; gap:1.5%; padding:2% 2.5%; }
+  .ppt-grid2{ grid-template-columns:repeat(2,1fr); }
+  .ppt-grid3{ grid-template-columns:repeat(3,1fr); }
+  .ppt-grid4{ grid-template-columns:repeat(4,1fr); }
+  /* 痛点卡 */
+  .ppt-pain{ background:#fff; border-radius:8px; padding:2.5% 2.5%; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .ppt-pain-h{ display:flex; align-items:center; gap:5%; margin-bottom:3%; }
+  .ppt-pain-ic{ font-size:1.6em; }
+  .ppt-pain-h b{ font-size:1.15em; color:#1e293b; }
+  .ppt-pain p{ color:#64748b; font-size:.95em; line-height:1.4; }
+  .ppt-pain-fix{ color:#059669; font-size:.95em; font-weight:600; margin-top:3%; }
+  /* 优势/场景/IOC/案例/价值卡片通用 */
+  .ppt-adv,.ppt-sc,.ppt-ioc,.ppt-case,.ppt-val{ background:#fff; border-radius:8px; padding:2.2% 2.5%; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .ppt-adv b,.ppt-case b{ font-size:1.2em; }
+  .ppt-adv p,.ppt-sc p,.ppt-ioc p,.ppt-case p,.ppt-val p{ color:#64748b; font-size:.95em; line-height:1.4; margin-top:3%; }
+  .ppt-sc-f{ color:#334155; font-size:.9em; margin-top:2%; }
+  .ppt-case-m{ font-weight:700; font-size:1em; margin-top:3%; }
+  .ppt-val{ text-align:center; }
+  .ppt-val-ic{ font-size:2.2em; }
+  .ppt-val b{ display:block; font-size:1.4em; margin:3% 0; }
+  .ppt-ioc-h{ display:flex; align-items:center; gap:5%; }
+  .ppt-ioc-ic{ width:1.8em; height:1.8em; border-radius:6px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.1em; }
+  .ppt-ioc-h b{ font-size:1.1em; }
+  .ppt-ioc-banner{ margin:1.5% 2.5%; background:#0D0F1A; color:#fff; font-weight:700; padding:1.5% 2.5%; border-radius:6px; font-size:1.1em; }
+  /* 能力/场景详情左右栏 */
+  .ppt-cap-l{ flex:.42; border-radius:10px; padding:3% 2.5%; color:#fff; }
+  .ppt-cap-no{ width:1.9em; height:1.9em; border-radius:50%; color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:1.3em; }
+  .ppt-cap-nm{ font-weight:800; font-size:1.7em; margin-top:5%; }
+  .ppt-cap-en{ color:#94a3b8; font-size:1em; margin-top:2%; }
+  .ppt-cap-line{ width:45%; height:3px; margin:3% 0; }
+  .ppt-cap-desc{ color:#cbd5e1; font-size:1em; line-height:1.5; }
+  .ppt-cap-r{ flex:1; overflow:hidden; }
+  .ppt-cap-pt{ background:#f4f6fa; border-radius:6px; padding:1.5% 2%; margin-bottom:2%; display:flex; align-items:center; gap:2.5%; }
+  .ppt-cap-ptn{ width:1.7em; height:1.7em; border-radius:50%; color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; font-size:1em; }
+  .ppt-cap-pt span:last-child{ color:#1e293b; font-size:1.02em; line-height:1.3; }
+  /* 功能小卡 */
+  .ppt-feat{ background:#f4f6fa; border-radius:6px; padding:1.5% 2%; }
+  .ppt-feat-h{ display:flex; align-items:center; gap:4%; }
+  .ppt-feat-n{ width:1.5em; height:1.5em; border:1.5px solid; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; flex:none; font-size:.95em; }
+  .ppt-feat-h b{ font-size:1em; color:#1e293b; }
+  .ppt-feat p{ color:#64748b; font-size:.88em; line-height:1.3; margin-top:3%; }
+  /* 标准 */
+  .ppt-scale{ background:#5B3AED; color:#fff; font-weight:700; padding:1.5% 2.5%; margin:2% 2.5% 0; border-radius:6px; font-size:1.05em; }
+  .ppt-stats{ display:flex; gap:2%; padding:2% 2.5%; }
+  .ppt-stat{ flex:1; background:#ede9fe; border-radius:8px; padding:1.5%; text-align:center; }
+  .ppt-stat-v{ color:#5B3AED; font-weight:900; font-size:2.6em; }
+  .ppt-stat-l{ color:#64748b; font-size:1em; }
+  .ppt-stat-d{ color:#cbd5e1; font-size:.85em; margin-top:2%; }
+  .ppt-hls{ padding:0 2.5%; }
+  .ppt-hl{ background:#f4f6fa; padding:1% 2%; margin-bottom:1.2%; border-radius:4px; color:#334155; font-size:.92em; }
+  /* 架构 */
+  .ppt-arch{ padding:2.5% 0; display:flex; flex-direction:column; align-items:center; gap:1.5%; }
+  .ppt-arch-l{ color:#fff; border-radius:6px; padding:1.2% 3%; display:flex; align-items:center; gap:3%; }
+  .ppt-arch-l b{ font-size:1.15em; min-width:20%; }
+  .ppt-arch-l span{ color:#e0e7ff; font-size:.95em; }
+  /* 流程 */
+  .ppt-flow{ display:flex; align-items:stretch; gap:0; padding:2% 2.5%; }
+  .ppt-flow-s{ flex:1; border-radius:10px; padding:2% 1.5%; text-align:center; background:#fff; }
+  .ppt-flow-ic{ width:2.2em; height:2.2em; border-radius:50%; color:#fff; margin:0 auto 3%; display:flex; align-items:center; justify-content:center; font-size:1.4em; }
+  .ppt-flow-st{ font-weight:700; font-size:.9em; }
+  .ppt-flow-s b{ display:block; font-size:1.3em; margin:2% 0; }
+  .ppt-flow-s p{ color:#64748b; font-size:.9em; line-height:1.35; }
+  .ppt-flow-arr{ display:flex; align-items:center; color:#94a3b8; font-size:1.6em; padding:0 .5%; }
+  .ppt-flow-ft{ margin:1% 2.5% 0; background:#0D0F1A; color:#fff; font-weight:600; padding:1.5% 2.5%; border-radius:6px; text-align:center; font-size:1.02em; }
+  /* 方法论 */
+  .ppt-method{ display:flex; gap:1.2%; padding:2.5%; }
+  .ppt-method-s{ flex:1; border-radius:8px; padding:2% 1.2%; text-align:center; }
+  .ppt-method-n{ width:1.8em; height:1.8em; border-radius:50%; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 4%; font-size:1.1em; }
+  .ppt-method-s b{ font-size:1.15em; }
+  .ppt-method-s p{ font-size:.9em; line-height:1.4; margin-top:3%; }
+  /* 案例功能/成效 */
+  .ppt-funcs{ display:flex; flex-wrap:wrap; gap:2%; margin-bottom:2%; }
+  .ppt-func{ background:#f4f6fa; padding:.6% 1.5%; border-radius:4px; color:#334155; font-size:.95em; }
+  .ppt-cmetric{ display:flex; align-items:center; gap:2%; background:#ede9fe; border-radius:5px; padding:1% 1.5%; margin-bottom:1.5%; }
+  .ppt-cmetric-n{ width:1.6em; height:1.6em; border-radius:50%; color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; font-size:.95em; }
+  /* 实施计划 */
+  .ppt-plan{ padding:2% 2.5%; display:flex; flex-direction:column; gap:1.5%; }
+  .ppt-plan-i{ background:#f4f6fa; border-radius:6px; padding:1.5% 2%; display:flex; gap:3%; }
+  .ppt-plan-l{ min-width:22%; display:flex; flex-direction:column; }
+  .ppt-plan-l b{ font-size:1.15em; color:#1e293b; }
+  .ppt-plan-l span{ font-size:.95em; }
+  .ppt-plan-r{ flex:1; color:#334155; font-size:1em; line-height:1.4; }
+  .ppt-plan-dv{ font-weight:700; color:#64748b; }
+  /* 闭幕 */
+  .ppt-closing{ height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 30%,rgba(91,58,237,.5),transparent 60%),#0D0F1A; }
+  .ppt-closing-t{ color:#fff; font-weight:900; font-size:4em; }
+  .ppt-closing-s{ color:#a5b4fc; font-size:1.5em; margin-top:2%; }
+  .ppt-closing-line{ width:35%; height:3px; background:#EC4899; margin:3% 0; }
+  .ppt-closing-c{ color:#fff; font-weight:700; font-size:1.3em; }
+  .ppt-closing-sl{ color:#ddd6fe; font-size:1.1em; margin-top:1.5%; }
 </style>
 </head>
 <body class="text-gray-100 min-h-screen">
@@ -466,7 +617,7 @@ async function runStage3Generate(){
     else if(type==='ppt') html=renderPptView(j);
     else html=renderSolutionView(j);
     const label = type==='plan'?'实施计划':(type==='ppt'?'汇报PPT':'解决方案');
-    openDocViewer(`${customer}·${park} ${label}`, html);
+    openDocViewer(`${customer}·${park} ${label}`, html, type==='ppt');
     box.innerHTML = `<div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-100">
       ✅ 已生成 <b>${esc(label)}</b> 并在弹窗中打开在线查看。<div class="text-xs text-gray-400 mt-1">内容按行业、客户名称、需求实时生成，可直接在网页阅读，无需下载大文件。</div>
     </div>`;
@@ -478,13 +629,13 @@ async function runStage3Generate(){
 }
 
 // —— 通用在线查看弹层 ——
-function openDocViewer(title, bodyHtml){
+function openDocViewer(title, bodyHtml, wide){
   let modal=document.getElementById('docViewModal');
   if(!modal){
     modal=document.createElement('div');
     modal.id='docViewModal';
     modal.className='fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm';
-    modal.innerHTML=`<div class="bg-slate-900 border border-amber-500/30 rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl">
+    modal.innerHTML=`<div id="docViewCard" class="bg-slate-900 border border-amber-500/30 rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl">
       <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-700">
         <div id="docViewTitle" class="font-bold text-amber-200 truncate"></div>
         <button onclick="document.getElementById('docViewModal').classList.add('hidden')" class="text-gray-400 hover:text-white text-xl leading-none px-2">×</button>
@@ -495,6 +646,9 @@ function openDocViewer(title, bodyHtml){
     modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.add('hidden'); });
     document.body.appendChild(modal);
   }
+  const card=document.getElementById('docViewCard');
+  card.classList.remove('max-w-3xl','max-w-5xl');
+  card.classList.add(wide?'max-w-5xl':'max-w-3xl');
   document.getElementById('docViewTitle').textContent=title;
   document.getElementById('docViewBody').innerHTML=bodyHtml;
   modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -512,12 +666,135 @@ function renderBlocks(blocks){
   }).join('');
 }
 function renderSolutionView(j){ return renderBlocks(j.blocks); }
+// —— 汇报PPT 在线查看：按真实幻灯片版式逐页还原（16:9） ——
+function pptFrame(inner, bg, i, total){
+  return `<div class="ppt-slide" style="background:${bg||'#ffffff'}">${inner}
+    <div class="ppt-pageno">${i+1} / ${total}</div></div>`;
+}
+function pptHeader(title, tag){
+  return `<div class="ppt-hd"><span class="ppt-hd-t">${esc(title)}</span>${tag?`<span class="ppt-hd-tag">${esc(tag)}</span>`:''}</div>`;
+}
 function renderPptView(j){
-  return '<div class="space-y-4">'+(j.slides||[]).map((s,i)=>`
-    <div class="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
-      <div class="px-4 py-2 bg-slate-800 flex justify-between items-center"><span class="text-amber-200 font-bold text-[13px]">${esc(s.title)}</span><span class="text-gray-500 text-[11px]">第 ${i+1} 页</span></div>
-      <div class="p-4">${renderBlocks(s.body)||'<div class="text-gray-500 text-xs">（本页为章节封面）</div>'}</div>
-    </div>`).join('')+'</div>';
+  const slides=j.slides||[]; const total=slides.length;
+  const P='#5B3AED', DK='#0D0F1A', PK='#EC4899';
+  const cap=['#5B3AED','#EC4899','#0891B2','#059669','#D97706'];
+  const body=slides.map((s,i)=>{
+    let inner='', bg='#ffffff';
+    switch(s.kind){
+      case 'cover':
+        bg=DK;
+        inner=`<div class="ppt-cover">
+          <div class="ppt-cover-badge">${esc(s.badge||'AI')}</div>
+          <div class="ppt-cover-company">${esc(s.company||'')}</div>
+          <div class="ppt-cover-title">${esc(s.title||'')}</div>
+          <div class="ppt-cover-sub">${esc(s.subtitle||'')}</div>
+          <div class="ppt-cover-proj">${esc(s.project||'')}</div>
+          <div class="ppt-cover-meta">${esc(s.meta||'')}</div>
+        </div>`; break;
+      case 'toc':
+        bg='#f4f6fa';
+        inner=pptHeader(s.title||'目录', s.en)+`<div class="ppt-toc">`+
+          (s.items||[]).map(it=>`<div class="ppt-toc-item"><span class="ppt-toc-no">${esc(it.no)}</span>
+            <span class="ppt-toc-tt"><b>${esc(it.title)}</b><em>${esc(it.en||'')}</em></span></div>`).join('')+`</div>`; break;
+      case 'divider':
+        bg=DK;
+        inner=`<div class="ppt-div"><div class="ppt-div-left"><span>${esc(s.no)}</span></div>
+          <div class="ppt-div-right"><div class="ppt-div-t">${esc(s.title)}</div>
+          <div class="ppt-div-en">${esc(s.en||'')}</div><div class="ppt-div-line"></div>
+          ${s.lead?`<div class="ppt-div-lead-h">本章导读</div><div class="ppt-div-lead">${esc(s.lead)}</div>`:''}</div></div>`; break;
+      case 'policy':
+        inner=pptHeader(s.title, s.tag||'Policy')+`<div class="ppt-cols">
+          <div class="ppt-col-l"><div class="ppt-sub">行业背景</div><p>${esc(s.background||'')}</p></div>
+          <div class="ppt-col-r"><div class="ppt-sub">政策时间线</div>`+
+          (s.policies||[]).map(p=>`<div class="ppt-pol"><span class="ppt-pol-y">${esc(p.year||'●')}</span><span>${esc(p.text)}</span></div>`).join('')+`</div></div>`; break;
+      case 'market':
+        inner=pptHeader(s.title, s.tag||'Market')+`<div class="ppt-market">
+          <div class="ppt-big"><div class="ppt-big-n">${esc(s.bigNum)}</div><div class="ppt-big-l">${esc(s.bigLabel||'')}</div><div class="ppt-big-s">${esc(s.bigSub||'')}</div></div>
+          <div class="ppt-metrics">`+(s.metrics||[]).map(m=>`<div class="ppt-metric"><div class="ppt-metric-v">${esc(m.v)}</div><div class="ppt-metric-l">${esc(m.l)}</div></div>`).join('')+`</div></div>
+          <div class="ppt-chart">`+(()=>{const vals=(s.chart&&s.chart.values)||[];const mx=Math.max.apply(null,vals.concat([1]));const lb=(s.chart&&s.chart.labels)||[];return `<div class="ppt-chart-t">${esc((s.chart&&s.chart.title)||'')}</div><div class="ppt-bars">`+vals.map((v,k)=>`<div class="ppt-bar-wrap"><div class="ppt-bar-v">${esc(String(v))}</div><div class="ppt-bar" style="height:${Math.round(v/mx*100)}%"></div><div class="ppt-bar-l">${esc(lb[k]||'')}</div></div>`).join('')+`</div>`;})()+`</div>`; break;
+      case 'pains':
+        bg='#f4f6fa';
+        inner=pptHeader(s.title, s.tag||'Challenges')+`<div class="ppt-grid3">`+
+          (s.cards||[]).map(c=>`<div class="ppt-pain"><div class="ppt-pain-h"><span class="ppt-pain-ic">${esc(c.icon)}</span><b>${esc(c.title)}</b></div>
+            <p>${esc(c.desc)}</p><div class="ppt-pain-fix">✓ ${esc(c.fix)}</div></div>`).join('')+`</div>`; break;
+      case 'advantages':
+        inner=pptHeader(s.title, s.tag||'Response')+`<p class="ppt-intro">${esc(s.intro||'')}</p><div class="ppt-grid3">`+
+          (s.cards||[]).map((c,k)=>`<div class="ppt-adv" style="border-top:4px solid ${cap[k%5]}"><b style="color:${cap[k%5]}">${esc(c.title)}</b><p>${esc(c.body)}</p></div>`).join('')+`</div>`; break;
+      case 'capability': {
+        const cc=cap[(s.idx-1)%5];
+        inner=pptHeader(s.name+' —— '+(s.en||''), '核心能力 '+s.idx+'/'+s.total)+`<div class="ppt-cols">
+          <div class="ppt-cap-l" style="background:${DK}"><div class="ppt-cap-no" style="background:${cc}">${s.idx}</div>
+            <div class="ppt-cap-nm">${esc(s.name)}</div><div class="ppt-cap-en">${esc(s.en||'')}</div>
+            <div class="ppt-cap-line" style="background:${cc}"></div><p class="ppt-cap-desc">${esc(s.desc||'')}</p></div>
+          <div class="ppt-cap-r"><div class="ppt-sub">核心能力亮点</div>`+
+          (s.points||[]).map((pt,k)=>`<div class="ppt-cap-pt" style="border-left:4px solid ${cc}"><span class="ppt-cap-ptn" style="background:${cc}">${k+1}</span><span>${esc(pt)}</span></div>`).join('')+`</div></div>`; break; }
+      case 'standards':
+        inner=pptHeader(s.title, s.tag||'Standards')+`<div class="ppt-scale">⭐ ${esc(s.scale||'')}</div>
+          <div class="ppt-stats">`+(s.stats||[]).map(m=>`<div class="ppt-stat"><div class="ppt-stat-v">${esc(m[0])}</div><div class="ppt-stat-l">${esc(m[1])}</div></div>`).join('')+`</div>
+          <div class="ppt-hls">`+(s.highlights||[]).map((h,k)=>`<div class="ppt-hl" style="border-left:4px solid ${cap[k%5]}">${esc(h)}</div>`).join('')+`</div>`; break;
+      case 'architecture':
+        inner=pptHeader(s.title, s.tag||'Architecture')+`<div class="ppt-arch">`+
+          (s.layers||[]).map((l,k)=>`<div class="ppt-arch-l" style="background:${['#4F46E5','#6D28D9','#0891B2','#059669','#16A34A','#D97706'][k%6]};width:${86+k*2.3}%"><b>${esc(l.layer)}</b><span>${esc(l.desc)}</span></div>`).join('')+`</div>`; break;
+      case 'ioc':
+        inner=pptHeader(s.title, s.tag||'IOC')+`<p class="ppt-intro">${esc(s.intro||'')}</p>
+          <div class="ppt-ioc-banner">🛰️ ${esc(s.banner||'')}</div><div class="ppt-grid4">`+
+          (s.apps||[]).map((a,k)=>`<div class="ppt-ioc" style="border-top:4px solid ${cap[k%5]}"><div class="ppt-ioc-h"><span class="ppt-ioc-ic" style="background:${cap[k%5]}">${esc(a.icon)}</span><b>${esc(a.name)}</b></div><p>${esc(a.desc)}</p></div>`).join('')+`</div>`; break;
+      case 'value':
+        inner=pptHeader(s.title, s.tag||'Value')+`<div class="ppt-grid4">`+
+          (s.cards||[]).map((c,k)=>`<div class="ppt-val" style="${k===0?'background:'+P+';color:#fff':''}"><div class="ppt-val-ic">${esc(c.icon)}</div><b style="${k===0?'color:#fff':'color:'+cap[k%5]}">${esc(c.title)}</b><p style="${k===0?'color:#ddd6fe':''}">${esc(c.desc)}</p></div>`).join('')+`</div>`; break;
+      case 'flow':
+        inner=pptHeader(s.title, s.tag||'Logic')+`<p class="ppt-intro">${esc(s.intro||'')}</p><div class="ppt-flow">`+
+          (s.steps||[]).map((f,k)=>`<div class="ppt-flow-s" style="border:2px solid ${cap[k%5]}"><div class="ppt-flow-ic" style="background:${cap[k%5]}">${esc(f.icon)}</div><div class="ppt-flow-st" style="color:${cap[k%5]}">STEP ${k+1}</div><b>${esc(f.t)}</b><p>${esc(f.d)}</p></div>${k<s.steps.length-1?'<div class="ppt-flow-arr">➜</div>':''}`).join('')+`</div>
+          <div class="ppt-flow-ft">${esc(s.footer||'')}</div>`; break;
+      case 'scenarioOverview':
+        inner=pptHeader(s.title, s.tag||'Scenarios')+`<p class="ppt-intro">${esc(s.intro||'')}</p><div class="ppt-grid3">`+
+          (s.cards||[]).map((c,k)=>`<div class="ppt-sc" style="border-top:4px solid ${cap[k%6%5]}${c.focus?';box-shadow:0 0 0 2px '+PK:''}"><b style="color:${cap[k%5]}">${esc(c.name)}</b><p>${esc(c.desc)}</p>`+
+            (c.features||[]).map(f=>`<div class="ppt-sc-f">✦ ${esc(f)}</div>`).join('')+`</div>`).join('')+`</div>`; break;
+      case 'scenarioDetail': {
+        const cc=cap[(s.idx-1)%5];
+        inner=pptHeader('应用场景 '+s.idx+'/'+s.total+'  ——  '+s.name, 'Scenario Detail')+`<div class="ppt-cols">
+          <div class="ppt-cap-l" style="background:${DK}"><div class="ppt-cap-no" style="background:${cc}">${s.idx}</div>
+            <div class="ppt-cap-nm">${esc(s.name)}</div><div class="ppt-cap-line" style="background:${cc}"></div>
+            <div class="ppt-sub" style="color:#94a3b8">场景说明</div><p class="ppt-cap-desc">${esc(s.desc||'')}</p>
+            <div class="ppt-sub" style="color:#a5b4fc">场景价值</div><p class="ppt-cap-desc" style="color:#cbd5e1">${esc(s.value||'')}</p></div>
+          <div class="ppt-cap-r"><div class="ppt-sub">核心功能模块</div><div class="ppt-grid2">`+
+          (s.features||[]).map((f,k)=>`<div class="ppt-feat" style="border-top:3px solid ${cc}"><div class="ppt-feat-h"><span class="ppt-feat-n" style="color:${cc};border-color:${cc}">${k+1}</span><b>${esc(f.name)}</b></div>${f.detail?`<p>${esc(f.detail)}</p>`:''}</div>`).join('')+`</div></div></div>`; break; }
+      case 'methodology':
+        inner=pptHeader(s.title, s.tag||'Methodology')+`<div class="ppt-method">`+
+          (s.steps||[]).map((st,k)=>`<div class="ppt-method-s" style="background:${k%2===0?P:'#f4f6fa'};color:${k%2===0?'#fff':'#1e293b'}"><div class="ppt-method-n" style="background:${k%2===0?'#fff':P};color:${k%2===0?P:'#fff'}">${k+1}</div><b>${esc(st.step)}</b><p style="color:${k%2===0?'#ddd6fe':'#64748b'}">${esc(st.desc)}</p></div>`).join('')+`</div>`; break;
+      case 'casesOverview':
+        inner=pptHeader(s.title, s.tag||'Cases')+`<div class="ppt-scale">${esc(s.banner||'')}</div><div class="ppt-grid2">`+
+          (s.cards||[]).map((c,k)=>`<div class="ppt-case" style="border-top:4px solid ${cap[k%4]}"><b>${esc(c.name)}</b><p>${esc(c.desc)}</p>${c.metric?`<div class="ppt-case-m" style="color:${cap[k%4]}">${esc(c.metric)}</div>`:''}</div>`).join('')+`</div>`; break;
+      case 'caseDetail': {
+        const cc=cap[(s.idx-1)%4];
+        inner=pptHeader('案例 '+s.idx+'  ——  '+s.name, 'Case Study')+`<div class="ppt-cols">
+          <div class="ppt-cap-l" style="background:${DK}"><div class="ppt-cap-nm">${esc(s.name)}</div><div class="ppt-cap-line" style="background:${cc}"></div>
+            <div class="ppt-sub" style="color:${cc}">项目背景</div><p class="ppt-cap-desc">${esc(s.bg||'')}</p>
+            <div class="ppt-sub" style="color:${cc}">项目价值</div><p class="ppt-cap-desc" style="color:#a5b4fc">${esc(s.value||'')}</p></div>
+          <div class="ppt-cap-r">`+
+          (s.funcs&&s.funcs.length?`<div class="ppt-sub">功能应用</div><div class="ppt-funcs">`+s.funcs.map(f=>`<span class="ppt-func" style="border-left:3px solid ${cc}">${esc(f)}</span>`).join('')+`</div>`:'')+
+          (s.metrics&&s.metrics.length?`<div class="ppt-sub">建设成效</div>`+s.metrics.map((m,k)=>`<div class="ppt-cmetric"><span class="ppt-cmetric-n" style="background:${cc}">${k+1}</span><span style="color:${P};font-weight:600">${esc(m)}</span></div>`).join(''):'')+
+          `</div></div>`; break; }
+      case 'valueMetrics':
+        inner=pptHeader(s.title, s.tag||'Value')+`<div class="ppt-scale" style="background:#ede9fe;color:${P}">${esc(s.summary||'')}</div>
+          <div class="ppt-stats">`+(s.metrics||[]).map(m=>`<div class="ppt-stat" style="background:${DK}"><div class="ppt-stat-v" style="color:#34d399">${esc(m.value)}</div><div class="ppt-stat-l" style="color:#fff">${esc(m.label)}</div>${m.desc?`<div class="ppt-stat-d">${esc(m.desc)}</div>`:''}</div>`).join('')+`</div>
+          <div class="ppt-funcs">`+(s.funcList||[]).map(f=>`<span class="ppt-func" style="border-left:3px solid ${P}">✦ ${esc(f)}</span>`).join('')+`</div>`; break;
+      case 'plan': {
+        const pc=cap[(s.idx-1)%3];
+        inner=pptHeader('实施计划 · '+s.stageLabel+' —— '+s.stage, s.desc)+`<div class="ppt-plan">`+
+          (s.items||[]).map((it,k)=>`<div class="ppt-plan-i" style="border-left:5px solid ${pc}"><div class="ppt-plan-l"><b>${esc(it.name)}</b><span style="color:${pc}">${esc(it.duration)}</span></div>
+            <div class="ppt-plan-r"><span class="ppt-plan-dv">交付物：</span>${esc(it.deliverables)}</div></div>`).join('')+`</div>`; break; }
+      case 'closing':
+        bg=DK;
+        inner=`<div class="ppt-closing"><div class="ppt-closing-t">${esc(s.title||'谢谢观看')}</div>
+          <div class="ppt-closing-s">${esc(s.subtitle||'')}</div><div class="ppt-closing-line"></div>
+          <div class="ppt-closing-c">${esc(s.company||'')}</div><div class="ppt-closing-sl">${esc(s.slogan||'')}</div></div>`; break;
+      default:
+        inner=pptHeader(s.title||'', s.tag||'')+`<p class="ppt-intro">${esc(s.desc||'')}</p>`;
+    }
+    return pptFrame(inner, bg, i, total);
+  }).join('');
+  return `<div class="ppt-deck">${body}</div>`;
 }
 function renderPlanView(j){
   const head='<tr>'+(j.columns||[]).map(c=>'<th class="border border-slate-600 px-2 py-1 bg-slate-800 text-amber-200 text-[12px]">'+esc(c)+'</th>').join('')+'</tr>';

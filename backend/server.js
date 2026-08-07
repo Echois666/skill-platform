@@ -10,7 +10,7 @@ const fs = require('fs');
 const { parks, phases, getPark } = require('../data/content');
 const { tasks, versions, branches } = require('./adminData');
 const { generateSolutionBuffer, buildSolutionModel } = require('./docxGenerator');
-const { generatePptBuffer } = require('./pptGenerator');
+const { generatePptBuffer, buildPptModel } = require('./pptGenerator');
 const { generatePlanBuffer, buildPlanModel } = require('./planGenerator');
 const { generateBrandBuffer } = require('./brandGenerator');
 const { generateOnePagerBuffer, buildOnePagerPreview } = require('./onePagerGenerator');
@@ -554,22 +554,13 @@ app.post('/api/preview/solution', (req, res) => {
   }
 });
 
-// 汇报PPT 在线查看：复用解决方案内容模型，按章节切分为“幻灯片”
+// 汇报PPT 在线查看：读取真实 PPT 生成器的逐页幻灯片内容模型，转成网页幻灯片
 app.post('/api/preview/ppt', (req, res) => {
   try {
     const { park, version, brief } = resolveRequest(req.body);
     if (!park) return res.status(404).json({ ok: false, error: '未找到该园区，请选择园区或在需求中说明行业类型' });
-    const model = buildSolutionModel(park, version, brief);
-    // 以 h1 为分页点，聚合为幻灯片
-    const slides = [];
-    let cur = null;
-    model.blocks.forEach(b => {
-      if (b.tag === 'pagebreak' || b.tag === 'spacer') return;
-      if (b.tag === 'h1') { cur = { title: b.text, body: [] }; slides.push(cur); return; }
-      if (!cur) { cur = { title: model.title, body: [] }; slides.push(cur); }
-      cur.body.push(b);
-    });
-    res.json({ ok: true, type: 'ppt', title: model.title, version, slides });
+    const model = buildPptModel(park, version, brief);
+    res.json({ ok: true, type: 'ppt', title: model.title, version: model.version, slides: model.slides });
   } catch (e) {
     console.error('preview/ppt失败:', e);
     res.status(500).json({ ok: false, error: '生成预览失败', detail: e.message });
