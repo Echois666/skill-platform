@@ -169,17 +169,17 @@
     <div class="text-center mb-8">
       <span class="text-4xl">🎯</span>
       <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段三 · 方案/PPT/计划生成</h2>
-      <p class="text-gray-400">不再跳转到单独页面：在当前作战台内输入客户需求，生成解决方案、PPT、实施计划或完整方案包。</p>
+      <p class="text-gray-400">不再跳转到单独页面：在当前作战台内输入客户需求，一键在网页上在线查看解决方案、汇报PPT、实施计划，无需下载大文件。</p>
     </div>
     <div class="bg-slate-800/60 border border-purple-500/20 rounded-2xl p-6 md:p-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div><label class="block text-sm font-semibold mb-2">行业领域</label><select id="genPark" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></select></div>
         <div><label class="block text-sm font-semibold mb-2">客户名称</label><input id="genCustomer" value="某客户" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"></div>
-        <div><label class="block text-sm font-semibold mb-2">输出类型</label><select id="genType" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="complete">完整方案包 ZIP</option><option value="solution">解决方案 Word</option><option value="ppt">汇报PPT</option><option value="plan">实施计划 Excel</option></select></div>
+        <div><label class="block text-sm font-semibold mb-2">查看类型</label><select id="genType" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5"><option value="solution">解决方案</option><option value="ppt">汇报PPT</option><option value="plan">实施计划</option></select></div>
       </div>
       <label class="block text-sm font-semibold mb-2">客户需求/场景描述</label>
       <textarea id="genRequirement" rows="5" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-3 mb-4" placeholder="例如：客户是一所高校，希望建设数字孪生校园IOC，实现安防、能耗、资产、空间、应急、访客、停车、AI问答等能力，要求能支撑领导驾驶舱和日常运维。"></textarea>
-      <button onclick="runStage3Generate()" id="genBtn" class="w-full gold-btn px-4 py-3 rounded-lg font-bold transition">🎯 生成阶段三材料</button>
+      <button onclick="runStage3Generate()" id="genBtn" class="w-full gold-btn px-4 py-3 rounded-lg font-bold transition">🎯 在线查看方案</button>
       <div id="genResult" class="mt-5"></div>
     </div>
   </div>
@@ -191,7 +191,7 @@
     <div class="text-center mb-8">
       <span class="text-4xl">📚</span>
       <h2 class="text-3xl md:text-4xl font-bold mt-2 mb-2 gradient-text">阶段四 · 全环节文档/客户手册中心</h2>
-      <p class="text-gray-400">按需求、设计、执行、验收、售后整理标准交付物；可按客户行业快速下载适配模板。</p>
+      <p class="text-gray-400">按需求、设计、执行、验收、售后整理标准交付物；可按客户行业在线查看适配模板的用途、写作要点与目录大纲。</p>
     </div>
     <div class="bg-slate-800/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
@@ -444,39 +444,111 @@ async function downloadOnePager(){
   }catch(e){ dl.textContent='❌ '+e.message; setTimeout(()=>{dl.textContent=old; dl.disabled=false;},2500); }
 }
 
-// ===== 阶段三 方案/PPT/计划生成 =====
-const GEN_API = {
-  complete: ['/api/generate/complete-package', '完整方案包.zip'],
-  solution: ['/api/generate/solution', '解决方案.docx'],
-  ppt: ['/api/generate/ppt', '汇报PPT.pptx'],
-  plan: ['/api/generate/plan', '实施计划.xlsx']
-};
+// ===== 阶段三 方案/PPT/计划 —— 在线查看（不下载大文件）=====
+const PREVIEW_API = { solution:'/api/preview/solution', ppt:'/api/preview/ppt', plan:'/api/preview/plan' };
 async function runStage3Generate(){
   const btn=document.getElementById('genBtn'), box=document.getElementById('genResult');
-  const type=document.getElementById('genType').value;
+  let type=document.getElementById('genType').value;
+  if(type!=='ppt' && type!=='plan') type='solution';
   const parkId=document.getElementById('genPark').value;
   const park=(PARKS.find(p=>p.id===parkId)||{}).name||'行业';
   const customer=document.getElementById('genCustomer').value.trim()||'某客户';
   const requirement=document.getElementById('genRequirement').value.trim() || `${customer}需要建设${park}数字孪生IOC平台，覆盖安全、运营、资产、能耗、应急和领导驾驶舱。`;
-  const [url,label]=GEN_API[type]||GEN_API.complete;
-  btn.disabled=true; btn.textContent='⏳ 正在生成材料...';
+  const payload=JSON.stringify({parkId, client:customer, projectName:`${customer}${park}数字孪生建设项目`, requirement, version:'专业版'});
+  btn.disabled=true; btn.textContent='⏳ 正在生成...';
   box.innerHTML='<div class="text-sm text-gray-400 flex items-center gap-2"><span class="spinner"></span> 正在调用方案引擎，请稍候...</div>';
   try{
-    const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parkId, client:customer, projectName:`${customer}${park}数字孪生建设项目`, requirement, version:'专业版'})});
-    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.detail||j.error||('HTTP '+r.status)); }
-    const blob = await r.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${customer}-${park}-${label}`;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    const r = await fetch(PREVIEW_API[type],{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+    const j = await r.json();
+    if(!j.ok){ throw new Error(j.error||('HTTP '+r.status)); }
+    let html;
+    if(type==='plan') html=renderPlanView(j);
+    else if(type==='ppt') html=renderPptView(j);
+    else html=renderSolutionView(j);
+    const label = type==='plan'?'实施计划':(type==='ppt'?'汇报PPT':'解决方案');
+    openDocViewer(`${customer}·${park} ${label}`, html);
     box.innerHTML = `<div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-100">
-      ✅ 已生成并下载 <b>${esc(label)}</b>。<div class="text-xs text-gray-400 mt-1">输入需求已带入行业、客户名称、项目名称，用于提升方案贴合度。</div>
+      ✅ 已生成 <b>${esc(label)}</b> 并在弹窗中打开在线查看。<div class="text-xs text-gray-400 mt-1">内容按行业、客户名称、需求实时生成，可直接在网页阅读，无需下载大文件。</div>
     </div>`;
   }catch(e){
     box.innerHTML=`<div class="text-red-400 text-sm p-3 rounded-lg bg-red-500/10 border border-red-500/20">生成失败：${esc(e.message)}</div>`;
   }finally{
-    btn.disabled=false; btn.textContent='🎯 生成阶段三材料';
+    btn.disabled=false; btn.textContent='🎯 在线查看方案';
   }
+}
+
+// —— 通用在线查看弹层 ——
+function openDocViewer(title, bodyHtml){
+  let modal=document.getElementById('docViewModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='docViewModal';
+    modal.className='fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm';
+    modal.innerHTML=`<div class="bg-slate-900 border border-amber-500/30 rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-700">
+        <div id="docViewTitle" class="font-bold text-amber-200 truncate"></div>
+        <button onclick="document.getElementById('docViewModal').classList.add('hidden')" class="text-gray-400 hover:text-white text-xl leading-none px-2">×</button>
+      </div>
+      <div id="docViewBody" class="overflow-y-auto px-6 py-5 text-sm text-gray-200"></div>
+      <div class="px-5 py-2.5 border-t border-slate-700 text-[11px] text-gray-500">在线查看 · 内容根据当前输入实时生成，仅供内部参考</div>
+    </div>`;
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.add('hidden'); });
+    document.body.appendChild(modal);
+  }
+  document.getElementById('docViewTitle').textContent=title;
+  document.getElementById('docViewBody').innerHTML=bodyHtml;
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+function renderBlocks(blocks){
+  return (blocks||[]).map(b=>{
+    if(b.tag==='h1') return '<div class="font-bold text-amber-200 text-[15px] mt-5 mb-2 border-b border-amber-500/20 pb-1">'+esc(b.text)+'</div>';
+    if(b.tag==='h2') return '<div class="font-semibold text-amber-100 text-[13px] mt-3 mb-1">'+esc(b.text)+'</div>';
+    if(b.tag==='bullet') return '<div class="text-gray-300 text-[12.5px] mb-1 '+(b.level?'pl-7':'pl-4')+'">• '+esc(b.text)+'</div>';
+    if(b.tag==='pagebreak'||b.tag==='spacer') return '';
+    var cls='text-gray-300 leading-relaxed mb-2 text-[12.5px]';
+    if(b.bold) cls='font-semibold text-gray-100 mb-1 text-[13px]';
+    if(b.align==='center') cls+=' text-center';
+    return '<p class="'+cls+'">'+esc(b.text)+'</p>';
+  }).join('');
+}
+function renderSolutionView(j){ return renderBlocks(j.blocks); }
+function renderPptView(j){
+  return '<div class="space-y-4">'+(j.slides||[]).map((s,i)=>`
+    <div class="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
+      <div class="px-4 py-2 bg-slate-800 flex justify-between items-center"><span class="text-amber-200 font-bold text-[13px]">${esc(s.title)}</span><span class="text-gray-500 text-[11px]">第 ${i+1} 页</span></div>
+      <div class="p-4">${renderBlocks(s.body)||'<div class="text-gray-500 text-xs">（本页为章节封面）</div>'}</div>
+    </div>`).join('')+'</div>';
+}
+function renderPlanView(j){
+  const head='<tr>'+(j.columns||[]).map(c=>'<th class="border border-slate-600 px-2 py-1 bg-slate-800 text-amber-200 text-[12px]">'+esc(c)+'</th>').join('')+'</tr>';
+  const rows=(j.rows||[]).map(r=>'<tr>'+
+    '<td class="border border-slate-600 px-2 py-1 text-[12px] font-semibold text-amber-300 whitespace-nowrap">'+esc(r.stage||'')+'</td>'+
+    '<td class="border border-slate-600 px-2 py-1 text-[12px] whitespace-nowrap">'+esc(r.phase)+'</td>'+
+    '<td class="border border-slate-600 px-2 py-1 text-[12px] whitespace-nowrap">'+esc(r.duration)+'</td>'+
+    '<td class="border border-slate-600 px-2 py-1 text-[12px]">'+esc(r.activities)+'</td>'+
+    '<td class="border border-slate-600 px-2 py-1 text-[12px] text-purple-300">'+esc(r.deliverables)+'</td></tr>').join('');
+  return '<div class="overflow-x-auto"><table class="w-full border-collapse">'+head+rows+'</table></div>';
+}
+function renderTemplateView(j){
+  let h='<div class="text-[11px] text-amber-300 mb-3">'+esc(j.stage||'')+' · '+esc(j.phase||'')+' · 适用读者：'+esc(j.audience||'')+'</div>';
+  h+='<div class="font-semibold text-gray-100 mb-1">文档用途</div><p class="text-gray-300 text-[12.5px] mb-3">'+esc(j.purpose||'')+'</p>';
+  if(j.tips&&j.tips.length){ h+='<div class="font-semibold text-gray-100 mb-1">写作要点</div>'+j.tips.map(t=>'<div class="text-gray-300 text-[12.5px] mb-1 pl-3">• '+esc(t)+'</div>').join(''); }
+  h+='<div class="font-semibold text-gray-100 mt-3 mb-1">文档目录大纲</div>';
+  h+=(j.outline||[]).map(sec=>`<div class="mb-2">
+      <div class="font-semibold text-amber-200 text-[13px]">${esc(sec.section)}</div>`+
+      (sec.guide?`<div class="text-[11px] text-purple-300 mb-1">写作指引：${esc(sec.guide)}</div>`:'')+
+      (sec.points||[]).map(pt=>`<div class="text-gray-400 text-[12px] pl-3">- ${esc(pt)}</div>`).join('')+
+    `</div>`).join('');
+  return h;
+}
+async function viewTemplate(key){
+  openDocViewer('加载中…','<div class="text-gray-400 py-8 text-center">加载中…</div>');
+  try{
+    const r=await fetch('/api/preview/template/'+encodeURIComponent(key));
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error||('HTTP '+r.status));
+    openDocViewer((j.icon||'📄')+' '+j.name, renderTemplateView(j));
+  }catch(e){ openDocViewer('加载失败','<div class="text-red-400 py-6">'+esc(e.message)+'</div>'); }
 }
 
 // ===== 阶段四 文档/客户手册中心 =====
@@ -489,7 +561,7 @@ function renderDocCenter(){
   const park=(PARKS.find(p=>p.id===document.getElementById('docPark').value)||{}).name||'行业';
   box.innerHTML = `
     <div class="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-100">
-      已按 <b>${customer}</b> · <b>${esc(park)}</b> 整理全环节交付文档。下载时会生成可填写 Word 模板，覆盖用途、读者、写作要点、目录大纲和占位内容。
+      已按 <b>${customer}</b> · <b>${esc(park)}</b> 整理全环节交付文档。点击任意文档即可在线查看用途、适用读者、写作要点与目录大纲，无需下载。
     </div>
     <div class="space-y-4">${DELIVERABLES.map(stage=>`
       <details class="bg-slate-900/60 border border-slate-700 rounded-xl overflow-hidden" open>
@@ -502,7 +574,7 @@ function renderDocCenter(){
             <div class="bg-slate-800/70 border border-slate-700 rounded-lg p-3">
               <div class="flex items-start justify-between gap-2 mb-1">
                 <div class="font-semibold text-sm text-gray-100">${item.icon||'📄'} ${esc(item.name)}</div>
-                <button onclick="downloadTemplate('${esc(item.key)}')" class="text-xs px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white whitespace-nowrap">下载</button>
+                <button onclick="viewTemplate('${esc(item.key)}')" class="text-xs px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white whitespace-nowrap">📖 在线查看</button>
               </div>
               <div class="text-[11px] text-amber-300 mb-1">${esc(item.phase)} · ${esc(item.audience)}</div>
               <div class="text-xs text-gray-400 leading-relaxed">${esc(item.purpose)}</div>

@@ -54,4 +54,24 @@ async function generatePlanBuffer(park, version) {
   return Buffer.from(buffer);
 }
 
-module.exports = { generatePlanBuffer };
+// 实施计划内容模型（Excel 下载 + 在线查看共用）
+function buildPlanModel(park, version) {
+  const columns = ['阶段', '环节', '周期', '主要活动', '交付物'];
+  const rows = [];
+  ['presales', 'midsales', 'delivery'].forEach(key => {
+    const ph = phases[key];
+    ph.items.forEach((it, idx) => {
+      rows.push({
+        stage: idx === 0 ? ph.name : '',
+        stageName: ph.name,
+        phase: it.name,
+        duration: it.duration,
+        activities: it.activities.join('、'),
+        deliverables: it.deliverables.join('、')
+      });
+    });
+  });
+  return { title: `${park.icon || ''} ${park.name} 数字化解决方案 - 实施计划（${version}）`.trim(), columns, rows };
+}
+
+module.exports = { generatePlanBuffer, buildPlanModel };

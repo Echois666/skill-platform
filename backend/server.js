@@ -9,13 +9,13 @@ const fs = require('fs');
 
 const { parks, phases, getPark } = require('../data/content');
 const { tasks, versions, branches } = require('./adminData');
-const { generateSolutionBuffer } = require('./docxGenerator');
+const { generateSolutionBuffer, buildSolutionModel } = require('./docxGenerator');
 const { generatePptBuffer } = require('./pptGenerator');
-const { generatePlanBuffer } = require('./planGenerator');
+const { generatePlanBuffer, buildPlanModel } = require('./planGenerator');
 const { generateBrandBuffer } = require('./brandGenerator');
 const { generateOnePagerBuffer, buildOnePagerPreview } = require('./onePagerGenerator');
 const { generateTemplateBuffer } = require('./templateGenerator');
-const { listByStage } = require('../data/deliverableTemplates');
+const { listByStage, getTemplate } = require('../data/deliverableTemplates');
 const { parseRequirement } = require('./requirementParser');
 const { getJourney, buildLeadRadar, buildEnablement, scoreCustomerSuccess, buildBrandPreview } = require('./journeyEngine');
 const { fetchTenderRadar } = require('./tenderRadar');
@@ -537,6 +537,71 @@ app.post('/api/generate/plan', async (req, res) => {
   } catch (e) {
     console.error('plan生成失败:', e);
     res.status(500).json({ error: '生成失败', detail: e.message });
+  }
+});
+
+// ========== 在线查看（预览）API —— 网页直接查看方案内容，避免下载大文件 ==========
+// 解决方案 在线查看：返回与 Word 下载同源的内容模型
+app.post('/api/preview/solution', (req, res) => {
+  try {
+    const { park, version, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ ok: false, error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const model = buildSolutionModel(park, version, brief);
+    res.json({ ok: true, type: 'solution', title: model.title, version, blocks: model.blocks });
+  } catch (e) {
+    console.error('preview/solution失败:', e);
+    res.status(500).json({ ok: false, error: '生成预览失败', detail: e.message });
+  }
+});
+
+// 汇报PPT 在线查看：复用解决方案内容模型，按章节切分为“幻灯片”
+app.post('/api/preview/ppt', (req, res) => {
+  try {
+    const { park, version, brief } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ ok: false, error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const model = buildSolutionModel(park, version, brief);
+    // 以 h1 为分页点，聚合为幻灯片
+    const slides = [];
+    let cur = null;
+    model.blocks.forEach(b => {
+      if (b.tag === 'pagebreak' || b.tag === 'spacer') return;
+      if (b.tag === 'h1') { cur = { title: b.text, body: [] }; slides.push(cur); return; }
+      if (!cur) { cur = { title: model.title, body: [] }; slides.push(cur); }
+      cur.body.push(b);
+    });
+    res.json({ ok: true, type: 'ppt', title: model.title, version, slides });
+  } catch (e) {
+    console.error('preview/ppt失败:', e);
+    res.status(500).json({ ok: false, error: '生成预览失败', detail: e.message });
+  }
+});
+
+// 实施计划 在线查看：返回与 Excel 下载同源的表格模型
+app.post('/api/preview/plan', (req, res) => {
+  try {
+    const { park, version } = resolveRequest(req.body);
+    if (!park) return res.status(404).json({ ok: false, error: '未找到该园区，请选择园区或在需求中说明行业类型' });
+    const model = buildPlanModel(park, version);
+    res.json({ ok: true, type: 'plan', title: model.title, columns: model.columns, rows: model.rows });
+  } catch (e) {
+    console.error('preview/plan失败:', e);
+    res.status(500).json({ ok: false, error: '生成预览失败', detail: e.message });
+  }
+});
+
+// 交付物模板 在线查看：返回模板的用途/读者/写作要点/目录大纲
+app.get('/api/preview/template/:key', (req, res) => {
+  try {
+    const tpl = getTemplate(req.params.key);
+    if (!tpl) return res.status(404).json({ ok: false, error: '未找到该交付物模板' });
+    res.json({
+      ok: true, type: 'template', key: tpl.key, name: tpl.name, icon: tpl.icon,
+      stage: tpl.stage, phase: tpl.phase, purpose: tpl.purpose, audience: tpl.audience,
+      tips: tpl.tips || [], outline: tpl.outline || []
+    });
+  } catch (e) {
+    console.error('preview/template失败:', e);
+    res.status(500).json({ ok: false, error: '获取模板预览失败', detail: e.message });
   }
 });
 
